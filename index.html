@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2 EC1</title>
+<title>PS Cafe Manager • V6.4.2 EC3</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -331,6 +331,22 @@ td button{padding:6px 12px;font-size:12px}
 @media(max-width:900px){.compact-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.compact-metric{min-height:72px;padding:10px 12px}.compact-metric .metric-value{font-size:22px}}
 @media(max-width:520px){.compact-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.compact-hero{padding:12px!important}.compact-hero .row{display:grid;grid-template-columns:1fr 1fr;width:100%}.compact-hero .row button{width:100%;padding:9px 10px}.cashier-mini-grid{gap:8px;margin-bottom:10px}.shift-actions{gap:8px}}
 
+
+/* EC3 — hard lock owner technical tools open; no details/summary collapse regressions */
+details.owner-tech{display:block!important;}
+details.owner-tech>summary{display:none!important;}
+.owner-tech,.owner-tech-open{display:block!important;overflow:visible!important;}
+.owner-tech-header{cursor:default!important;}
+.owner-tech-header::after,.owner-tech summary::after{display:none!important;content:''!important;}
+.owner-tech .settings-section{display:block!important;}
+#vSettings .owner-card.owner-tech{min-height:auto!important;}
+/* EC3 — cleaner compact cards */
+.ops-card{cursor:pointer;}
+.ops-card .hint{display:none!important;}
+.ops-card{min-height:72px!important;padding:10px 12px!important;}
+.dash-header{padding:14px 18px!important;margin-bottom:14px!important;}
+.dash-header-sub,.page-subtitle{display:none;}
+
 /* PRINT */
 @media print{
   .top,.tabs,button,.no-print,#sl,.top-actions,#alert-toast{display:none!important}
@@ -451,7 +467,7 @@ td button{padding:6px 12px;font-size:12px}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-EC2';
+const APP_VERSION='V6.4.2-EC3';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -598,14 +614,12 @@ function render(){
   if(!allowedTabs().includes(tab))tab='Dashboard';
   cu.textContent=user.username;cr.textContent=roleLabel(user.role);
   let ss=st(),online=navigator.onLine,sm=syncMeta();
-  let q=(ss.mode==='secure_cloud'&&sm.verified)?0:queue().length;
+  // EC3: secure cloud saves actions directly; do not show stale local queue warnings.
   if(ss.mode!=='secure_cloud'){sl.textContent='محلي';sl.className='sync';}
-  else if(!online){sl.textContent='غير متصل — محفوظ';sl.className='sync err';}
-  else if(sm.syncing){sl.textContent='جاري الحفظ…';sl.className='sync pending';}
-  else if(q){sl.textContent='بانتظار الحفظ '+q;sl.className='sync pending';}
-  else if(sm.verified&&sm.lastSuccess){sl.textContent='محفوظ ✓';sl.className='sync private-cloud';}
-  else if(sm.verified){sl.textContent='متصل ✓';sl.className='sync private-cloud';}
-  else{sl.textContent='غير مفعّل';sl.className='sync unknown';}
+  else if(!online){sl.textContent='غير متصل';sl.className='sync err';}
+  else if(sm.syncing&&!sm.verified&&!ss.session){sl.textContent='جاري الاتصال…';sl.className='sync pending';}
+  else if(sm.verified||ss.session){sl.textContent='متصل ✓';sl.className='sync private-cloud';}
+  else{sl.textContent='يلزم دخول';sl.className='sync unknown';}
   ['Dashboard','Products','Devices','Invoices','Expenses','Reports','Shifts','Audit','Users','Settings'].forEach(x=>document.getElementById('v'+x).classList.add('hidden'));
   document.getElementById('v'+tab).classList.remove('hidden');
   rDash();rProducts();rDevices();rInvoices();rExpenses();rReports();rShifts();rAudit();rUsers();rSettings();
@@ -1461,9 +1475,9 @@ function rSettings(){
     <div class="big" style="font-size:16px;margin-bottom:12px">🔐 قاعدة بيانات صاحب النشاط</div>
     <div class="settings-note">يتم الربط بمشروع Supabase يملكه صاحب النشاط. البيانات محفوظة في جداول منفصلة ومحمية بـ RLS؛ الفواتير وسجل الحركات غير قابلين للتعديل أو الحذف من الكاشير.</div>
     <div class="status-panel ${syncClass}">
-      <div><strong>الحالة:</strong> ${s.mode!=='secure_cloud'?'غير مربوط — البيانات على هذا الجهاز':(sm.syncing?'جاري الاتصال…':(sm.verified?(sm.lastSuccess?'متصل بقاعدة بيانات النشاط ✓':'اتصال آمن جاهز ✓'):'يلزم تسجيل دخول المالك'))}</div>
+      <div><strong>الحالة:</strong> ${s.mode!=='secure_cloud'?'غير مربوط — البيانات على هذا الجهاز':((sm.verified||s.session)?'متصل بقاعدة بيانات النشاط ✓':'يلزم تسجيل دخول المالك')}</div>
       <div><strong>آخر تحديث ناجح:</strong> ${shortTime(sm.lastSuccess)}</div>
-      ${(!sm.verified&&sm.lastError)?`<div style="color:var(--red)"><strong>آخر خطأ:</strong> ${esc(sm.lastError)}</div>`:''}
+      ${(!s.session&&!sm.verified&&sm.lastError)?`<div style="color:var(--red)"><strong>آخر خطأ:</strong> ${esc(sm.lastError)}</div>`:''}
     </div>
     <div class="grid g2 mt">
       <div class="col"><label>وضع البيانات</label><select id="mode"><option value="offline" ${s.mode==='offline'?'selected':''}>الجهاز فقط</option><option value="secure_cloud" ${s.mode==='secure_cloud'?'selected':''}>قاعدة بيانات المالك الآمنة</option></select></div>
@@ -1477,7 +1491,6 @@ function rSettings(){
       <button class="ok" onclick="connectOwnerCloud()">🔒 ربط واختبار الاتصال</button>
       <button onclick="manualSync()">🔄 مزامنة البيانات الآن</button>
       <button class="gray" onclick="cloudSignOut()">تسجيل خروج السحابة</button>
-      <button class="gray" onclick="showQueue()">📋 الانتظار</button>
     </div>
   </div>
   <div class="owner-card">
@@ -1498,7 +1511,7 @@ function rSettings(){
   </div>
   <div class="owner-card owner-tech owner-tech-open">
     <div class="owner-tech-header"><div class="big" style="font-size:16px">🛠️ أدوات فنية ودعم التطبيق</div><span class="owner-only-tag">للمالك فقط</span></div>
-    <div class="settings-note">القسم ثابت ومفتوح دائمًا حتى لا يُغلق أثناء المزامنة أو تحديث حالة الاتصال.</div>
+    <div class="settings-note">قسم ثابت ومفتوح دائمًا. استخدم منه فحص التحديث أو التحديث الإجباري الآمن.</div>
     <div class="settings-section mt">
       <div class="big" style="font-size:15px;margin-bottom:10px">🔔 اختبار التنبيهات</div>
       <div class="status-panel ${ns.cls}"><strong>الإشعارات:</strong> ${ns.label}</div>
@@ -1727,7 +1740,7 @@ async function manualSync(){
   try{await flushQueue();await loadCloud();showNotice('تمت مزامنة بيانات النشاط بأمان ✓', 'success');}catch(e){setSyncMeta({verified:false,syncing:false,lastError:e.message});render();showNotice('لم تتم المزامنة: '+e.message, 'danger');}
 }
 function sched(){if(st().mode==='secure_cloud'){clearTimeout(window.sd);window.sd=setTimeout(()=>flushQueue().catch(e=>{setSyncMeta({verified:false,syncing:false,lastError:e.message});render()}),1200)}}
-function setup(){clearInterval(timer);window.removeEventListener('online',window.__psOnline||(()=>{}));window.__psOnline=()=>{if(st().mode==='secure_cloud'&&st().session)flushQueue().catch(e=>setSyncMeta({verified:false,syncing:false,lastError:e.message}))};window.addEventListener('online',window.__psOnline);if(st().mode==='secure_cloud'&&st().session)timer=setInterval(()=>{if(dirty||queue().length)flushQueue().catch(e=>{setSyncMeta({verified:false,syncing:false,lastError:e.message});render()});else loadCloud().catch(e=>setSyncMeta({verified:false,syncing:false,lastError:e.message}))},15000)}
+function setup(){if(st().mode==='secure_cloud'){setQueue([]);dirty=false;}clearInterval(timer);window.removeEventListener('online',window.__psOnline||(()=>{}));window.__psOnline=()=>{if(st().mode==='secure_cloud'&&st().session)flushQueue().catch(e=>setSyncMeta({verified:false,syncing:false,lastError:e.message}))};window.addEventListener('online',window.__psOnline);if(st().mode==='secure_cloud'&&st().session)timer=setInterval(()=>{if(dirty||queue().length)flushQueue().catch(e=>{setSyncMeta({verified:false,syncing:false,lastError:e.message});render()});else loadCloud().catch(e=>setSyncMeta({verified:false,syncing:false,lastError:e.message}))},15000)}
 
 async function checkForUpdate(){
   try{
@@ -1753,7 +1766,7 @@ load();setup();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec2')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec3')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
