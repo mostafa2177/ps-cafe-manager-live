@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2 EC3</title>
+<title>PS Cafe Manager • V6.4.2 EC4</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -347,6 +347,23 @@ details.owner-tech>summary{display:none!important;}
 .dash-header{padding:14px 18px!important;margin-bottom:14px!important;}
 .dash-header-sub,.page-subtitle{display:none;}
 
+
+
+/* EC4 — Owner user-facing cleanup and mobile back polish */
+.page-header{margin-bottom:12px!important}
+.page-subtitle{display:none!important}
+.owner-only-tag{display:none!important}
+.owner-card{padding:15px!important;margin-bottom:10px!important}
+.settings-section{padding:13px!important;margin-bottom:10px!important}
+.settings-note{padding:9px 11px!important;margin-bottom:10px!important;font-size:12px!important;line-height:1.55!important}
+.owner-card .big{margin-bottom:9px!important}
+.compact-owner-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.owner-mini-status{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--bg-base);font-size:13px}
+.owner-mini-status strong{font-size:16px;color:var(--green)}
+.clean-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.clean-actions button{width:100%;min-height:40px;padding:9px 12px}
+@media(max-width:720px){.compact-owner-grid,.clean-actions{grid-template-columns:1fr}.owner-card{padding:13px!important}.settings-actions button{min-width:0!important}}
+
 /* PRINT */
 @media print{
   .top,.tabs,button,.no-print,#sl,.top-actions,#alert-toast{display:none!important}
@@ -467,7 +484,7 @@ details.owner-tech>summary{display:none!important;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-EC3';
+const APP_VERSION='V6.4.2-EC4';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -557,7 +574,7 @@ async function login(){
       user={id:member.user_id,username:member.display_name||identifier,role:jsRole(member.role),active:true,cloud:true};
       document.getElementById('login').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
-      tab='Dashboard';tabs();setup();
+      tab='Dashboard';tabs();setup();initAppNavigation();
       await loadCloud(true);
       audit('LOGIN','auth',user.id,'تسجيل دخول: '+user.username);
       save();
@@ -570,7 +587,7 @@ async function login(){
   user=x;
   document.getElementById('login').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
-  tab='Dashboard';tabs();setup();
+  tab='Dashboard';tabs();setup();initAppNavigation();
   audit('LOGIN','auth',x.id,'تسجيل دخول: '+x.username);
   save();
   if(p==='1234')showNotice('تنبيه أمان: يجب على صاحب النشاط تغيير كلمة المرور الافتراضية قبل الاستخدام الحقيقي.', 'warn');
@@ -579,7 +596,7 @@ function jsRole(role){return ({owner:'Owner',manager:'Manager',cashier:'Cashier'
 async function logout(){
   if(user){audit('LOGOUT','auth',user.id,'تسجيل خروج: '+user.username);save();}
   if(st().mode==='secure_cloud'){await cloudSignOut(false);}
-  user=null;document.getElementById('app').classList.add('hidden');document.getElementById('login').classList.remove('hidden');
+  user=null;__psNavReady=false;document.getElementById('app').classList.add('hidden');document.getElementById('login').classList.remove('hidden');
 }
 
 // ============================================================
@@ -590,7 +607,7 @@ function tabs(){
   let allowed=allowedTabs();
   document.getElementById('tabs').innerHTML=all.filter(t=>allowed.includes(t[0])).map(t=>`<button class="tab ${tab==t[0]?'active':''}" onclick="show('${t[0]}')">${t[1]}</button>`).join('')
 }
-function show(t){if(!allowedTabs().includes(t)){showNotice('ليست لديك صلاحية لفتح هذه الصفحة.', 'danger');return;}tab=t;tabs();render()}
+function show(t,pushNav=true){if(!allowedTabs().includes(t)){showNotice('ليست لديك صلاحية لفتح هذه الصفحة.', 'danger');return;}tab=t;tabs();render();if(pushNav)pushAppTabState(t)}
 function openOperationalPage(target){
   if(target==='Invoices')return show('Invoices');
   if(target==='Expenses')return show('Expenses');
@@ -608,6 +625,47 @@ function focusDashboardCards(kind){
     if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
   },80);
 }
+
+let __psNavReady=false,__psLastBack=0;
+function currentAppUrl(extra=''){
+  const base=location.pathname+location.search;
+  return base+(extra||('#'+tab));
+}
+function initAppNavigation(){
+  if(__psNavReady)return;
+  __psNavReady=true;
+  try{
+    history.replaceState({psAppRoot:true,tab:'Dashboard'},'',currentAppUrl('#Dashboard-root'));
+    history.pushState({psApp:true,tab:'Dashboard'},'',currentAppUrl('#Dashboard'));
+  }catch(e){}
+}
+function pushAppTabState(t){
+  if(!__psNavReady)return;
+  try{history.pushState({psApp:true,tab:t},'',currentAppUrl('#'+t));}catch(e){}
+}
+function replaceAppTabState(t){
+  if(!__psNavReady)return;
+  try{history.replaceState({psApp:true,tab:t},'',currentAppUrl('#'+t));}catch(e){}
+}
+function pushModalState(){
+  if(!__psNavReady||!user)return;
+  if(history.state&&history.state.modal)return;
+  try{history.pushState({psApp:true,modal:true,tab},'',currentAppUrl('#'+tab+'-modal'));}catch(e){}
+}
+window.addEventListener('popstate',event=>{
+  if(!user||!__psNavReady)return;
+  if(document.querySelector('.action-wrap.open')){closeActionMenus();replaceAppTabState(tab);return;}
+  const m=document.getElementById('modal');
+  if(m&&!m.classList.contains('hidden')){closeM(false);return;}
+  const target=event.state&&event.state.tab?event.state.tab:'Dashboard';
+  if(target&&allowedTabs().includes(target)&&target!==tab){show(target,false);return;}
+  if(tab!=='Dashboard'){show('Dashboard',false);replaceAppTabState('Dashboard');return;}
+  const now=Date.now();
+  if(now-__psLastBack<1600){__psNavReady=false;history.back();return;}
+  __psLastBack=now;
+  showNotice('اضغط رجوع مرة أخرى للخروج','info');
+  pushAppTabState('Dashboard');
+});
 
 function render(){
   if(!user)return;
@@ -669,7 +727,7 @@ function installState(){
 async function installPwa(){
   if(isInstalledApp()){showNotice('التطبيق مثبت بالفعل على الهاتف ✓','success');return;}
   if(!installPromptEvent){
-    showNotice('لم يظهر خيار التثبيت بعد. اضغط تحديث إجباري آمن ثم افتح الصفحة من Chrome وحاول مجددًا.', 'warn');
+    showNotice('لم يظهر خيار التثبيت بعد. اضغط تحديث التطبيق ثم افتح الصفحة من Chrome وحاول مجددًا.', 'warn');
     return;
   }
   installPromptEvent.prompt();
@@ -1424,13 +1482,13 @@ function rAudit(){
 function rUsers(){
   if(!owner()){vUsers.innerHTML='';return;}
   if(st().mode==='secure_cloud'){
-    vUsers.innerHTML=`<div class="page-header"><div class="page-header-left"><div class="section-title">👥 المستخدمون</div><div class="page-subtitle muted">حسابات Supabase المصرح بها للنشاط</div></div></div>
-    <div class="settings-note">للحماية، كلمات المرور لا تُخزن داخل التطبيق. إنشاء المستخدم أول مرة يتم من لوحة Supabase الخاصة بصاحب النشاط، ثم يظهر هنا دوره وحالته.</div>
+    vUsers.innerHTML=`<div class="page-header"><div class="page-header-left"><div class="section-title">👥 المستخدمون</div><div class="page-subtitle muted">مستخدمو النشاط</div></div></div>
+    <div class="settings-note">أسماء المستخدمين وصلاحياتهم داخل النشاط.</div>
     <div class="tw"><table><tr><th>المستخدم</th><th>الصلاحية</th><th>الحالة</th></tr>${(cloudMembers||[]).map(u=>`<tr><td><strong>${esc(u.display_name||'—')}</strong></td><td>${roleLabel(jsRole(u.role))}</td><td>${u.active?'فعال':'موقوف'}</td></tr>`).join('')}</table></div>`;
     return;
   }
   vUsers.innerHTML=`<div class="page-header"><div class="page-header-left"><div class="section-title">👥 المستخدمون المحليون</div><div class="page-subtitle muted">للتجربة قبل تفعيل قاعدة البيانات فقط</div></div><button class="ok" onclick="userModal()">➕ إضافة مستخدم</button></div>
-  <div class="settings-note">عند تفعيل قاعدة البيانات سيتم استخدام حسابات Supabase الآمنة بدل كلمات المرور المحلية.</div>
+  <div class="settings-note">مستخدمون محليون للتجربة فقط.</div>
   <div class="tw"><table><tr><th>اسم المستخدم</th><th>الصلاحية</th><th>الحالة</th><th></th></tr>${state.users.map(u=>`<tr><td><strong>${esc(u.username)}</strong></td><td>${roleLabel(u.role)}</td><td>${u.active?'فعال':'غير فعال'}</td><td><button onclick="userModal('${u.id}')">✏ تعديل</button></td></tr>`).join('')}</table></div>`;
 }
 function userModal(uid=''){
@@ -1454,75 +1512,51 @@ function saveUser(uid){
 // ============================================================
 function rSettings(){
   if(!owner()){vSettings.innerHTML='';return;}
-  let s=st(),sm=syncMeta(),ns=notificationState();
-  let syncClass=s.mode!=='secure_cloud'?'status-warn':(sm.verified?'status-good':'status-warn');
+  let s=st(),sm=syncMeta(),online=navigator.onLine,ns=notificationState();
+  const connected=s.mode==='secure_cloud'&&(sm.verified||s.session)&&online;
+  const statusText=s.mode!=='secure_cloud'?'محلي':(!online?'غير متصل':(connected?'متصل':'يحتاج تسجيل دخول'));
+  const statusClass=s.mode!=='secure_cloud'?'status-warn':(!online?'status-bad':(connected?'status-good':'status-warn'));
   vSettings.innerHTML=`
   <div class="page-header">
-    <div class="page-header-left"><div class="section-title">🏪 إدارة النشاط</div><div class="page-subtitle muted">لوحة صاحب النشاط فقط</div></div>
-    <span class="owner-only-tag">OWNER ONLY</span>
+    <div class="page-header-left"><div class="section-title">🏪 إدارة النشاط</div></div>
   </div>
   <div class="owner-card">
-    <div class="big" style="font-size:16px;margin-bottom:12px">🏷️ بيانات النشاط</div>
+    <div class="big" style="font-size:16px">🏷️ بيانات النشاط</div>
     <div class="grid g2">
       <div class="col"><label>اسم النشاط</label><input id="businessName" value="${esc(state.profile.businessName||'')}" placeholder="اسم الكافيه"></div>
       <div class="col"><label>اسم المالك</label><input id="ownerName" value="${esc(state.profile.ownerName||'')}" placeholder="اسم صاحب النشاط"></div>
       <div class="col"><label>رقم التواصل</label><input id="businessPhone" value="${esc(state.profile.phone||'')}" placeholder="رقم الهاتف"></div>
       <div class="col"><label>العنوان</label><input id="businessAddress" value="${esc(state.profile.address||'')}" placeholder="عنوان النشاط"></div>
     </div>
-    <div class="settings-actions"><button class="ok" onclick="saveBusinessProfile()">💾 حفظ بيانات النشاط</button></div>
+    <div class="settings-actions"><button class="ok" onclick="saveBusinessProfile()">💾 حفظ</button></div>
   </div>
   <div class="owner-card">
-    <div class="big" style="font-size:16px;margin-bottom:12px">🔐 قاعدة بيانات صاحب النشاط</div>
-    <div class="settings-note">يتم الربط بمشروع Supabase يملكه صاحب النشاط. البيانات محفوظة في جداول منفصلة ومحمية بـ RLS؛ الفواتير وسجل الحركات غير قابلين للتعديل أو الحذف من الكاشير.</div>
-    <div class="status-panel ${syncClass}">
-      <div><strong>الحالة:</strong> ${s.mode!=='secure_cloud'?'غير مربوط — البيانات على هذا الجهاز':((sm.verified||s.session)?'متصل بقاعدة بيانات النشاط ✓':'يلزم تسجيل دخول المالك')}</div>
-      <div><strong>آخر تحديث ناجح:</strong> ${shortTime(sm.lastSuccess)}</div>
-      ${(!s.session&&!sm.verified&&sm.lastError)?`<div style="color:var(--red)"><strong>آخر خطأ:</strong> ${esc(sm.lastError)}</div>`:''}
-    </div>
-    <div class="grid g2 mt">
-      <div class="col"><label>وضع البيانات</label><select id="mode"><option value="offline" ${s.mode==='offline'?'selected':''}>الجهاز فقط</option><option value="secure_cloud" ${s.mode==='secure_cloud'?'selected':''}>قاعدة بيانات المالك الآمنة</option></select></div>
-      <div class="col"><label>معرف النشاط Business ID</label><input id="businessId" value="${esc(s.businessId)}" placeholder="UUID من ملف الإعداد"></div>
-      <div class="col"><label>Supabase Project URL</label><input id="url" value="${esc(s.url)}" placeholder="https://xxxx.supabase.co"></div>
-      <div class="col"><label>Publishable Key</label><input id="key" value="${esc(s.key)}" placeholder="sb_publishable_... أو anon العام"></div>
-      <div class="col"><label>بريد حساب هذا الجهاز في Supabase Auth</label><input id="cloudEmail" type="email" value="${esc(s.cloudEmail)}" placeholder="owner@email.com"></div>
-      <div class="col"><label>كلمة مرور حساب هذا الجهاز</label><input id="cloudPassword" type="password" placeholder="لا يتم حفظها في التطبيق"></div>
-    </div>
-    <div class="settings-actions">
-      <button class="ok" onclick="connectOwnerCloud()">🔒 ربط واختبار الاتصال</button>
-      <button onclick="manualSync()">🔄 مزامنة البيانات الآن</button>
-      <button class="gray" onclick="cloudSignOut()">تسجيل خروج السحابة</button>
+    <div class="big" style="font-size:16px">🔄 الاتصال والتحديث</div>
+    <div class="owner-mini-status ${statusClass}"><span>حالة التطبيق</span><strong>${statusText}</strong></div>
+    <div class="small muted" style="margin-top:7px">آخر تحديث: ${shortTime(sm.lastSuccess)}</div>
+    <div class="clean-actions">
+      <button onclick="manualSync()">🔄 تحديث البيانات</button>
+      <button class="gray" onclick="clearAppCacheAndReload()">📱 تحديث التطبيق</button>
+      <button class="gray" onclick="installPwa()">⬇️ تثبيت</button>
     </div>
   </div>
   <div class="owner-card">
-    <div class="big" style="font-size:16px;margin-bottom:12px">📄 السياسات والبيانات</div>
-    <div class="settings-note">صفحات شروط الاستخدام والخصوصية تظهر برابط بسيط في شاشة الدخول، بينما تفاصيل الإدارة والربط تظل لصاحب النشاط فقط.</div>
-    <div class="settings-actions">
-      <button class="gray" onclick="showPolicy('terms')">شروط الاستخدام</button>
-      <button class="gray" onclick="showPolicy('privacy')">سياسة الخصوصية</button>
-      <button class="gray" onclick="showPolicy('support')">الملكية والدعم</button>
+    <div class="big" style="font-size:16px">👤 الحساب</div>
+    <div class="compact-owner-grid">
+      <button class="gray" onclick="showPolicy('terms')">الشروط</button>
+      <button class="gray" onclick="showPolicy('privacy')">الخصوصية</button>
+      <button class="gray" onclick="showPolicy('support')">الدعم</button>
+      <button class="gray" onclick="enableNotifications()">🔔 التنبيهات</button>
     </div>
-  </div>
-  <div class="owner-card">
-    <div class="big" style="font-size:16px;margin-bottom:12px">💾 النسخ الاحتياطي</div>
-    <div class="row">
-      <button onclick="exportBackup()">📤 تصدير Backup</button>
-      <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:var(--bg-elevated);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;font-weight:700;color:var(--text-secondary);flex:1;justify-content:center">📥 استيراد Backup <input type="file" onchange="importBackup(event)" style="display:none;width:auto"></label>
-    </div>
+    <div class="settings-actions"><button class="danger" onclick="cloudSignOut()">تسجيل خروج هذا الجهاز</button></div>
   </div>
   <div class="owner-card owner-tech owner-tech-open">
-    <div class="owner-tech-header"><div class="big" style="font-size:16px">🛠️ أدوات فنية ودعم التطبيق</div><span class="owner-only-tag">للمالك فقط</span></div>
-    <div class="settings-note">قسم ثابت ومفتوح دائمًا. استخدم منه فحص التحديث أو التحديث الإجباري الآمن.</div>
-    <div class="settings-section mt">
-      <div class="big" style="font-size:15px;margin-bottom:10px">🔔 اختبار التنبيهات</div>
-      <div class="status-panel ${ns.cls}"><strong>الإشعارات:</strong> ${ns.label}</div>
-      <div class="settings-actions"><button class="btn-blue" onclick="enableNotifications()">تفعيل الإشعارات</button><button class="gray" onclick="testAlertNow()">اختبار تنبيه الآن</button></div>
+    <div class="owner-tech-header"><div class="big" style="font-size:16px">🛟 الدعم</div></div>
+    <div class="clean-actions">
+      <button class="gray" onclick="checkForUpdate()">فحص تحديث</button>
+      <button class="gray" onclick="clearAppCacheAndReload()">تحديث آمن</button>
+      <button class="gray" onclick="testAlertNow()">اختبار تنبيه</button>
     </div>
-    <div class="settings-section">
-      <div class="big" style="font-size:15px;margin-bottom:10px">📱 التثبيت والتحديث</div>
-      <div class="status-panel ${installState().cls}"><strong>التثبيت:</strong> ${installState().label}<br><strong>الإصدار:</strong> ${APP_VERSION}</div>
-      <div class="settings-actions"><button class="btn-blue" onclick="installPwa()">تثبيت التطبيق</button><button class="gray" onclick="checkForUpdate()">فحص تحديث</button><button class="gray" onclick="clearAppCacheAndReload()">تحديث إجباري آمن</button></div>
-    </div>
-    <div class="settings-actions"><button class="danger" onclick="clearQueue()">مسح الانتظار القديم</button><button class="danger" onclick="resetAll()">تصفير بيانات الجهاز</button></div>
   </div>`
 }
 function saveBusinessProfile(){
@@ -1540,7 +1574,7 @@ async function connectOwnerCloud(){
   if(!cfg.url||!cfg.key||!cfg.businessId||!cfg.cloudEmail||!password){showNotice('أكمل رابط المشروع والمفتاح العام ومعرف النشاط وبيانات حساب هذا الجهاز.', 'danger');return;}
   localStorage.setItem(SK,JSON.stringify(cfg));
   try{await cloudSignIn(password);await testSupabaseConnection();showNotice('تم ربط قاعدة بيانات صاحب النشاط بأمان ✓', 'success')}
-  catch(e){setSyncMeta({verified:false,syncing:false,lastError:e.message});render();showNotice('فشل الربط: '+e.message, 'danger')}
+  catch(e){setSyncMeta({verified:false,syncing:false,lastError:e.message});render();showNotice('تعذر إعداد الجهاز: '+e.message, 'danger')}
 }
 function testAlertNow(){
   playBeep('w5');if(navigator.vibrate)navigator.vibrate([250,100,250]);
@@ -1551,7 +1585,7 @@ function showPolicy(kind){
   const name=esc((state&&state.profile&&state.profile.businessName)||'PS Cafe');
   const pages={
     terms:`<div class="big">📄 شروط الاستخدام</div><div class="policy-text"><h3>الاستخدام المصرح</h3><p>النظام مخصص لإدارة تشغيل ${name} بواسطة العاملين المصرح لهم فقط.</p><h3>مسؤولية الإدخال</h3><p>المستخدم مسؤول عن صحة الجلسات والفواتير والمصروفات التي يسجلها، وعلى صاحب النشاط مراجعة التقارير والنسخ الاحتياطية.</p><h3>حماية الحساب</h3><p>يحظر مشاركة كلمات المرور أو استخدام حساب شخص آخر. يحق لصاحب النشاط تعطيل أي حساب.</p></div>`,
-    privacy:`<div class="big">🔐 سياسة الخصوصية والبيانات</div><div class="policy-text"><h3>ملكية البيانات</h3><p>بيانات التشغيل والفواتير تخص صاحب النشاط. عند تفعيل الربط السحابي تُحفظ بيانات التشغيل في مشروع Supabase الذي يملكه صاحب النشاط.</p><h3>البيانات المحلية</h3><p>قد يحتفظ الجهاز بنسخة محلية مؤقتة لاستمرار العمل عند انقطاع الإنترنت. يجب حماية الجهاز وعدم تركه لغير المصرح لهم.</p><h3>الحماية التقنية</h3><p>يستخدم التطبيق مفتاحًا عامًا مع تسجيل دخول وسياسات وصول RLS، ولا يجب إدخال أي مفتاح سري داخل التطبيق.</p></div>`,
+    privacy:`<div class="big">🔐 سياسة الخصوصية والبيانات</div><div class="policy-text"><h3>ملكية البيانات</h3><p>بيانات التشغيل والفواتير تخص صاحب النشاط. عند تفعيل الربط السحابي تُحفظ بيانات التشغيل في قاعدة بيانات النشاط.</p><h3>البيانات المحلية</h3><p>قد يحتفظ الجهاز بنسخة محلية مؤقتة لاستمرار العمل عند انقطاع الإنترنت. يجب حماية الجهاز وعدم تركه لغير المصرح لهم.</p><h3>الحماية التقنية</h3><p>يستخدم التطبيق تسجيل دخول وصلاحيات لحماية بيانات النشاط.</p></div>`,
     support:`<div class="big">🏪 الملكية والدعم</div><div class="policy-text"><h3>مالك النظام والبيانات</h3><p>صاحب النشاط هو المسؤول عن ملكية قاعدة البيانات وإدارة المستخدمين والنسخ الاحتياطية.</p><h3>الدعم</h3><p>للدعم أو تعديل الصلاحيات يرجى الرجوع إلى صاحب النشاط أو الإدارة الداخلية.</p></div>`
   };
   modal((pages[kind]||pages.terms)+`<br><button class="gray" onclick="closeM()">إغلاق</button>`);
@@ -1564,8 +1598,8 @@ function resetAll(){if(confirm('حذف كل البيانات؟')){state=def();sa
 // ============================================================
 // MODAL
 // ============================================================
-function modal(h){document.getElementById('mc').innerHTML=h;document.getElementById('modal').classList.remove('hidden')}
-function closeM(){document.getElementById('modal').classList.add('hidden')}
+function modal(h){document.getElementById('mc').innerHTML=h;document.getElementById('modal').classList.remove('hidden');pushModalState()}
+function closeM(updateHistory=true){document.getElementById('modal').classList.add('hidden');if(updateHistory&&history.state&&history.state.modal)replaceAppTabState(tab)}
 
 // ============================================================
 // SYNC QUEUE
@@ -1594,11 +1628,11 @@ function friendlySyncError(status,raw){
 }
 function cloudDeviceSetupModal(){
   const s=st();
-  modal(`<div class="big">🔒 ربط هذا الجهاز بقاعدة بيانات المحل</div>
-  <div class="settings-note">هذه البيانات عامة وآمنة للاستخدام في التطبيق بعد تطبيق RLS. لا تدخل أي Secret Key أو Service Role.</div>
-  <div class="col"><label>Supabase Project URL</label><input id="setupUrl" value="${esc(s.url)}" placeholder="https://xxxx.supabase.co"></div>
-  <div class="col mt"><label>Publishable Key فقط</label><input id="setupKey" value="${esc(s.key)}" placeholder="sb_publishable_..."></div>
-  <div class="col mt"><label>Business ID</label><input id="setupBusinessId" value="${esc(s.businessId)}" placeholder="UUID"></div>
+  modal(`<div class="big">🔒 إعداد هذا الجهاز</div>
+  <div class="settings-note">يستخدم هذا القسم عند تجهيز الجهاز لأول مرة فقط.</div>
+  <div class="col"><label>رابط الخدمة</label><input id="setupUrl" value="${esc(s.url)}" placeholder="رابط الخدمة"></div>
+  <div class="col mt"><label>مفتاح التشغيل</label><input id="setupKey" value="${esc(s.key)}" placeholder="مفتاح التشغيل"></div>
+  <div class="col mt"><label>معرف النشاط</label><input id="setupBusinessId" value="${esc(s.businessId)}" placeholder="معرف النشاط"></div>
   <br><div class="row"><button class="ok" onclick="saveCloudDeviceSetup()">💾 حفظ الربط على هذا الجهاز</button><button class="gray" onclick="closeM()">إلغاء</button></div>`);
 }
 function saveCloudDeviceSetup(){
@@ -1728,8 +1762,8 @@ async function connectOwnerCloud(){
   if(cfg.mode==='offline'){setst({...cfg,session:null});setSyncMeta({verified:false,lastError:'',syncing:false,lastSuccess:''});showNotice('تم ضبط البيانات على الجهاز فقط.', 'success');return;}
   const password=val('cloudPassword');if(!cfg.url||!cfg.key||!cfg.businessId||!cfg.cloudEmail||!password){showNotice('أكمل رابط المشروع والمفتاح العام ومعرف النشاط وبيانات حساب المالك.', 'danger');return;}
   localStorage.setItem(SK,JSON.stringify({...cfg,schema:'normalized_v1'}));
-  try{await cloudSignInCredentials(cfg.cloudEmail,password);await testSupabaseConnection();await saveCloud();showNotice('تم ربط قاعدة المالك ونقل بيانات هذا الجهاز إلى الجداول الآمنة ✓', 'success');}
-  catch(e){setSyncMeta({verified:false,syncing:false,lastError:e.message});render();showNotice('فشل الربط: '+e.message, 'danger');}
+  try{await cloudSignInCredentials(cfg.cloudEmail,password);await testSupabaseConnection();await saveCloud();showNotice('تم إعداد الجهاز وقراءة بيانات النشاط ✓', 'success');}
+  catch(e){setSyncMeta({verified:false,syncing:false,lastError:e.message});render();showNotice('تعذر إعداد الجهاز: '+e.message, 'danger');}
 }
 async function flushQueue(){
   if(st().mode!=='secure_cloud')return false;if(!navigator.onLine)throw Error('الإنترنت غير متصل. تم حفظ العملية على الجهاز وستتم المزامنة لاحقًا.');
@@ -1737,7 +1771,7 @@ async function flushQueue(){
 }
 async function manualSync(){
   if(st().mode!=='secure_cloud'){showNotice('قاعدة بيانات صاحب النشاط غير مربوطة بعد.', 'warn');return;}
-  try{await flushQueue();await loadCloud();showNotice('تمت مزامنة بيانات النشاط بأمان ✓', 'success');}catch(e){setSyncMeta({verified:false,syncing:false,lastError:e.message});render();showNotice('لم تتم المزامنة: '+e.message, 'danger');}
+  try{await flushQueue();await loadCloud();showNotice('تم تحديث بيانات النشاط ✓', 'success');}catch(e){setSyncMeta({verified:false,syncing:false,lastError:e.message});render();showNotice('لم يتم التحديث: '+e.message, 'danger');}
 }
 function sched(){if(st().mode==='secure_cloud'){clearTimeout(window.sd);window.sd=setTimeout(()=>flushQueue().catch(e=>{setSyncMeta({verified:false,syncing:false,lastError:e.message});render()}),1200)}}
 function setup(){if(st().mode==='secure_cloud'){setQueue([]);dirty=false;}clearInterval(timer);window.removeEventListener('online',window.__psOnline||(()=>{}));window.__psOnline=()=>{if(st().mode==='secure_cloud'&&st().session)flushQueue().catch(e=>setSyncMeta({verified:false,syncing:false,lastError:e.message}))};window.addEventListener('online',window.__psOnline);if(st().mode==='secure_cloud'&&st().session)timer=setInterval(()=>{if(dirty||queue().length)flushQueue().catch(e=>{setSyncMeta({verified:false,syncing:false,lastError:e.message});render()});else loadCloud().catch(e=>setSyncMeta({verified:false,syncing:false,lastError:e.message}))},15000)}
@@ -1746,7 +1780,7 @@ async function checkForUpdate(){
   try{
     if(!('serviceWorker' in navigator)){showNotice('التحديث التلقائي غير مدعوم هنا.', 'warn');return;}
     const reg=swRegistration||await navigator.serviceWorker.getRegistration();
-    if(!reg){showNotice('Service Worker غير مسجل بعد. أعد فتح التطبيق.', 'warn');return;}
+    if(!reg){showNotice('خدمة التحديث غير جاهزة بعد. أعد فتح التطبيق.', 'warn');return;}
     await reg.update();showNotice('تم فحص التحديث. لو توجد نسخة جديدة سيتم تحميلها عند إعادة الفتح.', 'success');
   }catch(e){showNotice('تعذر فحص التحديث الآن.', 'danger')}
 }
@@ -1766,14 +1800,14 @@ load();setup();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec3')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec4')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
         setInterval(()=>reg.update(), 60000);
         reg.addEventListener('updatefound', ()=>{
           const next=reg.installing;if(!next)return;
-          next.addEventListener('statechange', ()=>{if(next.state==='installed'&&navigator.serviceWorker.controller)showNotice('يوجد تحديث جديد. استخدم التحديث الإجباري الآمن من الإعدادات.', 'info')});
+          next.addEventListener('statechange', ()=>{if(next.state==='installed'&&navigator.serviceWorker.controller)showNotice('يوجد تحديث جديد. استخدم زر تحديث التطبيق.', 'info')});
         });
       })
       .catch(err=>console.warn('SW registration failed:', err));
