@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.1-EC7">
+<link rel="manifest" href="manifest.json?v=6.4.1-EC8">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.1-EC7">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.1-EC7">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.1-EC7">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.1-EC7">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.1-EC7">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.1-EC8">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.1-EC8">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.1-EC8">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.1-EC8">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.1-EC8">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -348,6 +348,11 @@ button{min-height:40px;}
 .role-owner{background:var(--purple-dim);color:#c4b5fd;border-color:rgba(124,58,237,.28)}
 .sync.private-cloud{background:var(--green-dim);border-color:rgba(0,200,83,.2);color:var(--green)}
 
+
+/* EC8 — technical tools are always expanded to avoid auto-closing during cloud refresh */
+.owner-tech-open{display:block;}
+.owner-tech-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
 /* PRINT */
 @media print{
   .top,.tabs,button,.no-print,#sl,.top-actions,#alert-toast{display:none!important}
@@ -402,7 +407,7 @@ button{min-height:40px;}
 .device-card.warn-5,.device-card.overtime{animation:pulseDanger 0.8s ease-in-out infinite}
 [dir=rtl] th,[dir=rtl] td{text-align:right}
 
-/* EC7 — stable action sheets and no auto-scroll redraw */
+/* EC8 — stable action sheets and no auto-scroll redraw */
 .invoice-actions{display:flex!important;flex-wrap:wrap!important;gap:10px!important;align-items:center!important}
 .invoice-actions>button{flex:1 1 150px!important;min-width:140px!important}
 @media(max-width:650px){.invoice-actions{display:grid!important;grid-template-columns:1fr!important}.invoice-actions>button{width:100%!important}}
@@ -469,7 +474,7 @@ button{min-height:40px;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.1-EC7';
+const APP_VERSION='V6.4.1-EC8';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -549,7 +554,7 @@ function toggleActionMenu(id,ev){
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.action-wrap'))closeActionMenus();});
 window.addEventListener('resize',closeActionMenus);
-// EC7: do not close action UI on scroll; mobile scroll events can fire immediately after tap.
+// EC8: do not close action UI on scroll; mobile scroll events can fire immediately after tap.
 function invoiceActionsModal(iid){
   const i=state.invoices.find(x=>x.id===iid);if(!i)return;
   modal(`<div class="big">⋯ إجراءات الفاتورة ${invNo(i)}</div>
@@ -660,7 +665,7 @@ function renderActiveTab(){
   (map[tab]||rDash)();
 }
 
-// 1-second tick — EC7: no full-screen redraws.
+// 1-second tick — EC8: no full-screen redraws.
 // The business uses fixed match prices, so a live timer is less important than a stable mobile screen.
 function isModalOpen(){return !document.getElementById('modal')?.classList.contains('hidden')}
 function dashboardTick(){
@@ -1125,7 +1130,7 @@ function printInvoice(iid){
   w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>فاتورة ${invNo(i)}</title><style>
   *{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;color:#111;margin:0;padding:18px;background:#fff}.receipt{max-width:760px;margin:0 auto;border:1px solid #ddd;padding:22px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:15px}.head h1{font-size:23px;margin:0 0 4px}.muted{color:#555;font-size:12px}.row{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed #bbb;font-size:14px}.total{font-size:20px;font-weight:700;border-top:2px solid #111;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between}.total.voided{color:#666;text-decoration:line-through}.void-note{margin-top:12px;padding:10px;border:1px solid #a00;color:#a00;font-weight:700}table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}th,td{padding:7px 5px;border-bottom:1px solid #ddd;text-align:right}th{background:#f5f5f5}.print-actions{text-align:center;margin:18px 0}button{padding:10px 20px;border:0;background:#155eef;color:#fff;border-radius:6px;font-weight:700}@page{size:auto;margin:12mm}@media print{.print-actions{display:none}.receipt{border:none;padding:0;max-width:none}}
   
-/* EC7 — stable action sheets and no auto-scroll redraw */
+/* EC8 — stable action sheets and no auto-scroll redraw */
 .invoice-actions{display:flex!important;flex-wrap:wrap!important;gap:10px!important;align-items:center!important}
 .invoice-actions>button{flex:1 1 150px!important;min-width:140px!important}
 @media(max-width:650px){.invoice-actions{display:grid!important;grid-template-columns:1fr!important}.invoice-actions>button{width:100%!important}}
@@ -1424,8 +1429,12 @@ function rSettings(){
       <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:var(--bg-elevated);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;font-weight:700;color:var(--text-secondary);flex:1;justify-content:center">📥 استيراد Backup <input type="file" onchange="importBackup(event)" style="display:none;width:auto"></label>
     </div>
   </div>
-  <details class="owner-card owner-tech">
-    <summary>🛠️ أدوات فنية ودعم التطبيق <span class="owner-only-tag">للمالك فقط</span></summary>
+  <div class="owner-card owner-tech owner-tech-open">
+    <div class="owner-tech-header">
+      <div class="big" style="font-size:16px">🛠️ أدوات فنية ودعم التطبيق</div>
+      <span class="owner-only-tag">للمالك فقط</span>
+    </div>
+    <div class="settings-note">تم تثبيت هذه المنطقة مفتوحة دائمًا في EC8 حتى لا تُغلق أثناء المزامنة أو التحديث التلقائي.</div>
     <div class="settings-section mt">
       <div class="big" style="font-size:15px;margin-bottom:10px">🔔 اختبار التنبيهات</div>
       <div class="status-panel ${ns.cls}"><strong>الإشعارات:</strong> ${ns.label}</div>
@@ -1437,7 +1446,7 @@ function rSettings(){
       <div class="settings-actions"><button class="btn-blue" onclick="installPwa()">تثبيت التطبيق</button><button class="gray" onclick="checkForUpdate()">فحص تحديث</button><button class="gray" onclick="clearAppCacheAndReload()">تحديث إجباري آمن</button></div>
     </div>
     <div class="settings-actions"><button class="danger" onclick="clearQueue()">مسح الانتظار</button><button class="danger" onclick="resetAll()">تصفير بيانات الجهاز</button></div>
-  </details>`
+  </div>`
 }
 async function saveBusinessProfile(){
   if(!owner())return;const before={...state.profile};const after={businessName:val('businessName').trim()||'PS Cafe',ownerName:val('ownerName').trim(),phone:val('businessPhone').trim(),address:val('businessAddress').trim()};
