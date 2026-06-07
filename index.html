@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2 EC4</title>
+<title>PS Cafe Manager • V6.4.2 EC5</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -421,6 +421,25 @@ details.owner-tech>summary{display:none!important;}
 .owner-tech-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
 .owner-tech-open .settings-section{margin-top:12px}
 
+
+
+/* EC5 — cleaner owner UI and polished popups */
+.compact-page-header{margin-bottom:12px!important;}
+.page-subtitle{font-size:12px!important;line-height:1.35!important;}
+.settings-note{padding:9px 12px!important;margin-bottom:10px!important;font-size:12px!important;line-height:1.55!important;border-radius:12px!important;}
+.owner-only-tag{font-size:10px!important;padding:3px 8px!important;}
+.modal{background:radial-gradient(circle at 50% 0%,rgba(41,121,255,.12),rgba(0,0,0,.74) 48%,rgba(0,0,0,.82))!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;padding:18px!important;align-items:center!important;}
+.modal .box{width:min(660px,calc(100vw - 24px))!important;max-height:calc(100dvh - 28px)!important;border-radius:24px!important;padding:22px!important;background:linear-gradient(155deg,rgba(18,32,54,.98),rgba(10,18,31,.98))!important;border:1px solid rgba(89,134,205,.35)!important;box-shadow:0 26px 90px rgba(0,0,0,.72),0 0 0 1px rgba(41,121,255,.09),0 0 34px rgba(41,121,255,.10)!important;animation:modalPop .18s ease-out!important;}
+@keyframes modalPop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal .big{border-bottom:1px solid rgba(90,132,190,.22)!important;margin-bottom:14px!important;padding-bottom:10px!important;font-size:18px!important;}
+.modal .row{gap:8px!important;}
+.modal button{border-radius:12px!important;}
+.action-menu{background:linear-gradient(155deg,rgba(24,39,64,.98),rgba(13,24,40,.98))!important;border:1px solid rgba(96,142,210,.36)!important;border-radius:16px!important;box-shadow:0 22px 70px rgba(0,0,0,.7),0 0 0 1px rgba(41,121,255,.08)!important;padding:8px!important;backdrop-filter:blur(10px)!important;}
+.action-menu button{border-radius:11px!important;min-height:38px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(120,160,220,.12)!important;color:var(--text-primary)!important;}
+.action-menu button:hover{background:rgba(41,121,255,.18)!important;border-color:rgba(41,121,255,.38)!important;transform:none!important;box-shadow:none!important;}
+.toast-item{border-radius:14px!important;padding:9px 12px!important;box-shadow:0 12px 32px rgba(0,0,0,.48)!important;}
+@media(max-width:650px){.modal{padding:10px!important;align-items:flex-end!important}.modal .box{width:100%!important;border-radius:22px 22px 12px 12px!important;padding:18px 14px!important}.modal .big{font-size:17px!important}.settings-note{font-size:11.5px!important}}
+
 </style>
 </head>
 <body>
@@ -484,7 +503,7 @@ details.owner-tech>summary{display:none!important;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-EC4';
+const APP_VERSION='V6.4.2-EC5';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -1143,6 +1162,25 @@ function printInvoice(iid){
 .owner-tech-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
 .owner-tech-open .settings-section{margin-top:12px}
 
+
+
+/* EC5 — cleaner owner UI and polished popups */
+.compact-page-header{margin-bottom:12px!important;}
+.page-subtitle{font-size:12px!important;line-height:1.35!important;}
+.settings-note{padding:9px 12px!important;margin-bottom:10px!important;font-size:12px!important;line-height:1.55!important;border-radius:12px!important;}
+.owner-only-tag{font-size:10px!important;padding:3px 8px!important;}
+.modal{background:radial-gradient(circle at 50% 0%,rgba(41,121,255,.12),rgba(0,0,0,.74) 48%,rgba(0,0,0,.82))!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;padding:18px!important;align-items:center!important;}
+.modal .box{width:min(660px,calc(100vw - 24px))!important;max-height:calc(100dvh - 28px)!important;border-radius:24px!important;padding:22px!important;background:linear-gradient(155deg,rgba(18,32,54,.98),rgba(10,18,31,.98))!important;border:1px solid rgba(89,134,205,.35)!important;box-shadow:0 26px 90px rgba(0,0,0,.72),0 0 0 1px rgba(41,121,255,.09),0 0 34px rgba(41,121,255,.10)!important;animation:modalPop .18s ease-out!important;}
+@keyframes modalPop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal .big{border-bottom:1px solid rgba(90,132,190,.22)!important;margin-bottom:14px!important;padding-bottom:10px!important;font-size:18px!important;}
+.modal .row{gap:8px!important;}
+.modal button{border-radius:12px!important;}
+.action-menu{background:linear-gradient(155deg,rgba(24,39,64,.98),rgba(13,24,40,.98))!important;border:1px solid rgba(96,142,210,.36)!important;border-radius:16px!important;box-shadow:0 22px 70px rgba(0,0,0,.7),0 0 0 1px rgba(41,121,255,.08)!important;padding:8px!important;backdrop-filter:blur(10px)!important;}
+.action-menu button{border-radius:11px!important;min-height:38px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(120,160,220,.12)!important;color:var(--text-primary)!important;}
+.action-menu button:hover{background:rgba(41,121,255,.18)!important;border-color:rgba(41,121,255,.38)!important;transform:none!important;box-shadow:none!important;}
+.toast-item{border-radius:14px!important;padding:9px 12px!important;box-shadow:0 12px 32px rgba(0,0,0,.48)!important;}
+@media(max-width:650px){.modal{padding:10px!important;align-items:flex-end!important}.modal .box{width:100%!important;border-radius:22px 22px 12px 12px!important;padding:18px 14px!important}.modal .big{font-size:17px!important}.settings-note{font-size:11.5px!important}}
+
 </style></head><body><div class="receipt"><div class="head"><h1>PS Cafe Manager</h1><div class="muted">فاتورة ${invNo(i)} • ${esc(fmt(i.date))}</div></div>
   <div class="row"><span>أنشأ الفاتورة</span><strong>${esc(invActor(i))}</strong></div><div class="row"><span>بدأ الجلسة</span><strong>${esc(i.startedBy||'غير محدد — بيانات سابقة')}</strong></div><div class="row"><span>الجهاز</span><strong>${esc(i.deviceName)} — ${esc(i.mode)}</strong></div>${i.sessionType==='match'?`<div class="row"><span>نوع الجلسة</span><strong>مباراة ${i.matchMins} دقيقة</strong></div>`:''}<div class="row"><span>العميل</span><strong>${esc(i.customer||'—')}</strong></div><div class="row"><span>المدة الفعلية</span><strong>${i.minutes} دقيقة</strong></div><div class="row"><span>رسوم اللعب</span><strong>${money(i.playTotal)} ج</strong></div>${itemRows?`<table><thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>${itemRows}</tbody></table>`:''}<div class="row"><span>رسوم المشروبات</span><strong>${money(i.drinkTotal)} ج</strong></div><div class="total"><span>الإجمالي</span><span>${money(i.total)} ج</span></div></div><div class="print-actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
   w.document.close();w.focus();
@@ -1460,24 +1498,42 @@ function printShiftReport(summary,closure){
 .owner-tech-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
 .owner-tech-open .settings-section{margin-top:12px}
 
+
+
+/* EC5 — cleaner owner UI and polished popups */
+.compact-page-header{margin-bottom:12px!important;}
+.page-subtitle{font-size:12px!important;line-height:1.35!important;}
+.settings-note{padding:9px 12px!important;margin-bottom:10px!important;font-size:12px!important;line-height:1.55!important;border-radius:12px!important;}
+.owner-only-tag{font-size:10px!important;padding:3px 8px!important;}
+.modal{background:radial-gradient(circle at 50% 0%,rgba(41,121,255,.12),rgba(0,0,0,.74) 48%,rgba(0,0,0,.82))!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;padding:18px!important;align-items:center!important;}
+.modal .box{width:min(660px,calc(100vw - 24px))!important;max-height:calc(100dvh - 28px)!important;border-radius:24px!important;padding:22px!important;background:linear-gradient(155deg,rgba(18,32,54,.98),rgba(10,18,31,.98))!important;border:1px solid rgba(89,134,205,.35)!important;box-shadow:0 26px 90px rgba(0,0,0,.72),0 0 0 1px rgba(41,121,255,.09),0 0 34px rgba(41,121,255,.10)!important;animation:modalPop .18s ease-out!important;}
+@keyframes modalPop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal .big{border-bottom:1px solid rgba(90,132,190,.22)!important;margin-bottom:14px!important;padding-bottom:10px!important;font-size:18px!important;}
+.modal .row{gap:8px!important;}
+.modal button{border-radius:12px!important;}
+.action-menu{background:linear-gradient(155deg,rgba(24,39,64,.98),rgba(13,24,40,.98))!important;border:1px solid rgba(96,142,210,.36)!important;border-radius:16px!important;box-shadow:0 22px 70px rgba(0,0,0,.7),0 0 0 1px rgba(41,121,255,.08)!important;padding:8px!important;backdrop-filter:blur(10px)!important;}
+.action-menu button{border-radius:11px!important;min-height:38px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(120,160,220,.12)!important;color:var(--text-primary)!important;}
+.action-menu button:hover{background:rgba(41,121,255,.18)!important;border-color:rgba(41,121,255,.38)!important;transform:none!important;box-shadow:none!important;}
+.toast-item{border-radius:14px!important;padding:9px 12px!important;box-shadow:0 12px 32px rgba(0,0,0,.48)!important;}
+@media(max-width:650px){.modal{padding:10px!important;align-items:flex-end!important}.modal .box{width:100%!important;border-radius:22px 22px 12px 12px!important;padding:18px 14px!important}.modal .big{font-size:17px!important}.settings-note{font-size:11.5px!important}}
+
 </style></head><body><div class="sheet"><div class="head"><h1>تقرير تسليم وردية</h1><div>${esc((state.profile&&state.profile.businessName)||'PS Cafe Manager')}</div></div><div class="row"><span>الكاشير</span><strong>${esc(label)}</strong></div><div class="row"><span>من</span><strong>${shortTime(from)}</strong></div><div class="row"><span>إلى</span><strong>${shortTime(to)}</strong></div><div class="row"><span>عدد الفواتير</span><strong>${count}</strong></div><div class="row"><span>أول / آخر فاتورة</span><strong>${first?('#'+first):'—'} / ${last?('#'+last):'—'}</strong></div><div class="row"><span>إيراد اللعب</span><strong>${money(play)} ج</strong></div><div class="row"><span>إيراد المشروبات</span><strong>${money(drinks)} ج</strong></div><div class="total"><span>الإجمالي النظامي</span><span>${money(total)} ج</span></div><div class="row"><span>المبلغ الفعلي المسلم</span><strong>${money(actual)} ج</strong></div><div class="row"><span>فرق عجز/زيادة</span><strong>${money(diff)} ج</strong></div>${isClosed&&closure.notes?`<div class="row"><span>ملاحظات</span><strong>${esc(closure.notes)}</strong></div>`:''}</div><div class="actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
   w.document.close();w.focus();
 }
 
 // ============================================================
-// AUDIT LOG — OWNER ONLY
+// AUDIT LOG — للمالك
 // ============================================================
 function actionLabel(a){return ({LOGIN:'تسجيل دخول',LOGOUT:'تسجيل خروج',SESSION_START:'بدء جلسة',MATCH_START:'بدء مباراة',SESSION_ITEM_ADD:'إضافة مشروب للجلسة',SESSION_ITEM_REMOVE:'حذف مشروب من الجلسة',INVOICE_CREATE:'إنشاء فاتورة',PRODUCT_ADD:'إضافة منتج',PRODUCT_EDIT:'تعديل منتج',DEVICE_ADD:'إضافة جهاز',DEVICE_EDIT:'تعديل جهاز',DEVICE_DELETE:'حذف جهاز',DEVICE_PRICE_EDIT:'تعديل أسعار جهاز',EXPENSE_ADD:'إضافة مصروف',EXPENSE_DELETE:'حذف مصروف',USER_ADD:'إضافة مستخدم',USER_EDIT:'تعديل مستخدم',PROFILE_EDIT:'تعديل بيانات النشاط',SHIFT_CLOSE:'تسليم وردية'}[a]||a)}
 function rAudit(){
   if(!owner()){vAudit.innerHTML='';return;}
   const logs=(state.auditLogs||[]).slice(0,300);
-  vAudit.innerHTML=`<div class="page-header"><div class="page-header-left"><div class="section-title">🛡️ سجل الحركات</div><div class="page-subtitle muted">من نفّذ كل إجراء ومتى — يظهر لصاحب النشاط فقط</div></div><span class="owner-only-tag">OWNER ONLY</span></div>
-  <div class="settings-note">يتم تسجيل الجلسات والفواتير والمشروبات والأسعار والمصروفات وإدارة الأجهزة. عند تفعيل قاعدة البيانات الآمنة تُرفع السجلات لسجل لا يسمح للكاشير بتعديله أو حذفه.</div>
+  vAudit.innerHTML=`<div class="page-header compact-page-header"><div class="page-header-left"><div class="section-title">🛡️ سجل الحركات</div><div class="page-subtitle muted">آخر العمليات</div></div><span class="owner-only-tag">للمالك</span></div>
   <div class="tw"><table><tr><th>الوقت</th><th>المستخدم</th><th>الإجراء</th><th>التفاصيل</th></tr>${logs.length?logs.map(l=>`<tr><td>${fmt(l.at)}</td><td><strong>${esc(l.actor||'غير محدد')}</strong><br><span class="small muted">${esc(roleLabel(l.actorRole||''))}</span></td><td>${esc(actionLabel(l.action))}</td><td>${esc(l.summary||'')}</td></tr>`).join(''):'<tr><td colspan="4" class="muted">لا توجد حركات مسجلة بعد.</td></tr>'}</table></div>`;
 }
 
 // ============================================================
-// USERS — OWNER ONLY
+// USERS — للمالك
 // ============================================================
 function rUsers(){
   if(!owner()){vUsers.innerHTML='';return;}
@@ -1800,7 +1856,7 @@ load();setup();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec4')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec5')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);

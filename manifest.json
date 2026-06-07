@@ -1,8 +1,8 @@
 {
   "name": "PS Cafe Manager",
   "short_name": "PS Cafe",
-  "description": "إدارة تشغيل كافيه بلايستيشن وفواتيره — V6.4.2 EC1 Stable Owner Tools",
-  "start_url": "./index.html?source=pwa&v=6.4.2-EC4",
+  "description": "إدارة تشغيل كافيه بلايستيشن وفواتيره — V6.4.2 EC5",
+  "start_url": "./index.html?source=pwa&v=6.4.2-EC5",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -86,5 +86,5 @@
       ]
     }
   ],
-  "id": "./?app=ps-cafe-manager-v642-ec4"
+  "id": "./?app=ps-cafe-manager-v642-ec5"
 }
