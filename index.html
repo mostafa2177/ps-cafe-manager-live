@@ -255,6 +255,19 @@ td button{padding:6px 12px;font-size:12px}
 .match-price-mins{font-size:12px;color:var(--text-muted);white-space:nowrap;}
 .match-price-val{font-size:15px;font-weight:800;color:var(--blue);white-space:nowrap;}
 
+/* EC6 — compact pricing choices and fixed match-price wording */
+.match-price-table{border-radius:12px;margin-top:6px;}
+.match-price-row{padding:8px 12px;min-height:46px;gap:8px;}
+.match-price-row input[type=radio]{width:14px;height:14px;}
+.match-price-label{font-size:13px;font-weight:800;}
+.match-price-val{font-size:14px;font-weight:900;color:#72a7ff;}
+.match-price-mins{display:none!important;}
+.modal .box{max-width:min(620px,calc(100vw - 24px));}
+.modal .big{margin-bottom:14px;padding-bottom:10px;}
+.type-toggle button{padding:8px;font-size:12.5px;min-height:38px;}
+@media(max-width:650px){.match-price-row{padding:8px 10px;min-height:42px}.modal .box{padding:16px 13px}.modal .grid{gap:10px;margin-bottom:10px}}
+
+
 
 /* V6.2.0 — Owner-controlled production foundation */
 .version-pill{display:inline-flex;align-items:center;margin-right:6px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:800;background:var(--blue-dim);color:#8ab4ff;border:1px solid rgba(41,121,255,.35);vertical-align:middle}
@@ -503,7 +516,7 @@ details.owner-tech>summary{display:none!important;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-EC5';
+const APP_VERSION='V6.4.2-EC6';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -516,10 +529,10 @@ function id(){return 'id_'+Math.random().toString(36).slice(2)+Date.now().toStri
 
 // DEFAULT match pricing configs per device: {mins, single, multi}
 const DEF_MATCH_PRICES=[
-  {mins:15,single:15,multi:25},
-  {mins:30,single:25,multi:40},
-  {mins:45,single:35,multi:55},
-  {mins:60,single:45,multi:70}
+  {mins:10,single:5,multi:10},
+  {mins:15,single:10,multi:15},
+  {mins:30,single:20,multi:30},
+  {mins:60,single:40,multi:60}
 ];
 
 function def(){
@@ -551,7 +564,8 @@ function save(md=true){state.updatedAt=new Date().toISOString();localStorage.set
 function baseSettings(){return {mode:'offline',url:'',key:'',businessId:'',cloudEmail:'',session:null,schema:'normalized_v1'}}
 function st(){try{return {...baseSettings(),...(JSON.parse(localStorage.getItem(SK))||{})}}catch(e){return baseSettings()}}
 function setst(s){localStorage.setItem(SK,JSON.stringify({...baseSettings(),...s}));setup();render()}
-function money(n){return (Number(n)||0).toFixed(2)}
+function money(n){const x=Number(n)||0;return Number.isInteger(x)?String(x):x.toFixed(2)}
+function roundOpenCharge(n){const x=Number(n)||0;if(x<=0)return 0;return Math.max(5,Math.ceil(x/5)*5)}
 function fmt(d){return d?new Date(d).toLocaleString('ar-EG'):''}
 function today(){return new Date().toISOString().slice(0,10)}
 function val(x){return document.getElementById(x)?.value||''}
@@ -717,12 +731,13 @@ function cost(s){
     // Fixed price match
     play=+s.matchPrice||0;
   } else {
-    // Open session: billed by hour rate
+    // Open session: time-based, rounded to the nearest 5 EGP with 5 EGP minimum.
     let rate=s.mode==='multi'?d.multiRate:d.singleRate;
-    play=elapsed/60*(+rate||0);
+    play=roundOpenCharge(elapsed/60*(+rate||0));
   }
   let dr=(s.items||[]).reduce((a,i)=>a+i.price*i.qty,0);
-  return{m,elapsed,play,dr,total:play+dr}
+  const total=play+dr;
+  return{m,elapsed,play,dr,total}
 }
 
 function badge(d){
@@ -1024,7 +1039,7 @@ function matchModal(did=''){
   if(!av.length&&!did){return alert('لا توجد أجهزة متاحة');}
   // Build device selector
   let devSel=`<select id="msd" onchange="updateMatchPrices()">${av.map(d=>`<option value="${d.id}" ${d.id==did?'selected':''}>${d.name}</option>`)}</select>`;
-  modal(`<div class="big">⚽ بدء مباراة محددة الوقت</div>
+  modal(`<div class="big">⚽ بدء مباراة بسعر ثابت</div>
     <div class="grid g2">
       <div class="col"><label>الجهاز</label>${devSel}</div>
       <div class="col"><label>اسم العميل</label><input id="msc" placeholder="اختياري"></div>
@@ -1036,7 +1051,7 @@ function matchModal(did=''){
         <input type="hidden" id="msm" value="single">
       </div>
       <div class="col" style="grid-column:1/-1">
-        <label>اختر مدة المباراة والسعر</label>
+        <label>اختر مدة المباراة وسعرها الثابت</label>
         <div id="match-prices-list"></div>
         <input type="hidden" id="sel-match-mins" value="">
         <input type="hidden" id="sel-match-price" value="">
@@ -1066,7 +1081,6 @@ function updateMatchPrices(){
     html+=`<div class="match-price-row ${i===0?'sel':''}" id="mpr_${i}" onclick="selectMatchPrice(${i},${p.mins},${price})">
       <input type="radio" name="matchopt" ${i===0?'checked':''} id="mr_${i}">
       <span class="match-price-label">${p.mins} دقيقة</span>
-      <span class="match-price-mins">${p.mins/15} ربع</span>
       <span class="match-price-val">${money(price)} ج</span>
     </div>`;
   });
@@ -1273,10 +1287,9 @@ function editMatchPrices(did){
   let d=state.devices.find(x=>x.id==did);
   let prices=d.matchPrices||DEF_MATCH_PRICES.map(x=>({...x}));
   modal(`<div class="big">⚽ أسعار مباريات ${esc(d.name)}</div>
-    <p class="muted small" style="margin-bottom:14px">حدد سعر كل مدة للعب المنفرد (Single) والجماعي (Multi)</p>
     <div class="tw"><table><tr><th>المدة</th><th>Single (ج)</th><th>Multi (ج)</th></tr>
     ${prices.map((p,i)=>`<tr>
-      <td style="font-weight:700">${p.mins} دقيقة (${p.mins/15} ربع)</td>
+      <td style="font-weight:700">${p.mins} دقيقة</td>
       <td><input id="mp_s_${i}" type="number" value="${p.single}" style="width:80px"></td>
       <td><input id="mp_m_${i}" type="number" value="${p.multi}" style="width:80px"></td>
     </tr>`).join('')}
@@ -1856,7 +1869,7 @@ load();setup();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec5')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec6')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
