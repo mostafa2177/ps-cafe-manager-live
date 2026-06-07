@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2 EC5</title>
+<title>PS Cafe Manager • V6.4.2 EC7</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -516,7 +516,7 @@ details.owner-tech>summary{display:none!important;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-EC6';
+const APP_VERSION='V6.4.2-EC7';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -566,6 +566,17 @@ function st(){try{return {...baseSettings(),...(JSON.parse(localStorage.getItem(
 function setst(s){localStorage.setItem(SK,JSON.stringify({...baseSettings(),...s}));setup();render()}
 function money(n){const x=Number(n)||0;return Number.isInteger(x)?String(x):x.toFixed(2)}
 function roundOpenCharge(n){const x=Number(n)||0;if(x<=0)return 0;return Math.max(5,Math.ceil(x/5)*5)}
+function isMatchItem(item){
+  if(!item)return false;
+  const t=String(item.type||item.itemType||item.item_type||'').toLowerCase();
+  const name=String(item.name||'').trim();
+  return t==='match'||name.startsWith('مباراة')||name.includes('مباراة إضافية');
+}
+function matchItemsTotal(items){return (items||[]).filter(isMatchItem).reduce((a,i)=>a+(Number(i.price)||0)*(Number(i.qty)||1),0)}
+function nonMatchItemsTotal(items){return (items||[]).filter(i=>!isMatchItem(i)).reduce((a,i)=>a+(Number(i.price)||0)*(Number(i.qty)||1),0)}
+function matchItemsCount(items){return (items||[]).filter(isMatchItem).reduce((a,i)=>a+(Number(i.qty)||1),0)}
+function sessionMatchCount(s){return (s&&s.sessionType==='match'?1:0)+matchItemsCount((s&&s.items)||[])}
+function matchCountLabel(n){return n===1?'مباراة واحدة':(n===2?'مباراتان':(n>=3&&n<=10?n+' مباريات':n+' مباراة'))}
 function fmt(d){return d?new Date(d).toLocaleString('ar-EG'):''}
 function today(){return new Date().toISOString().slice(0,10)}
 function val(x){return document.getElementById(x)?.value||''}
@@ -735,7 +746,9 @@ function cost(s){
     let rate=s.mode==='multi'?d.multiRate:d.singleRate;
     play=roundOpenCharge(elapsed/60*(+rate||0));
   }
-  let dr=(s.items||[]).reduce((a,i)=>a+i.price*i.qty,0);
+  // EC7: additional matches inside an active session are play revenue with fixed price, not drinks.
+  play += matchItemsTotal(s.items||[]);
+  let dr=nonMatchItemsTotal(s.items||[]);
   const total=play+dr;
   return{m,elapsed,play,dr,total}
 }
@@ -977,7 +990,9 @@ function rDash(){
             :c.m+' <span style="font-size:14px;font-weight:600;color:var(--text-muted)">دقيقة</span>'
           }</div>
           <div class="session-total">${money(c.total)} ج</div>
+          <div class="small muted" style="margin-bottom:6px">${sessionMatchCount(s)>0?matchCountLabel(sessionMatchCount(s)):'جلسة مفتوحة'}</div>
           <div class="device-actions">
+            <button style="background:var(--purple-dim);border-color:rgba(124,58,237,0.4);color:#a78bfa" onclick="matchAddModal('${s.id}')">⚽ مباراة</button>
             <button onclick="drinkModal('${s.id}')">🥤 مشروبات</button>
             <button class="danger" onclick="endSession('${s.id}')">⏹ إنهاء</button>
           </div>
@@ -1112,6 +1127,41 @@ function startMatch(){
   closeM();save();
 }
 
+function matchAddModal(sid){
+  const s=state.sessions.find(x=>x.id===sid);
+  if(!s)return showNotice('الجلسة غير موجودة.','danger');
+  const d=state.devices.find(x=>x.id===s.deviceId);
+  if(!d)return showNotice('الجهاز غير موجود.','danger');
+  const prices=d.matchPrices||DEF_MATCH_PRICES;
+  const mode=s.mode||'single';
+  modal(`<div class="big">⚽ إضافة مباراة</div>
+    <div class="settings-note">تُضاف المباراة على نفس الجلسة الحالية بسعر ثابت للمدة المختارة.</div>
+    <div id="add-match-list" class="match-price-table">
+      ${prices.map((p,i)=>{const price=mode==='multi'?p.multi:p.single;return `<div class="match-price-row ${i===0?'sel':''}" onclick="selectAddMatchPrice(${i},${Number(p.mins)||0},${Number(price)||0})"><span class="match-price-label">${Number(p.mins)||0} دقيقة</span><span class="match-price-val">${money(price)} ج</span></div>`}).join('')}
+    </div>
+    <input type="hidden" id="add-match-mins" value="${prices[0]?Number(prices[0].mins)||0:0}">
+    <input type="hidden" id="add-match-price" value="${prices[0]?(mode==='multi'?Number(prices[0].multi)||0:Number(prices[0].single)||0):0}">
+    <br><div class="row"><button class="ok" onclick="addMatchToSession('${sid}')">➕ إضافة المباراة</button><button class="gray" onclick="closeM()">إلغاء</button></div>`);
+}
+function selectAddMatchPrice(idx,mins,price){
+  document.querySelectorAll('#add-match-list .match-price-row').forEach((el,i)=>{el.className='match-price-row'+(i===idx?' sel':'')});
+  document.getElementById('add-match-mins').value=mins;
+  document.getElementById('add-match-price').value=price;
+}
+function addMatchToSession(sid){
+  const s=state.sessions.find(x=>x.id===sid);
+  if(!s)return showNotice('الجلسة غير موجودة.','danger');
+  const mins=+val('add-match-mins')||0;
+  const price=+val('add-match-price')||0;
+  if(!mins||!price)return showNotice('اختر مدة وسعر المباراة.','danger');
+  const item={id:id(),productId:null,name:`مباراة ${mins} دقيقة`,price,qty:1,type:'match',item_type:'match',addedBy:user.username,addedAt:new Date().toISOString(),addedAuthId:user.cloud?user.id:''};
+  s.items=s.items||[];
+  s.items.push(item);
+  audit('SESSION_MATCH_ADD','session',sid,'إضافة مباراة '+mins+' دقيقة للجلسة',{minutes:mins,price});
+  closeM();save();
+  showNotice('تمت إضافة المباراة للجلسة الحالية ✓','success');
+}
+
 // ============================================================
 // DRINKS
 // ============================================================
@@ -1127,7 +1177,7 @@ function drinkModal(sid){
     <div class="tw"><table><tr><th>الصنف</th><th>كمية</th><th>سعر</th><th>إجمالي</th><th></th></tr>
     ${(s.items||[]).map((i,n)=>`<tr><td>${i.name}</td><td>${i.qty}</td><td>${money(i.price)}</td><td>${money(i.price*i.qty)}</td><td><button class="danger" onclick="remDrink('${sid}',${n})">حذف</button></td></tr>`).join('')}
     </table></div>
-    <br><button class="gray" onclick="closeM()">إغلاق</button>`);
+    <br><div class="row"><button style="background:var(--purple-dim);border-color:rgba(124,58,237,0.4);color:#a78bfa" onclick="matchAddModal('${sid}')">⚽ إضافة مباراة</button><button class="gray" onclick="closeM()">إغلاق</button></div>`);
 }
 function addDrink(sid){let s=state.sessions.find(x=>x.id==sid),p=state.products.find(x=>x.id==val('dp')),q=+val('dq')||1;if(!s||!p)return;s.items.push({id:id(),productId:p.id,name:p.name,price:+p.price,qty:q,addedBy:user.username,addedAt:new Date().toISOString(),addedAuthId:user.cloud?user.id:''});audit('SESSION_ITEM_ADD','session',sid,'إضافة '+q+' × '+p.name+' للجلسة',{productId:p.id,qty:q,price:+p.price});save();drinkModal(sid)}
 function remDrink(sid,n){let s=state.sessions.find(x=>x.id==sid),removed=s?.items?.[n];if(!s||!removed)return;s.items.splice(n,1);audit('SESSION_ITEM_REMOVE','session',sid,'حذف '+removed.name+' من الجلسة',{productId:removed.productId,qty:removed.qty,price:removed.price});save();drinkModal(sid)}
@@ -1869,7 +1919,7 @@ load();setup();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec6')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec7')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
