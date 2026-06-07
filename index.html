@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.1 EC6</title>
+<title>PS Cafe Manager • V6.4.1 EC11</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.1-EC10">
+<link rel="manifest" href="manifest.json?v=6.4.1-EC11">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.1-EC10">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.1-EC10">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.1-EC10">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.1-EC10">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.1-EC10">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.1-EC11">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.1-EC11">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.1-EC11">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.1-EC11">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.1-EC11">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -162,13 +162,15 @@ button:active{transform:translateY(0);box-shadow:none}
 .device-start-btn:hover{background:var(--green);color:#fff;box-shadow:0 4px 18px rgba(0,200,83,0.35)}
 
 /* Alert notification toast */
-#alert-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:min(420px,calc(100vw - 32px));}
-.toast-item{background:var(--bg-elevated);border:1.5px solid var(--border-light);border-radius:var(--radius);padding:12px 16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;animation:toastIn 0.3s ease;pointer-events:auto;}
+#alert-toast{position:fixed;top:92px;left:18px;right:auto;bottom:auto;transform:none;z-index:9999;display:flex;flex-direction:column;gap:7px;pointer-events:none;width:min(360px,calc(100vw - 28px));max-height:42vh;overflow:hidden;}
+.toast-item{background:rgba(16,31,52,0.96);border:1.2px solid var(--border-light);border-radius:14px;padding:9px 12px;box-shadow:0 8px 24px rgba(0,0,0,0.45);display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;line-height:1.45;animation:toastIn 0.22s ease;pointer-events:auto;backdrop-filter:blur(10px);}
+.toast-item span:last-child{display:block;overflow:hidden;text-overflow:ellipsis;}
+@media(max-width:700px){#alert-toast{top:76px;left:10px;width:min(330px,calc(100vw - 20px));}.toast-item{font-size:11.5px;padding:8px 10px;border-radius:12px;}}
 .toast-item.t-warn{border-color:rgba(255,214,0,0.4);background:rgba(60,40,0,0.95);}
 .toast-item.t-danger{border-color:rgba(255,61,87,0.5);background:rgba(60,10,18,0.95);}
 .toast-item.t-end{border-color:rgba(255,152,0,0.5);background:rgba(50,25,0,0.95);}
 .toast-icon{font-size:20px;flex-shrink:0}
-@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 
 /* Session type select buttons */
 .type-toggle{display:flex;gap:0;border-radius:var(--radius-sm);overflow:hidden;border:1.5px solid var(--border);}
@@ -349,13 +351,13 @@ button{min-height:40px;}
 .sync.private-cloud{background:var(--green-dim);border-color:rgba(0,200,83,.2);color:var(--green)}
 
 
-/* EC10 — technical tools are always expanded to avoid auto-closing during cloud refresh */
+/* EC11 — compact non-blocking notifications plus stable panels */
 .owner-tech-open{display:block;}
 .owner-tech-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
 
 /* PRINT */
 
-/* EC10 — Daily use polish + invoice auto preview: simpler operation, cleaner mobile, clearer invoices */
+/* EC11 — Daily use polish + invoice auto preview + non-blocking compact toasts */
 .ops-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 16px;}
 .ops-card{background:linear-gradient(160deg,var(--bg-card),rgba(15,27,45,.72));border:1px solid var(--border);border-radius:var(--radius-md);padding:13px 14px;min-height:86px;box-shadow:var(--shadow-card);position:relative;overflow:hidden;}
 .ops-card:before{content:'';position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--blue)}
@@ -493,7 +495,7 @@ button{min-height:40px;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.1-EC10';
+const APP_VERSION='V6.4.1-EC11';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -834,11 +836,15 @@ function playBeep(level){
 
 function showToast(icon,msg,cls){
   let wrap=document.getElementById('alert-toast');
+  if(!wrap)return;
+  // EC11: compact non-blocking top toast; keep newest 3 only so it never covers bottom actions.
+  while(wrap.children.length>=3)wrap.firstElementChild?.remove();
   let el=document.createElement('div');
   el.className='toast-item '+cls;
   el.innerHTML=`<span class="toast-icon">${icon}</span><span>${esc(msg)}</span>`;
   wrap.appendChild(el);
-  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity 0.4s';setTimeout(()=>el.remove(),400)},5200);
+  const life=(cls||'').includes('t-danger')?4200:2600;
+  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(-6px)';el.style.transition='opacity 0.25s, transform 0.25s';setTimeout(()=>el.remove(),260)},life);
 }
 function showNotice(msg,type='info'){
   const map={success:['✅','t-ok'],danger:['⚠️','t-danger'],warn:['⏰','t-warn'],info:['ℹ️','t-info']};
@@ -1528,7 +1534,7 @@ function rSettings(){
       <div class="big" style="font-size:16px">🛠️ أدوات فنية ودعم التطبيق</div>
       <span class="owner-only-tag">للمالك فقط</span>
     </div>
-    <div class="settings-note">تم تحسين واجهة التشغيل والفواتير في EC9، وإضافة عرض الفاتورة تلقائيًا بعد إنهاء الجلسة في EC10.</div>
+    <div class="settings-note">تم تحسين واجهة التشغيل والفواتير، وعرض الفاتورة تلقائيًا بعد الإنهاء، وضبط الإشعارات في EC11 حتى لا تغطي القوائم المهمة.</div>
     <div class="settings-section mt">
       <div class="big" style="font-size:15px;margin-bottom:10px">🔔 اختبار التنبيهات</div>
       <div class="status-panel ${ns.cls}"><strong>الإشعارات:</strong> ${ns.label}</div>
@@ -1723,7 +1729,7 @@ load();setup();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.1-ec9')
+    navigator.serviceWorker.register('./sw.js?v=6.4.1-ec11')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);

@@ -1,11 +1,11 @@
 // ============================================================
 // PS Cafe Manager — Service Worker
-// Version: 6.4.1 EC10 INVOICE AUTO PREVIEW
+// Version: 6.4.1 EC11 COMPACT NOTIFICATIONS
 // ============================================================
-const CACHE_NAME = 'ps-cafe-v6.4.1-ec10';
-const OFFLINE_URL = './index.html?v=6.4.1-ec10';
+const CACHE_NAME = 'ps-cafe-v6.4.1-ec11';
+const OFFLINE_URL = './index.html?v=6.4.1-ec11';
 const PRECACHE_ASSETS = [
-  './', './index.html?v=6.4.1-ec10', './manifest.json?v=6.4.1-ec10',
+  './', './index.html?v=6.4.1-ec11', './manifest.json?v=6.4.1-ec11',
   './icon-72.png','./icon-96.png','./icon-128.png','./icon-144.png',
   './icon-152.png','./icon-192.png','./icon-384.png','./icon-512.png','./brand-avatar.png'
 ];
