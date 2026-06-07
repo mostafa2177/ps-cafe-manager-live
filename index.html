@@ -307,7 +307,7 @@ td button{padding:6px 12px;font-size:12px}
 @media(max-width:480px){.cashier-mini-grid{grid-template-columns:1fr}.shift-period span{width:100%;text-align:center}}
 
 
-/* V6.4.2-EC1 — Compact dashboard and clickable operational cards */
+/* V6.4.2-EC2 — Compact dashboard and clickable operational cards */
 .compact-hero{padding:14px 18px!important;margin-bottom:12px!important;min-height:auto!important}
 .compact-hero .dash-header-title{font-size:24px}
 .compact-hero .dash-header-sub,.compact-hidden-sub{display:none!important}
@@ -382,6 +382,12 @@ td button{padding:6px 12px;font-size:12px}
 @keyframes pulseDanger{0%,100%{box-shadow:0 4px 24px rgba(0,0,0,0.5),0 0 0 0 rgba(255,61,87,0)}50%{box-shadow:0 4px 24px rgba(0,0,0,0.5),0 0 0 8px rgba(255,61,87,0.15)}}
 .device-card.warn-5,.device-card.overtime{animation:pulseDanger 0.8s ease-in-out infinite}
 [dir=rtl] th,[dir=rtl] td{text-align:right}
+
+/* EC2 — stable owner tools and clean sync status */
+.owner-tech-open{display:block;}
+.owner-tech-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.owner-tech-open .settings-section{margin-top:12px}
+
 </style>
 </head>
 <body>
@@ -445,7 +451,7 @@ td button{padding:6px 12px;font-size:12px}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-EC1';
+const APP_VERSION='V6.4.2-EC2';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -591,7 +597,8 @@ function render(){
   if(!user)return;
   if(!allowedTabs().includes(tab))tab='Dashboard';
   cu.textContent=user.username;cr.textContent=roleLabel(user.role);
-  let ss=st(),q=queue().length,online=navigator.onLine,sm=syncMeta();
+  let ss=st(),online=navigator.onLine,sm=syncMeta();
+  let q=(ss.mode==='secure_cloud'&&sm.verified)?0:queue().length;
   if(ss.mode!=='secure_cloud'){sl.textContent='محلي';sl.className='sync';}
   else if(!online){sl.textContent='غير متصل — محفوظ';sl.className='sync err';}
   else if(sm.syncing){sl.textContent='جاري الحفظ…';sl.className='sync pending';}
@@ -1058,7 +1065,13 @@ function printInvoice(iid){
   if(!w){showNotice('اسمح بفتح النوافذ المنبثقة للطباعة.', 'warn');return;}
   w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>فاتورة ${invNo(i)}</title><style>
   *{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;color:#111;margin:0;padding:18px;background:#fff}.receipt{max-width:760px;margin:0 auto;border:1px solid #ddd;padding:22px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:15px}.head h1{font-size:23px;margin:0 0 4px}.muted{color:#555;font-size:12px}.row{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed #bbb;font-size:14px}.total{font-size:20px;font-weight:700;border-top:2px solid #111;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between}table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}th,td{padding:7px 5px;border-bottom:1px solid #ddd;text-align:right}th{background:#f5f5f5}.print-actions{text-align:center;margin:18px 0}button{padding:10px 20px;border:0;background:#155eef;color:#fff;border-radius:6px;font-weight:700}@page{size:auto;margin:12mm}@media print{.print-actions{display:none}.receipt{border:none;padding:0;max-width:none}}
-  </style></head><body><div class="receipt"><div class="head"><h1>PS Cafe Manager</h1><div class="muted">فاتورة ${invNo(i)} • ${esc(fmt(i.date))}</div></div>
+  
+/* EC2 — stable owner tools and clean sync status */
+.owner-tech-open{display:block;}
+.owner-tech-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.owner-tech-open .settings-section{margin-top:12px}
+
+</style></head><body><div class="receipt"><div class="head"><h1>PS Cafe Manager</h1><div class="muted">فاتورة ${invNo(i)} • ${esc(fmt(i.date))}</div></div>
   <div class="row"><span>أنشأ الفاتورة</span><strong>${esc(invActor(i))}</strong></div><div class="row"><span>بدأ الجلسة</span><strong>${esc(i.startedBy||'غير محدد — بيانات سابقة')}</strong></div><div class="row"><span>الجهاز</span><strong>${esc(i.deviceName)} — ${esc(i.mode)}</strong></div>${i.sessionType==='match'?`<div class="row"><span>نوع الجلسة</span><strong>مباراة ${i.matchMins} دقيقة</strong></div>`:''}<div class="row"><span>العميل</span><strong>${esc(i.customer||'—')}</strong></div><div class="row"><span>المدة الفعلية</span><strong>${i.minutes} دقيقة</strong></div><div class="row"><span>رسوم اللعب</span><strong>${money(i.playTotal)} ج</strong></div>${itemRows?`<table><thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>${itemRows}</tbody></table>`:''}<div class="row"><span>رسوم المشروبات</span><strong>${money(i.drinkTotal)} ج</strong></div><div class="total"><span>الإجمالي</span><span>${money(i.total)} ج</span></div></div><div class="print-actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
   w.document.close();w.focus();
 }
@@ -1369,7 +1382,13 @@ function printShiftReport(summary,closure){
   const actual=isClosed?(closure.actualCash||closure.actual_cash||0):total;
   const diff=isClosed?(closure.difference||0):0;
   const w=window.open('','_blank','width=620,height=820');if(!w){showNotice('اسمح بفتح النوافذ المنبثقة للطباعة.','warn');return;}
-  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تسليم وردية</title><style>*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;padding:18px;color:#111}.sheet{max-width:760px;margin:0 auto;border:1px solid #ddd;padding:22px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:14px}h1{font-size:22px;margin:0}.row{display:flex;justify-content:space-between;border-bottom:1px dashed #bbb;padding:9px 0;font-size:14px}.total{display:flex;justify-content:space-between;border-top:2px solid #111;margin-top:10px;padding-top:12px;font-size:20px;font-weight:700}.actions{text-align:center;margin:18px 0}button{padding:10px 20px;border:0;background:#155eef;color:white;border-radius:6px;font-weight:700}@page{size:auto;margin:12mm}@media print{.actions{display:none}.sheet{border:none;padding:0}}</style></head><body><div class="sheet"><div class="head"><h1>تقرير تسليم وردية</h1><div>${esc((state.profile&&state.profile.businessName)||'PS Cafe Manager')}</div></div><div class="row"><span>الكاشير</span><strong>${esc(label)}</strong></div><div class="row"><span>من</span><strong>${shortTime(from)}</strong></div><div class="row"><span>إلى</span><strong>${shortTime(to)}</strong></div><div class="row"><span>عدد الفواتير</span><strong>${count}</strong></div><div class="row"><span>أول / آخر فاتورة</span><strong>${first?('#'+first):'—'} / ${last?('#'+last):'—'}</strong></div><div class="row"><span>إيراد اللعب</span><strong>${money(play)} ج</strong></div><div class="row"><span>إيراد المشروبات</span><strong>${money(drinks)} ج</strong></div><div class="total"><span>الإجمالي النظامي</span><span>${money(total)} ج</span></div><div class="row"><span>المبلغ الفعلي المسلم</span><strong>${money(actual)} ج</strong></div><div class="row"><span>فرق عجز/زيادة</span><strong>${money(diff)} ج</strong></div>${isClosed&&closure.notes?`<div class="row"><span>ملاحظات</span><strong>${esc(closure.notes)}</strong></div>`:''}</div><div class="actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
+  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تسليم وردية</title><style>*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;padding:18px;color:#111}.sheet{max-width:760px;margin:0 auto;border:1px solid #ddd;padding:22px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:14px}h1{font-size:22px;margin:0}.row{display:flex;justify-content:space-between;border-bottom:1px dashed #bbb;padding:9px 0;font-size:14px}.total{display:flex;justify-content:space-between;border-top:2px solid #111;margin-top:10px;padding-top:12px;font-size:20px;font-weight:700}.actions{text-align:center;margin:18px 0}button{padding:10px 20px;border:0;background:#155eef;color:white;border-radius:6px;font-weight:700}@page{size:auto;margin:12mm}@media print{.actions{display:none}.sheet{border:none;padding:0}}
+/* EC2 — stable owner tools and clean sync status */
+.owner-tech-open{display:block;}
+.owner-tech-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.owner-tech-open .settings-section{margin-top:12px}
+
+</style></head><body><div class="sheet"><div class="head"><h1>تقرير تسليم وردية</h1><div>${esc((state.profile&&state.profile.businessName)||'PS Cafe Manager')}</div></div><div class="row"><span>الكاشير</span><strong>${esc(label)}</strong></div><div class="row"><span>من</span><strong>${shortTime(from)}</strong></div><div class="row"><span>إلى</span><strong>${shortTime(to)}</strong></div><div class="row"><span>عدد الفواتير</span><strong>${count}</strong></div><div class="row"><span>أول / آخر فاتورة</span><strong>${first?('#'+first):'—'} / ${last?('#'+last):'—'}</strong></div><div class="row"><span>إيراد اللعب</span><strong>${money(play)} ج</strong></div><div class="row"><span>إيراد المشروبات</span><strong>${money(drinks)} ج</strong></div><div class="total"><span>الإجمالي النظامي</span><span>${money(total)} ج</span></div><div class="row"><span>المبلغ الفعلي المسلم</span><strong>${money(actual)} ج</strong></div><div class="row"><span>فرق عجز/زيادة</span><strong>${money(diff)} ج</strong></div>${isClosed&&closure.notes?`<div class="row"><span>ملاحظات</span><strong>${esc(closure.notes)}</strong></div>`:''}</div><div class="actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
   w.document.close();w.focus();
 }
 
@@ -1442,10 +1461,9 @@ function rSettings(){
     <div class="big" style="font-size:16px;margin-bottom:12px">🔐 قاعدة بيانات صاحب النشاط</div>
     <div class="settings-note">يتم الربط بمشروع Supabase يملكه صاحب النشاط. البيانات محفوظة في جداول منفصلة ومحمية بـ RLS؛ الفواتير وسجل الحركات غير قابلين للتعديل أو الحذف من الكاشير.</div>
     <div class="status-panel ${syncClass}">
-      <div><strong>الحالة:</strong> ${s.mode!=='secure_cloud'?'غير مربوط — البيانات على هذا الجهاز':(sm.syncing?'جاري الاتصال…':(sm.verified?(sm.lastSuccess?'محفوظ في قاعدة بيانات النشاط ✓':'اتصال آمن جاهز ✓'):'يلزم تسجيل دخول المالك'))}</div>
-      <div><strong>آخر حفظ ناجح:</strong> ${shortTime(sm.lastSuccess)}</div>
-      <div><strong>عمليات معلقة:</strong> ${queue().length}</div>
-      ${sm.lastError?`<div style="color:var(--red)"><strong>آخر خطأ:</strong> ${esc(sm.lastError)}</div>`:''}
+      <div><strong>الحالة:</strong> ${s.mode!=='secure_cloud'?'غير مربوط — البيانات على هذا الجهاز':(sm.syncing?'جاري الاتصال…':(sm.verified?(sm.lastSuccess?'متصل بقاعدة بيانات النشاط ✓':'اتصال آمن جاهز ✓'):'يلزم تسجيل دخول المالك'))}</div>
+      <div><strong>آخر تحديث ناجح:</strong> ${shortTime(sm.lastSuccess)}</div>
+      ${(!sm.verified&&sm.lastError)?`<div style="color:var(--red)"><strong>آخر خطأ:</strong> ${esc(sm.lastError)}</div>`:''}
     </div>
     <div class="grid g2 mt">
       <div class="col"><label>وضع البيانات</label><select id="mode"><option value="offline" ${s.mode==='offline'?'selected':''}>الجهاز فقط</option><option value="secure_cloud" ${s.mode==='secure_cloud'?'selected':''}>قاعدة بيانات المالك الآمنة</option></select></div>
@@ -1478,8 +1496,9 @@ function rSettings(){
       <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:var(--bg-elevated);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;font-weight:700;color:var(--text-secondary);flex:1;justify-content:center">📥 استيراد Backup <input type="file" onchange="importBackup(event)" style="display:none;width:auto"></label>
     </div>
   </div>
-  <details class="owner-card owner-tech">
-    <summary>🛠️ أدوات فنية ودعم التطبيق <span class="owner-only-tag">للمالك فقط</span></summary>
+  <div class="owner-card owner-tech owner-tech-open">
+    <div class="owner-tech-header"><div class="big" style="font-size:16px">🛠️ أدوات فنية ودعم التطبيق</div><span class="owner-only-tag">للمالك فقط</span></div>
+    <div class="settings-note">القسم ثابت ومفتوح دائمًا حتى لا يُغلق أثناء المزامنة أو تحديث حالة الاتصال.</div>
     <div class="settings-section mt">
       <div class="big" style="font-size:15px;margin-bottom:10px">🔔 اختبار التنبيهات</div>
       <div class="status-panel ${ns.cls}"><strong>الإشعارات:</strong> ${ns.label}</div>
@@ -1490,8 +1509,8 @@ function rSettings(){
       <div class="status-panel ${installState().cls}"><strong>التثبيت:</strong> ${installState().label}<br><strong>الإصدار:</strong> ${APP_VERSION}</div>
       <div class="settings-actions"><button class="btn-blue" onclick="installPwa()">تثبيت التطبيق</button><button class="gray" onclick="checkForUpdate()">فحص تحديث</button><button class="gray" onclick="clearAppCacheAndReload()">تحديث إجباري آمن</button></div>
     </div>
-    <div class="settings-actions"><button class="danger" onclick="clearQueue()">مسح الانتظار</button><button class="danger" onclick="resetAll()">تصفير بيانات الجهاز</button></div>
-  </details>`
+    <div class="settings-actions"><button class="danger" onclick="clearQueue()">مسح الانتظار القديم</button><button class="danger" onclick="resetAll()">تصفير بيانات الجهاز</button></div>
+  </div>`
 }
 function saveBusinessProfile(){
   if(!owner())return;
@@ -1689,7 +1708,7 @@ async function loadCloud(force=false){
   const openIds=new Set(mappedSessions.filter(s=>s.status==='open').map(s=>s.deviceId));
   const localUsers=state.users||[];
   state={users:localUsers,profile:{businessName:state.profile?.businessName||'PS Cafe',ownerName:profiles[0]?.owner_name||'',phone:profiles[0]?.phone||'',address:profiles[0]?.address||''},devices:(devices||[]).map(d=>({id:d.id,name:d.name,status:d.maintenance?'maintenance':(openIds.has(d.id)?'busy':'available'),singleRate:+d.single_rate,multiRate:+d.multi_rate,matchPrices:d.match_prices||[]})),products:(products||[]).map(p=>({id:p.id,name:p.name,price:+p.price,stock:+p.stock,active:p.active})),sessions:mappedSessions,invoices:(invoices||[]).map(i=>({id:i.id,no:+i.invoice_no,date:i.created_at,deviceId:i.device_id,deviceName:i.device_name,customer:i.customer,mode:i.play_mode,sessionType:i.session_type,matchMins:i.match_minutes,start:i.started_at,end:i.ended_at,minutes:i.minutes,playTotal:+i.play_total,drinkTotal:+i.drink_total,total:+i.total,items:invItemMap[i.id]||[],payment:i.payment_method,issuedBy:i.creator_label})),expenses:(expenses||[]).filter(e=>!e.voided_at).map(e=>({id:e.id,date:e.expense_date,type:e.type||e.expense_type,amount:+e.amount,note:e.note,createdBy:e.creator_label,createdAt:e.created_at})),shiftClosures:(shiftClosures||[]).map(x=>({id:x.id,openedAt:x.opened_at,closedAt:x.closed_at,closedBy:x.closed_by,closedByLabel:x.closed_by_label,invoiceCount:+x.invoice_count||0,firstInvoiceNo:+x.first_invoice_no||0,lastInvoiceNo:+x.last_invoice_no||0,playTotal:+x.play_total||0,drinkTotal:+x.drink_total||0,total:+x.total||0,actualCash:+x.actual_cash||0,difference:+x.difference||0,notes:x.notes||'',createdAt:x.created_at,cloudSynced:true})),auditLogs:(logs||[]).map(l=>({id:l.id,at:l.occurred_at,action:l.action,entityType:l.entity_type,entityId:l.entity_id,summary:l.summary,details:l.details,actor:l.actor_label,actorRole:l.actor_role,cloudSynced:true})),nextInvoice:Math.max(1,...(invoices||[]).map(i=>+i.invoice_no+1)),updatedAt:new Date().toISOString()};
-  localStorage.setItem(K,JSON.stringify(state));setSyncMeta({verified:true,syncing:false,lastError:''});dirty=false;setQueue([]);render();return true;
+  localStorage.setItem(K,JSON.stringify(state));setSyncMeta({verified:true,syncing:false,lastError:'',lastSuccess:new Date().toISOString()});dirty=false;setQueue([]);render();return true;
 }
 async function connectOwnerCloud(){
   if(!owner())return;const cfg=currentCloudInputs();
@@ -1734,7 +1753,7 @@ load();setup();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec1')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-ec2')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
