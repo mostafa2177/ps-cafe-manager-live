@@ -1,11 +1,11 @@
 // ============================================================
 // PS Cafe Manager — Service Worker
-// Version: 6.4.2 FLEXIBLE SHIFT HANDOVER
+// Version: 6.4.2 EC1 COMPACT DASHBOARD
 // ============================================================
-const CACHE_NAME = 'ps-cafe-v6.4.2';
-const OFFLINE_URL = './index.html?v=6.4.2';
+const CACHE_NAME = 'ps-cafe-v6.4.2-ec1';
+const OFFLINE_URL = './index.html?v=6.4.2-ec1';
 const PRECACHE_ASSETS = [
-  './', './index.html?v=6.4.2', './manifest.json?v=6.4.2',
+  './', './index.html?v=6.4.2-ec1', './manifest.json?v=6.4.2-ec1',
   './icon-72.png','./icon-96.png','./icon-128.png','./icon-144.png',
   './icon-152.png','./icon-192.png','./icon-384.png','./icon-512.png','./brand-avatar.png'
 ];
