@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.1 EC11</title>
+<title>PS Cafe Manager • V6.4.2</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.1-EC11">
+<link rel="manifest" href="manifest.json?v=6.4.2">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.1-EC11">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.1-EC11">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.1-EC11">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.1-EC11">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.1-EC11">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -314,7 +314,7 @@ button{min-height:40px;}
 .match-price-val{font-size:15px;font-weight:800;color:var(--blue);white-space:nowrap;}
 
 
-/* V6.4.1 — Owner private cloud & controlled corrections */
+/* V6.4.2 — Owner private cloud, controlled corrections & shift handover */
 .version-pill{display:inline-flex;align-items:center;margin-right:6px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:800;background:var(--blue-dim);color:#8ab4ff;border:1px solid rgba(41,121,255,.35);vertical-align:middle}
 .status-panel{margin-top:12px;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-base);font-size:13px;line-height:1.8;color:var(--text-secondary)}
 .status-panel strong{color:var(--text-primary)}
@@ -354,6 +354,24 @@ button{min-height:40px;}
 /* EC11 — compact non-blocking notifications plus stable panels */
 .owner-tech-open{display:block;}
 .owner-tech-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
+
+
+/* V6.4.2 — Flexible Shift Handover & cashier workspace */
+.shift-hero{background:linear-gradient(135deg,var(--bg-card),rgba(0,200,83,.055));border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:16px;box-shadow:var(--shadow-card)}
+.shift-period{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;color:var(--text-secondary);font-size:13px}
+.shift-period span{background:var(--bg-base);border:1px solid var(--border);border-radius:999px;padding:5px 10px}
+.shift-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.shift-actions button{width:100%}
+.cashier-mini-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.cashier-mini-card{background:var(--bg-base);border:1px solid var(--border);border-radius:12px;padding:11px;min-height:74px}
+.cashier-mini-card .mini-label{display:block;font-size:11px;color:var(--text-muted);margin-bottom:5px}
+.cashier-mini-card b{display:block;font-size:20px;color:var(--text-primary)}
+.last-invoice-card{margin-top:12px;padding:12px;border:1px solid rgba(41,121,255,.18);border-radius:14px;background:rgba(41,121,255,.055);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.last-invoice-card strong{color:var(--green)}
+.cashier-update-btn{background:var(--bg-elevated);border-color:var(--border-light);color:var(--text-secondary)}
+@media(max-width:850px){.shift-actions{grid-template-columns:1fr}.cashier-mini-grid{grid-template-columns:repeat(2,1fr)}.last-invoice-card{align-items:stretch}.last-invoice-card button{width:100%}}
+@media(max-width:480px){.cashier-mini-grid{grid-template-columns:1fr}.shift-period span{width:100%;text-align:center}}
 
 /* PRINT */
 
@@ -482,6 +500,7 @@ button{min-height:40px;}
     <section id="vInvoices" class="hidden"></section>
     <section id="vExpenses" class="hidden"></section>
     <section id="vReports" class="hidden"></section>
+    <section id="vShifts" class="hidden"></section>
     <section id="vAudit" class="hidden"></section>
     <section id="vUsers" class="hidden"></section>
     <section id="vSettings" class="hidden"></section>
@@ -495,7 +514,7 @@ button{min-height:40px;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.1-EC11';
+const APP_VERSION='V6.4.2';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -527,13 +546,14 @@ function def(){
     products:['شاي:15','قهوة:25','نسكافيه:30','مياه:10','عصير:20','كانز:25'].map(x=>{
       let a=x.split(':');return{id:id(),name:a[0],price:+a[1],stock:0,active:true}
     }),
-    profile:{businessName:'PS Cafe',ownerName:'',phone:'',address:''},sessions:[],invoices:[],expenses:[],auditLogs:[],nextInvoice:1,updatedAt:new Date().toISOString()
+    profile:{businessName:'PS Cafe',ownerName:'',phone:'',address:''},sessions:[],invoices:[],expenses:[],shiftClosures:[],auditLogs:[],nextInvoice:1,updatedAt:new Date().toISOString()
   }
 }
 
 function load(){try{state=JSON.parse(localStorage.getItem(K))||def()}catch(e){state=def()}
   if(!state.profile)state.profile={businessName:'PS Cafe',ownerName:'',phone:'',address:''};
   if(!Array.isArray(state.auditLogs))state.auditLogs=[];
+  if(!Array.isArray(state.shiftClosures))state.shiftClosures=[];
   state.users=(state.users||[]).map(u=>({...u,role:u.role==='Admin'?'Owner':u.role}));
   state.devices.forEach(d=>{if(!d.matchPrices)d.matchPrices=DEF_MATCH_PRICES.map(x=>({...x}))});
   save(false)
@@ -609,9 +629,9 @@ function invoiceRevisionRows(i,rowClass='invoice-row'){
   return `<div class="${rowClass}"><span>آخر ${action}</span><strong>${esc(i.correctedByLabel||'—')} — ${fmt(i.correctedAt)}</strong></div><div class="${rowClass}"><span>ملاحظة ${action}</span><span>${esc(i.correctionReason||'—')}</span></div>`;
 }
 function allowedTabs(){
-  if(owner())return ['Dashboard','Products','Devices','Invoices','Expenses','Reports','Audit','Users','Settings'];
-  if(manager())return ['Dashboard','Products','Devices','Invoices','Expenses','Reports'];
-  if(cashier())return ['Dashboard','Products','Invoices'];
+  if(owner())return ['Dashboard','Products','Devices','Invoices','Expenses','Reports','Shifts','Audit','Users','Settings'];
+  if(manager())return ['Dashboard','Products','Devices','Invoices','Expenses','Reports','Shifts'];
+  if(cashier())return ['Dashboard','Products','Invoices','Shifts'];
   return ['Dashboard','Invoices','Reports'];
 }
 
@@ -660,7 +680,7 @@ async function logout(){
 // TABS & RENDER
 // ============================================================
 function tabs(){
-  let all=[['Dashboard','🏠 الرئيسية'],['Products','🥤 المشروبات'],['Devices','🎮 الأجهزة'],['Invoices','🧾 الفواتير'],['Expenses','💸 المصروفات'],['Reports','📊 التقارير'],['Audit','🛡️ سجل الحركات'],['Users','👥 المستخدمين'],['Settings','🏪 إدارة النشاط']];
+  let all=[['Dashboard','🏠 الرئيسية'],['Products','🥤 المشروبات'],['Devices','🎮 الأجهزة'],['Invoices','🧾 الفواتير'],['Expenses','💸 المصروفات'],['Reports','📊 التقارير'],['Shifts','🔁 الورديات'],['Audit','🛡️ سجل الحركات'],['Users','👥 المستخدمين'],['Settings','🏪 إدارة النشاط']];
   let allowed=allowedTabs();
   document.getElementById('tabs').innerHTML=all.filter(t=>allowed.includes(t[0])).map(t=>`<button class="tab ${tab==t[0]?'active':''}" onclick="show('${t[0]}')">${t[1]}</button>`).join('')
 }
@@ -677,12 +697,12 @@ function render(){
   else if(sm.verified&&sm.lastSuccess){sl.textContent='محفوظ ✓';sl.className='sync private-cloud';}
   else if(sm.verified){sl.textContent='متصل ✓';sl.className='sync private-cloud';}
   else{sl.textContent='غير مفعّل';sl.className='sync unknown';}
-  ['Dashboard','Products','Devices','Invoices','Expenses','Reports','Audit','Users','Settings'].forEach(x=>document.getElementById('v'+x).classList.add('hidden'));
+  ['Dashboard','Products','Devices','Invoices','Expenses','Reports','Shifts','Audit','Users','Settings'].forEach(x=>document.getElementById('v'+x).classList.add('hidden'));
   document.getElementById('v'+tab).classList.remove('hidden');
   renderActiveTab();
 }
 function renderActiveTab(){
-  const map={Dashboard:rDash,Products:rProducts,Devices:rDevices,Invoices:rInvoices,Expenses:rExpenses,Reports:rReports,Audit:rAudit,Users:rUsers,Settings:rSettings};
+  const map={Dashboard:rDash,Products:rProducts,Devices:rDevices,Invoices:rInvoices,Expenses:rExpenses,Reports:rReports,Shifts:rShifts,Audit:rAudit,Users:rUsers,Settings:rSettings};
   (map[tab]||rDash)();
 }
 
@@ -1082,7 +1102,7 @@ function drinkModal(sid){
     <div class="tw"><table><tr><th>الصنف</th><th>كمية</th><th>سعر</th><th>إجمالي</th><th></th></tr>
     ${(s.items||[]).map((i,n)=>`<tr><td>${i.name}</td><td>${i.qty}</td><td>${money(i.price)}</td><td>${money(i.price*i.qty)}</td><td><button class="danger" onclick="remDrink('${sid}',${n})">حذف</button></td></tr>`).join('')}
     </table></div>
-    <br><div class="row"><button style="background:var(--purple-dim);border-color:rgba(124,58,237,0.4);color:#a78bfa" onclick="matchAddModal('${sid}')">⚽ إضافة مباراة</button><button class="gray" onclick="closeM()">إغلاق</button></div>`);
+    <br><button class="gray" onclick="closeM()">إغلاق</button>`);
 }
 async function addDrink(sid){let s=state.sessions.find(x=>x.id==sid),p=state.products.find(x=>x.id==val('dp')),q=+val('dq')||1;if(!s||!p)return;if(st().mode==='secure_cloud'){try{await rpc('ps_add_session_item',{p_business:st().businessId,p_id:id(),p_session_id:sid,p_product_id:p.id,p_qty:q});await loadCloud(true);drinkModal(sid);showNotice('تمت إضافة المنتج وتسجيل الحركة ✓','success');}catch(e){showNotice('تعذر إضافة المنتج: '+e.message,'danger')}return;}s.items.push({id:id(),productId:p.id,name:p.name,price:+p.price,qty:q,addedBy:user.username,addedAt:new Date().toISOString()});audit('SESSION_ITEM_ADD','session',sid,'إضافة '+q+' × '+p.name+' للجلسة',{productId:p.id,qty:q,price:+p.price});save();drinkModal(sid)}
 async function remDrink(sid,n){let s=state.sessions.find(x=>x.id==sid),removed=s?.items?.[n];if(!s||!removed)return;if(st().mode==='secure_cloud'){try{await rpc('ps_remove_session_item',{p_business:st().businessId,p_id:removed.id});await loadCloud(true);drinkModal(sid);showNotice('تم حذف المنتج وتسجيل الحركة ✓','success');}catch(e){showNotice('تعذر حذف المنتج: '+e.message,'danger')}return;}s.items.splice(n,1);audit('SESSION_ITEM_REMOVE','session',sid,'حذف '+removed.name+' من الجلسة',{productId:removed.productId,qty:removed.qty,price:removed.price});save();drinkModal(sid)}
@@ -1424,10 +1444,144 @@ function rReports(){
     </div>`;
 }
 
+
+// ============================================================
+// SHIFT HANDOVER — V6.4.2 Flexible Shift Handover
+// ============================================================
+function actorLabel(){return user?.username||'User'}
+function invActorLabel(i){return invActor(i)||i.creator_label||i.issuedBy||i.user||''}
+function shiftLabelFromRecord(x){return x.closedByLabel||x.closed_by_label||x.cashierLabel||x.actor||''}
+function shiftClosedAt(x){return x.closedAt||x.closed_at||x.date||x.created_at||''}
+function shiftStartFor(label){
+  const rows=(state.shiftClosures||[]).filter(x=>shiftLabelFromRecord(x)===label).sort((a,b)=>new Date(shiftClosedAt(b))-new Date(shiftClosedAt(a)));
+  if(rows[0])return shiftClosedAt(rows[0]);
+  const first=(state.invoices||[]).filter(i=>i.status!=='voided'&&invActorLabel(i)===label).sort((a,b)=>new Date(a.date)-new Date(b.date))[0];
+  return first?first.date:new Date(new Date().setHours(0,0,0,0)).toISOString();
+}
+function shiftSummary(label=actorLabel(),fromIso=null,toIso=null){
+  const from=fromIso||shiftStartFor(label), to=toIso||new Date().toISOString();
+  const invoices=(state.invoices||[]).filter(i=>i.status!=='voided'&&invActorLabel(i)===label&&new Date(i.date)>new Date(from)&&new Date(i.date)<=new Date(to)).sort((a,b)=>Number(a.no||0)-Number(b.no||0));
+  const playTotal=invoices.reduce((a,i)=>a+(+i.playTotal||0),0);
+  const drinkTotal=invoices.reduce((a,i)=>a+(+i.drinkTotal||0),0);
+  const total=invoices.reduce((a,i)=>a+(+i.total||0),0);
+  return {label,from,to,invoices,invoiceCount:invoices.length,firstInvoiceNo:invoices[0]?.no||0,lastInvoiceNo:invoices[invoices.length-1]?.no||0,playTotal,drinkTotal,total};
+}
+function cashierShiftWidget(){
+  if(!user)return '';
+  const s=shiftSummary(actorLabel());
+  const last=[...(state.invoices||[])].filter(i=>invActorLabel(i)===actorLabel()).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+  return `<div class="shift-hero">
+    <div class="page-header" style="margin-bottom:0">
+      <div><div class="section-title">🔁 وردية ${esc(actorLabel())}</div><div class="page-subtitle">من آخر تسليم حتى الآن</div></div>
+      <button class="ok" onclick="show('Shifts')">تسليم / مراجعة الوردية</button>
+    </div>
+    <div class="cashier-mini-grid">
+      <div class="cashier-mini-card"><span class="mini-label">فواتير الوردية</span><b>${s.invoiceCount}</b></div>
+      <div class="cashier-mini-card"><span class="mini-label">إجمالي الوردية</span><b>${money(s.total)} ج</b></div>
+      <div class="cashier-mini-card"><span class="mini-label">اللعب والمباريات</span><b>${money(s.playTotal)} ج</b></div>
+      <div class="cashier-mini-card"><span class="mini-label">المشروبات</span><b>${money(s.drinkTotal)} ج</b></div>
+    </div>
+    ${last?`<div class="last-invoice-card"><span>آخر فاتورة: <strong>${invNo(last)}</strong> — ${money(last.total)} ج</span><button onclick="showInv('${last.id}')">عرض / طباعة آخر فاتورة</button></div>`:''}
+    <div class="shift-actions">
+      <button class="ok" onclick="shiftCloseModal()">✅ تسليم وردية</button>
+      <button onclick="printCurrentShift()">🖨 طباعة ملخص</button>
+      <button class="cashier-update-btn" onclick="cashierSafeUpdate()">🔄 تحديث التطبيق</button>
+    </div>
+  </div>`;
+}
+function cashierSafeUpdate(){ clearAppCacheAndReload(); }
+function rShifts(){
+  if(!user){vShifts.innerHTML='';return;}
+  const label=actorLabel(), s=shiftSummary(label);
+  const rows=(state.shiftClosures||[]).slice().sort((a,b)=>new Date(shiftClosedAt(b))-new Date(shiftClosedAt(a)));
+  const visible=(owner()||manager())?rows:rows.filter(x=>shiftLabelFromRecord(x)===label);
+  vShifts.innerHTML=`<div class="page-header"><div><div class="section-title">🔁 تسليم الورديات</div><div class="page-subtitle muted">تسليم مرن بأي توقيت — بدون حذف أو تصفير الفواتير</div></div><button class="ok" onclick="shiftCloseModal()">✅ تسليم وردية الآن</button></div>
+  <div class="shift-hero">
+    <div class="big" style="font-size:16px">الوردية الحالية: ${esc(label)}</div>
+    <div class="shift-period"><span>من: ${shortTime(s.from)}</span><span>إلى الآن: ${shortTime(s.to)}</span><span>أول فاتورة: ${s.firstInvoiceNo?('#'+s.firstInvoiceNo):'—'}</span><span>آخر فاتورة: ${s.lastInvoiceNo?('#'+s.lastInvoiceNo):'—'}</span></div>
+    <div class="cashier-mini-grid">
+      <div class="cashier-mini-card"><span class="mini-label">عدد الفواتير</span><b>${s.invoiceCount}</b></div>
+      <div class="cashier-mini-card"><span class="mini-label">اللعب والمباريات</span><b>${money(s.playTotal)} ج</b></div>
+      <div class="cashier-mini-card"><span class="mini-label">المشروبات</span><b>${money(s.drinkTotal)} ج</b></div>
+      <div class="cashier-mini-card"><span class="mini-label">الإجمالي</span><b>${money(s.total)} ج</b></div>
+    </div>
+    <div class="shift-actions"><button class="ok" onclick="shiftCloseModal()">✅ تسليم وتصفير عداد الوردية</button><button onclick="printCurrentShift()">🖨 طباعة ملخص الوردية</button><button class="gray" onclick="cashierSafeUpdate()">🔄 تحديث التطبيق</button></div>
+  </div>
+  <div class="section-title mb">سجل التسليمات</div>
+  <div class="tw"><table><tr><th>وقت التسليم</th><th>الكاشير</th><th>الفترة</th><th>فواتير</th><th>الإجمالي</th><th>الفعلي</th><th>فرق</th><th></th></tr>${visible.length?visible.map(x=>`<tr><td>${shortTime(shiftClosedAt(x))}</td><td><strong>${esc(shiftLabelFromRecord(x))}</strong></td><td>${shortTime(x.openedAt||x.opened_at)} → ${shortTime(shiftClosedAt(x))}</td><td>${x.invoiceCount||x.invoice_count||0}</td><td><strong>${money(x.total||0)} ج</strong></td><td>${money(x.actualCash||x.actual_cash||0)} ج</td><td>${money(x.difference||0)} ج</td><td><button onclick="showShiftClosure('${x.id}')">عرض</button></td></tr>`).join(''):'<tr><td colspan="8" class="muted">لا توجد تسليمات وردية بعد.</td></tr>'}</table></div>`;
+}
+function shiftCloseModal(){
+  const s=shiftSummary(actorLabel());
+  modal(`<div class="big">✅ تسليم وردية الآن</div>
+  <div class="settings-note">سيتم حفظ نقطة تسليم جديدة. الفواتير لا تُحذف ولا تتغير؛ فقط الوردية القادمة ستبدأ من بعد هذه اللحظة.</div>
+  <div class="invoice-row"><span>الفترة</span><strong>${shortTime(s.from)} → الآن</strong></div>
+  <div class="invoice-row"><span>عدد الفواتير</span><strong>${s.invoiceCount}</strong></div>
+  <div class="invoice-row"><span>إجمالي النظام</span><strong>${money(s.total)} ج</strong></div>
+  <div class="grid g2 mt">
+    <div class="col"><label>المبلغ الفعلي المسلم</label><input id="shiftActual" type="number" value="${money(s.total)}"></div>
+    <div class="col"><label>ملاحظات التسليم</label><input id="shiftNotes" placeholder="اختياري"></div>
+  </div>
+  <br><div class="row"><button class="ok" onclick="closeShiftNow()">✅ تأكيد التسليم</button><button onclick="printCurrentShift()">🖨 طباعة قبل الحفظ</button><button class="gray" onclick="closeM()">إلغاء</button></div>`);
+}
+async function closeShiftNow(){
+  const s=shiftSummary(actorLabel());
+  const actual=+val('shiftActual')||0;
+  const closure={id:id(),openedAt:s.from,closedAt:new Date().toISOString(),closedBy:user.cloud?user.id:(user.id||''),closedByLabel:s.label,invoiceCount:s.invoiceCount,firstInvoiceNo:s.firstInvoiceNo,lastInvoiceNo:s.lastInvoiceNo,playTotal:+s.playTotal.toFixed(2),drinkTotal:+s.drinkTotal.toFixed(2),total:+s.total.toFixed(2),actualCash:+actual.toFixed(2),difference:+(actual-s.total).toFixed(2),notes:val('shiftNotes')||'',createdAt:new Date().toISOString(),cloudSynced:false};
+  if(st().mode==='secure_cloud'){
+    try{
+      const row={business_id:st().businessId,id:closure.id,opened_at:closure.openedAt,closed_at:closure.closedAt,closed_by:st().session?.userId||user.id,closed_by_label:closure.closedByLabel,invoice_count:closure.invoiceCount,first_invoice_no:closure.firstInvoiceNo||null,last_invoice_no:closure.lastInvoiceNo||null,play_total:closure.playTotal,drink_total:closure.drinkTotal,total:closure.total,actual_cash:closure.actualCash,difference:closure.difference,notes:closure.notes,created_at:closure.createdAt};
+      await req('POST','ps_shift_closures',[row],'return=minimal');
+      try{await rpc('ps_record_client_event',{p_business:st().businessId,p_action:'SHIFT_CLOSE',p_summary:'تسليم وردية '+closure.closedByLabel+' بإجمالي '+money(closure.total)+' ج'});}catch(_e){}
+      closeM();await loadCloud(true);showNotice('تم تسليم الوردية وبدء عداد وردية جديد ✓','success');show('Shifts');
+    }catch(e){showNotice('تعذر تسليم الوردية: '+e.message,'danger')}
+    return;
+  }
+  if(!Array.isArray(state.shiftClosures))state.shiftClosures=[];
+  state.shiftClosures.unshift(closure);
+  audit('SHIFT_CLOSE','shift',closure.id,'تسليم وردية '+s.label+' بإجمالي '+money(s.total)+' ج',{invoiceCount:s.invoiceCount,firstInvoiceNo:s.firstInvoiceNo,lastInvoiceNo:s.lastInvoiceNo,total:s.total,actualCash:actual,difference:actual-s.total});
+  closeM();save();showNotice('تم تسليم الوردية وبدء عداد وردية جديد ✓','success');show('Shifts');
+}
+function showShiftClosure(cid){
+  const x=(state.shiftClosures||[]).find(a=>a.id===cid);if(!x)return;
+  modal(`<div class="big">🔁 تقرير تسليم وردية</div>
+  <div class="invoice-row"><span>الكاشير</span><strong>${esc(shiftLabelFromRecord(x))}</strong></div>
+  <div class="invoice-row"><span>من</span><span>${shortTime(x.openedAt||x.opened_at)}</span></div>
+  <div class="invoice-row"><span>إلى</span><span>${shortTime(shiftClosedAt(x))}</span></div>
+  <div class="invoice-row"><span>عدد الفواتير</span><strong>${x.invoiceCount||x.invoice_count||0}</strong></div>
+  <div class="invoice-row"><span>أول / آخر فاتورة</span><span>${x.firstInvoiceNo?('#'+x.firstInvoiceNo):'—'} / ${x.lastInvoiceNo?('#'+x.lastInvoiceNo):'—'}</span></div>
+  <div class="invoice-row"><span>اللعب والمباريات</span><span>${money(x.playTotal||x.play_total||0)} ج</span></div>
+  <div class="invoice-row"><span>المشروبات</span><span>${money(x.drinkTotal||x.drink_total||0)} ج</span></div>
+  <div class="invoice-total-row"><span>إجمالي النظام</span><span>${money(x.total||0)} ج</span></div>
+  <div class="invoice-row"><span>الفعلي المسلم</span><strong>${money(x.actualCash||x.actual_cash||0)} ج</strong></div>
+  <div class="invoice-row"><span>الفرق</span><strong>${money(x.difference||0)} ج</strong></div>
+  ${x.notes?`<div class="invoice-row"><span>ملاحظات</span><span>${esc(x.notes)}</span></div>`:''}
+  <br><div class="row"><button onclick="printShiftClosure('${x.id}')">🖨 طباعة / PDF</button><button class="gray" onclick="closeM()">إغلاق</button></div>`);
+}
+function printCurrentShift(){printShiftReport(shiftSummary(actorLabel()),null)}
+function printShiftClosure(cid){const x=(state.shiftClosures||[]).find(a=>a.id===cid);if(!x)return;printShiftReport(null,x)}
+function printShiftReport(summary,closure){
+  const isClosed=!!closure;
+  const label=isClosed?shiftLabelFromRecord(closure):summary.label;
+  const from=isClosed?(closure.openedAt||closure.opened_at):summary.from;
+  const to=isClosed?shiftClosedAt(closure):summary.to;
+  const count=isClosed?(closure.invoiceCount||closure.invoice_count||0):summary.invoiceCount;
+  const first=isClosed?(closure.firstInvoiceNo||closure.first_invoice_no):summary.firstInvoiceNo;
+  const last=isClosed?(closure.lastInvoiceNo||closure.last_invoice_no):summary.lastInvoiceNo;
+  const play=isClosed?(closure.playTotal||closure.play_total||0):summary.playTotal;
+  const drinks=isClosed?(closure.drinkTotal||closure.drink_total||0):summary.drinkTotal;
+  const total=isClosed?(closure.total||0):summary.total;
+  const actual=isClosed?(closure.actualCash||closure.actual_cash||0):total;
+  const diff=isClosed?(closure.difference||0):0;
+  const w=window.open('','_blank','width=520,height=760');
+  if(!w){showNotice('اسمح بفتح النوافذ المنبثقة للطباعة.','warn');return;}
+  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تسليم وردية</title><style>*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;padding:18px;color:#111}.sheet{max-width:760px;margin:0 auto;border:1px solid #ddd;padding:22px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:14px}h1{font-size:22px;margin:0}.row{display:flex;justify-content:space-between;border-bottom:1px dashed #bbb;padding:9px 0;font-size:14px}.total{display:flex;justify-content:space-between;border-top:2px solid #111;margin-top:10px;padding-top:12px;font-size:20px;font-weight:700}.actions{text-align:center;margin:18px 0}button{padding:10px 20px;border:0;background:#155eef;color:white;border-radius:6px;font-weight:700}@page{size:auto;margin:12mm}@media print{.actions{display:none}.sheet{border:none;padding:0}}</style></head><body><div class="sheet"><div class="head"><h1>تقرير تسليم وردية</h1><div>${esc((state.profile&&state.profile.businessName)||'PS Cafe Manager')}</div></div><div class="row"><span>الكاشير</span><strong>${esc(label)}</strong></div><div class="row"><span>من</span><strong>${shortTime(from)}</strong></div><div class="row"><span>إلى</span><strong>${shortTime(to)}</strong></div><div class="row"><span>عدد الفواتير</span><strong>${count}</strong></div><div class="row"><span>أول / آخر فاتورة</span><strong>${first?('#'+first):'—'} / ${last?('#'+last):'—'}</strong></div><div class="row"><span>إيراد اللعب</span><strong>${money(play)} ج</strong></div><div class="row"><span>إيراد المشروبات</span><strong>${money(drinks)} ج</strong></div><div class="total"><span>الإجمالي النظامي</span><span>${money(total)} ج</span></div><div class="row"><span>المبلغ الفعلي المسلم</span><strong>${money(actual)} ج</strong></div><div class="row"><span>فرق عجز/زيادة</span><strong>${money(diff)} ج</strong></div>${isClosed&&closure.notes?`<div class="row"><span>ملاحظات</span><strong>${esc(closure.notes)}</strong></div>`:''}</div><div class="actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
+  w.document.close();w.focus();
+}
+
 // ============================================================
 // AUDIT LOG — OWNER ONLY
 // ============================================================
-function actionLabel(a){return ({LOGIN:'تسجيل دخول',LOGOUT:'تسجيل خروج',SESSION_START:'بدء جلسة',MATCH_START:'بدء مباراة',SESSION_ITEM_ADD:'إضافة مشروب للجلسة',SESSION_ITEM_REMOVE:'حذف مشروب من الجلسة',INVOICE_CREATE:'إنشاء فاتورة',INVOICE_CORRECT:'تصحيح فاتورة',INVOICE_VOID:'إلغاء فاتورة',SESSION_END:'إنهاء جلسة',PRODUCT_ADD:'إضافة منتج',PRODUCT_EDIT:'تعديل بيانات منتج',PRODUCT_STOCK_EDIT:'تعديل مخزون',PRODUCT_PRICE_EDIT:'تعديل سعر منتج',DEVICE_ADD:'إضافة جهاز',DEVICE_EDIT:'تعديل جهاز',DEVICE_DELETE:'حذف جهاز',DEVICE_PRICE_EDIT:'تعديل أسعار جهاز',EXPENSE_ADD:'إضافة مصروف',EXPENSE_DELETE:'حذف مصروف',EXPENSE_VOID:'إلغاء مصروف',USER_ADD:'إضافة مستخدم',USER_EDIT:'تعديل مستخدم',PROFILE_EDIT:'تعديل بيانات النشاط'}[a]||a)}
+function actionLabel(a){return ({LOGIN:'تسجيل دخول',LOGOUT:'تسجيل خروج',SESSION_START:'بدء جلسة',MATCH_START:'بدء مباراة',SESSION_ITEM_ADD:'إضافة مشروب للجلسة',SESSION_ITEM_REMOVE:'حذف مشروب من الجلسة',INVOICE_CREATE:'إنشاء فاتورة',INVOICE_CORRECT:'تصحيح فاتورة',INVOICE_VOID:'إلغاء فاتورة',SESSION_END:'إنهاء جلسة',PRODUCT_ADD:'إضافة منتج',PRODUCT_EDIT:'تعديل بيانات منتج',PRODUCT_STOCK_EDIT:'تعديل مخزون',PRODUCT_PRICE_EDIT:'تعديل سعر منتج',DEVICE_ADD:'إضافة جهاز',DEVICE_EDIT:'تعديل جهاز',DEVICE_DELETE:'حذف جهاز',DEVICE_PRICE_EDIT:'تعديل أسعار جهاز',EXPENSE_ADD:'إضافة مصروف',EXPENSE_DELETE:'حذف مصروف',EXPENSE_VOID:'إلغاء مصروف',USER_ADD:'إضافة مستخدم',USER_EDIT:'تعديل مستخدم',PROFILE_EDIT:'تعديل بيانات النشاط',SHIFT_CLOSE:'تسليم وردية'}[a]||a)}
 function rAudit(){
   if(!owner()){vAudit.innerHTML='';return;}
   const logs=(state.auditLogs||[]).slice(0,300);
@@ -1566,7 +1720,7 @@ function showPolicy(kind){
     privacy:`<div class="big">🔐 سياسة الخصوصية والبيانات</div><div class="policy-text"><h3>ملكية البيانات</h3><p>بيانات التشغيل والفواتير تخص صاحب النشاط. عند تفعيل الربط السحابي تُحفظ بيانات التشغيل في مشروع Supabase الذي يملكه صاحب النشاط.</p><h3>البيانات المحلية</h3><p>قد يحتفظ الجهاز بنسخة محلية مؤقتة لاستمرار العمل عند انقطاع الإنترنت. يجب حماية الجهاز وعدم تركه لغير المصرح لهم.</p><h3>الحماية التقنية</h3><p>يستخدم التطبيق مفتاحًا عامًا مع تسجيل دخول وسياسات وصول RLS، ولا يجب إدخال أي مفتاح سري داخل التطبيق.</p></div>`,
     support:`<div class="big">🏪 الملكية والدعم</div><div class="policy-text"><h3>مالك النظام والبيانات</h3><p>صاحب النشاط هو المسؤول عن ملكية قاعدة البيانات وإدارة المستخدمين والنسخ الاحتياطية.</p><h3>الدعم</h3><p>للدعم أو تعديل الصلاحيات يرجى الرجوع إلى صاحب النشاط أو الإدارة الداخلية.</p></div>`
   };
-  modal((pages[kind]||pages.terms)+`<br><div class="row"><button style="background:var(--purple-dim);border-color:rgba(124,58,237,0.4);color:#a78bfa" onclick="matchAddModal('${sid}')">⚽ إضافة مباراة</button><button class="gray" onclick="closeM()">إغلاق</button></div>`);
+  modal((pages[kind]||pages.terms)+`<br><button class="gray" onclick="closeM()">إغلاق</button>`);
 }
 
 function exportBackup(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='ps_backup_'+today()+'.json';a.click()}
@@ -1667,7 +1821,7 @@ async function testSupabaseConnection(){
 async function loadCloud(force=false){
   if(dirty&&!force||queue().length&&!force)return false;
   const b=st().businessId;
-  const [profiles,devices,products,sessions,sitems,invoices,iitems,expenses,logs,members]=await Promise.all([
+  const [profiles,devices,products,sessions,sitems,invoices,iitems,expenses,shiftClosures,logs,members]=await Promise.all([
     req('GET',`ps_business_profiles?business_id=eq.${encodeURIComponent(b)}&select=*`),
     req('GET',`ps_devices?business_id=eq.${encodeURIComponent(b)}&select=*`),
     req('GET',`ps_products?business_id=eq.${encodeURIComponent(b)}&select=*`),
@@ -1676,6 +1830,7 @@ async function loadCloud(force=false){
     req('GET',`ps_invoices?business_id=eq.${encodeURIComponent(b)}&select=*&order=created_at.desc`),
     req('GET',`ps_invoice_items?business_id=eq.${encodeURIComponent(b)}&select=*`),
     (owner()||manager())?req('GET',`ps_expenses?business_id=eq.${encodeURIComponent(b)}&select=*`):Promise.resolve([]),
+    req('GET',`ps_shift_closures?business_id=eq.${encodeURIComponent(b)}&select=*&order=closed_at.desc`),
     owner()?req('GET',`ps_audit_logs?business_id=eq.${encodeURIComponent(b)}&select=*&order=occurred_at.desc&limit=300`):Promise.resolve([]),
     owner()?req('GET',`ps_members?business_id=eq.${encodeURIComponent(b)}&select=*`):Promise.resolve([])
   ]);
@@ -1685,7 +1840,7 @@ async function loadCloud(force=false){
   const mappedSessions=(sessions||[]).map(s=>({id:s.id,deviceId:s.device_id,customer:s.customer,mode:s.play_mode,sessionType:s.session_type,matchMins:s.match_minutes,matchPrice:+s.match_price||null,items:itemMap[s.id]||[],start:s.started_at,status:s.status,end:s.ended_at,startedBy:s.started_by_label||'غير محدد',startedById:s.started_by,endedBy:s.ended_by_label||'',endedById:s.ended_by}));
   const openIds=new Set(mappedSessions.filter(s=>s.status==='open').map(s=>s.deviceId));
   const localUsers=state.users||[];
-  state={users:localUsers,profile:{businessName:state.profile?.businessName||'PS Cafe',ownerName:profiles[0]?.owner_name||'',phone:profiles[0]?.phone||'',address:profiles[0]?.address||''},devices:(devices||[]).map(d=>({id:d.id,name:d.name,status:d.maintenance?'maintenance':(openIds.has(d.id)?'busy':'available'),singleRate:+d.single_rate,multiRate:+d.multi_rate,matchPrices:d.match_prices||[],cloudUpdatedAt:d.updated_at})),products:(products||[]).map(p=>({id:p.id,name:p.name,price:+p.price,stock:+p.stock,active:p.active,cloudUpdatedAt:p.updated_at})),sessions:mappedSessions,invoices:(invoices||[]).map(i=>({id:i.id,sessionId:i.session_id,no:+i.invoice_no,date:i.created_at,deviceId:i.device_id,deviceName:i.device_name,customer:i.customer,mode:i.play_mode,sessionType:i.session_type,matchMins:i.match_minutes,start:i.started_at,end:i.ended_at,minutes:i.minutes,playTotal:+i.play_total,drinkTotal:+i.drink_total,total:+i.total,items:invItemMap[i.id]||[],payment:i.payment_method,status:i.status||'completed',correctionSeq:+i.correction_seq||0,correctedAt:i.corrected_at,correctedByLabel:i.corrected_by_label,correctionReason:i.correction_reason,issuedBy:i.creator_label})),expenses:(expenses||[]).map(e=>({id:e.id,date:e.expense_date,type:e.expense_type,amount:+e.amount,note:e.note,createdBy:e.creator_label,createdAt:e.created_at,voidedAt:e.voided_at,voidReason:e.void_reason||''})),auditLogs:(logs||[]).map(l=>({id:l.id,at:l.occurred_at,action:l.action,entityType:l.entity_type,entityId:l.entity_id,summary:l.summary,details:l.details,actor:l.actor_label,actorRole:l.actor_role,cloudSynced:true})),nextInvoice:Math.max(1,...(invoices||[]).map(i=>+i.invoice_no+1)),updatedAt:new Date().toISOString()};
+  state={users:localUsers,profile:{businessName:state.profile?.businessName||'PS Cafe',ownerName:profiles[0]?.owner_name||'',phone:profiles[0]?.phone||'',address:profiles[0]?.address||''},devices:(devices||[]).map(d=>({id:d.id,name:d.name,status:d.maintenance?'maintenance':(openIds.has(d.id)?'busy':'available'),singleRate:+d.single_rate,multiRate:+d.multi_rate,matchPrices:d.match_prices||[],cloudUpdatedAt:d.updated_at})),products:(products||[]).map(p=>({id:p.id,name:p.name,price:+p.price,stock:+p.stock,active:p.active,cloudUpdatedAt:p.updated_at})),sessions:mappedSessions,invoices:(invoices||[]).map(i=>({id:i.id,sessionId:i.session_id,no:+i.invoice_no,date:i.created_at,deviceId:i.device_id,deviceName:i.device_name,customer:i.customer,mode:i.play_mode,sessionType:i.session_type,matchMins:i.match_minutes,start:i.started_at,end:i.ended_at,minutes:i.minutes,playTotal:+i.play_total,drinkTotal:+i.drink_total,total:+i.total,items:invItemMap[i.id]||[],payment:i.payment_method,status:i.status||'completed',correctionSeq:+i.correction_seq||0,correctedAt:i.corrected_at,correctedByLabel:i.corrected_by_label,correctionReason:i.correction_reason,issuedBy:i.creator_label})),expenses:(expenses||[]).map(e=>({id:e.id,date:e.expense_date,type:e.expense_type,amount:+e.amount,note:e.note,createdBy:e.creator_label,createdAt:e.created_at,voidedAt:e.voided_at,voidReason:e.void_reason||''})),shiftClosures:(shiftClosures||[]).map(x=>({id:x.id,openedAt:x.opened_at,closedAt:x.closed_at,closedBy:x.closed_by,closedByLabel:x.closed_by_label,invoiceCount:+x.invoice_count||0,firstInvoiceNo:+x.first_invoice_no||0,lastInvoiceNo:+x.last_invoice_no||0,playTotal:+x.play_total||0,drinkTotal:+x.drink_total||0,total:+x.total||0,actualCash:+x.actual_cash||0,difference:+x.difference||0,notes:x.notes||'',createdAt:x.created_at,cloudSynced:true})),auditLogs:(logs||[]).map(l=>({id:l.id,at:l.occurred_at,action:l.action,entityType:l.entity_type,entityId:l.entity_id,summary:l.summary,details:l.details,actor:l.actor_label,actorRole:l.actor_role,cloudSynced:true})),nextInvoice:Math.max(1,...(invoices||[]).map(i=>+i.invoice_no+1)),updatedAt:new Date().toISOString()};
   localStorage.setItem(K,JSON.stringify(state));setSyncMeta({verified:true,syncing:false,lastError:''});dirty=false;setQueue([]);render();return true;
 }
 async function connectOwnerCloud(){
@@ -1729,7 +1884,7 @@ load();setup();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.1-ec11')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
