@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.1 EC5</title>
+<title>PS Cafe Manager • V6.4.1 EC6</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.1">
+<link rel="manifest" href="manifest.json?v=6.4.1-EC6">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.1">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.1">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.1">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.1">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.1">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.1-EC6">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.1-EC6">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.1-EC6">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.1-EC6">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.1-EC6">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -43,6 +43,8 @@
 }
 html{scroll-behavior:smooth}
 body{margin:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg-base);color:var(--text-primary);line-height:1.6;min-height:100vh;font-size:15px;}
+html,body{max-width:100%;overflow-x:hidden;}
+#app{min-height:100vh;overflow-x:hidden;}
 .hidden{display:none!important}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:var(--bg-surface)}
@@ -261,6 +263,43 @@ td button{padding:6px 12px;font-size:12px}
 .match-choice small{display:block;color:var(--text-muted);margin-top:3px;}
 
 
+
+/* EC6 — UI stability & usability fixes */
+.top,.tabs{width:100%;max-width:100vw;}
+.tabs{position:sticky;top:73px;z-index:45;scroll-behavior:smooth;}
+.tw{max-width:100%;}
+.tw table{table-layout:auto;}
+.action-menu{position:fixed!important;top:auto;left:auto;right:auto;min-width:190px;max-width:calc(100vw - 24px);z-index:2005;}
+.action-menu button{text-align:right;justify-content:flex-start;}
+.invoice-actions{gap:10px;align-items:center;justify-content:flex-start;}
+.modal{overflow:auto;align-items:flex-start;}
+.modal .box{margin:auto 0;max-width:min(760px,calc(100vw - 24px));}
+#vDashboard .grid.g5{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));}
+button{min-height:40px;}
+.device-card{min-width:0;}
+.device-card .device-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));}
+.invoice-row{gap:16px;align-items:center;}
+.invoice-row span:last-child,.invoice-row strong:last-child{text-align:left;direction:rtl;}
+@media(max-width:720px){
+  .top{position:sticky;top:0;display:grid;grid-template-columns:1fr;align-items:stretch;padding:10px 12px;}
+  .top-brand{justify-content:flex-end;}
+  .top-actions{display:grid;grid-template-columns:1fr 1fr;}
+  .tabs{top:118px;padding:8px 10px;gap:6px;}
+  .tab{padding:9px 12px;min-width:max-content;}
+  .content{padding:12px 10px;}
+  .dash-header,.page-header{align-items:stretch;}
+  .dash-header .row,.page-header .row{width:100%;}
+  .dash-header button,.page-header button{flex:1;}
+  table{min-width:720px;}
+  th,td{padding:10px 12px;font-size:13px;}
+  .modal{padding:10px;}
+  .modal .box{padding:18px 14px;width:100%;max-height:calc(100dvh - 20px);}
+  .invoice-actions{position:sticky;bottom:-14px;display:grid;grid-template-columns:1fr;}
+  .invoice-actions>button,.invoice-actions .action-wrap,.invoice-actions .action-wrap>button{width:100%;}
+  .compact-line{grid-template-columns:1fr 84px 72px;}
+  .compact-line .badge,.compact-line button{grid-column:1/-1;}
+}
+
 /* Match pricing table in modal */
 .match-price-table{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-top:10px;}
 .match-price-row{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);gap:10px;cursor:pointer;transition:background var(--transition);}
@@ -424,7 +463,7 @@ td button{padding:6px 12px;font-size:12px}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.1-EC5';
+const APP_VERSION='V6.4.1-EC6';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -486,8 +525,25 @@ function sessionMatchCount(s){return (s&&s.sessionType==='match'?1:0)+matchItems
 function invoiceMatchCount(i){return (i&&i.sessionType==='match'?1:0)+matchItemsCount((i&&i.items)||[]);}
 function matchCountLabel(n){return n===1?'مباراة واحدة':(n===2?'مباراتان':(n>=3&&n<=10?n+' مباريات':n+' مباراة'));}
 function closeActionMenus(){document.querySelectorAll('.action-wrap.open').forEach(el=>el.classList.remove('open'))}
-function toggleActionMenu(id,ev){if(ev)ev.stopPropagation();document.querySelectorAll('.action-wrap').forEach(el=>{if(el.id!==id)el.classList.remove('open')});document.getElementById(id)?.classList.toggle('open')}
+function positionActionMenu(el){
+  const menu=el?.querySelector('.action-menu');if(!menu)return;
+  const r=el.getBoundingClientRect();
+  const w=Math.max(190,menu.offsetWidth||190), h=menu.offsetHeight||150;
+  let left=Math.min(Math.max(12,r.right-w),window.innerWidth-w-12);
+  let top=r.bottom+6;
+  if(top+h>window.innerHeight-12) top=Math.max(12,r.top-h-6);
+  menu.style.left=left+'px';menu.style.top=top+'px';
+}
+function toggleActionMenu(id,ev){
+  if(ev)ev.stopPropagation();
+  document.querySelectorAll('.action-wrap').forEach(el=>{if(el.id!==id)el.classList.remove('open')});
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.toggle('open');
+  if(el.classList.contains('open'))requestAnimationFrame(()=>positionActionMenu(el));
+}
 document.addEventListener('click',e=>{if(!e.target.closest('.action-wrap'))closeActionMenus();});
+window.addEventListener('resize',closeActionMenus);
+window.addEventListener('scroll',closeActionMenus,true);
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function owner(){return user&&['Owner','Admin'].includes(user.role)}
 function manager(){return user&&user.role==='Manager'}
@@ -581,11 +637,32 @@ function render(){
   else{sl.textContent='غير مفعّل';sl.className='sync unknown';}
   ['Dashboard','Products','Devices','Invoices','Expenses','Reports','Audit','Users','Settings'].forEach(x=>document.getElementById('v'+x).classList.add('hidden'));
   document.getElementById('v'+tab).classList.remove('hidden');
-  rDash();rProducts();rDevices();rInvoices();rExpenses();rReports();rAudit();rUsers();rSettings();
+  renderActiveTab();
+}
+function renderActiveTab(){
+  const map={Dashboard:rDash,Products:rProducts,Devices:rDevices,Invoices:rInvoices,Expenses:rExpenses,Reports:rReports,Audit:rAudit,Users:rUsers,Settings:rSettings};
+  (map[tab]||rDash)();
 }
 
-// 1-second tick
-setInterval(()=>{if(user&&tab==='Dashboard'){rDash();checkAlerts();}},1000)
+// 1-second tick — EC6: preserve scroll and do not rebuild the screen while a modal/input is active
+function isModalOpen(){return !document.getElementById('modal')?.classList.contains('hidden')}
+function preserveViewport(fn){
+  const x=window.scrollX,y=window.scrollY,active=document.activeElement;
+  fn();
+  requestAnimationFrame(()=>{
+    try{window.scrollTo(x,y)}catch(e){}
+    if(active&&['INPUT','TEXTAREA','SELECT'].includes(active.tagName)){try{active.focus({preventScroll:true})}catch(e){}}
+  });
+}
+function dashboardTick(){
+  if(!user||tab!=='Dashboard')return;
+  checkAlerts();
+  if(isModalOpen())return;
+  const active=document.activeElement;
+  if(active&&['INPUT','TEXTAREA','SELECT'].includes(active.tagName))return;
+  preserveViewport(()=>rDash());
+}
+setInterval(dashboardTick,1000)
 
 // ============================================================
 // SESSION HELPERS
@@ -969,13 +1046,13 @@ async function endSession(sid){
   let s=state.sessions.find(x=>x.id==sid),d=state.devices.find(x=>x.id==s.deviceId),c=cost(s);
   if(st().mode==='secure_cloud'){
     const iid=id();
-    try{await rpc('ps_complete_session',{p_business:st().businessId,p_session_id:sid,p_invoice_id:iid,p_payment_method:'Cash'});await loadCloud(true);const inv=state.invoices.find(x=>x.sessionId===sid);showNotice('تم إنهاء الجلسة وإنشاء الفاتورة من قاعدة البيانات ✓','success');if(inv)showInv(inv.id);}
+    try{await rpc('ps_complete_session',{p_business:st().businessId,p_session_id:sid,p_invoice_id:iid,p_payment_method:'Cash'});await loadCloud(true);const inv=state.invoices.find(x=>x.sessionId===sid);showNotice('تم إنهاء الجلسة وإنشاء الفاتورة من قاعدة البيانات ✓','success');if(inv)setTimeout(()=>showInv(inv.id),80);else showNotice('تم الإنشاء، افتح تبويب الفواتير لعرض آخر فاتورة.','warn');}
     catch(e){showNotice('تعذر إنهاء الجلسة: '+e.message,'danger');}
     return;
   }
   const now=new Date().toISOString();
   let inv={id:id(),sessionId:s.id,no:state.nextInvoice++,date:now,status:'completed',deviceId:d.id,deviceName:d.name,customer:s.customer,mode:s.mode,sessionType:s.sessionType||'open',matchMins:s.matchMins||null,start:s.start,end:now,minutes:c.m,playTotal:+c.play.toFixed(2),drinkTotal:+c.dr.toFixed(2),total:+c.total.toFixed(2),items:s.items,payment:'Cash',user:user.username,issuedBy:user.username,startedBy:s.startedBy||s.user||''};
-  s.status='closed';s.end=inv.end;s.endedBy=user.username;s.invoiceId=inv.id;d.status='available';state.invoices.push(inv);audit('INVOICE_CREATE','invoice',inv.id,'إنشاء فاتورة #'+inv.no+' بواسطة '+user.username,{invoiceNo:inv.no,deviceId:d.id,total:inv.total,sessionId:s.id});delete alertedSessions[sid];save();showInv(inv.id);
+  s.status='closed';s.end=inv.end;s.endedBy=user.username;s.invoiceId=inv.id;d.status='available';state.invoices.push(inv);audit('INVOICE_CREATE','invoice',inv.id,'إنشاء فاتورة #'+inv.no+' بواسطة '+user.username,{invoiceNo:inv.no,deviceId:d.id,total:inv.total,sessionId:s.id});delete alertedSessions[sid];save();setTimeout(()=>showInv(inv.id),80);
 }
 function showInv(iid){
   let i=state.invoices.find(x=>x.id==iid);if(!i)return;

@@ -1,11 +1,11 @@
 // ============================================================
 // PS Cafe Manager — Service Worker
-// Version: 6.4.1 EC5 MATCH ADD-ONS
+// Version: 6.4.1 EC6 MATCH ADD-ONS
 // ============================================================
-const CACHE_NAME = 'ps-cafe-v6.4.1-ec5';
-const OFFLINE_URL = './index.html?v=6.4.1-ec5';
+const CACHE_NAME = 'ps-cafe-v6.4.1-ec6';
+const OFFLINE_URL = './index.html?v=6.4.1-ec6';
 const PRECACHE_ASSETS = [
-  './', './index.html?v=6.4.1-ec5', './manifest.json?v=6.4.1-ec5',
+  './', './index.html?v=6.4.1-ec6', './manifest.json?v=6.4.1-ec6',
   './icon-72.png','./icon-96.png','./icon-128.png','./icon-144.png',
   './icon-152.png','./icon-192.png','./icon-384.png','./icon-512.png','./brand-avatar.png'
 ];
