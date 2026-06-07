@@ -1,11 +1,11 @@
 // ============================================================
 // PS Cafe Manager — Service Worker
-// Version: 6.4.1 EC9 DAILY USE POLISH
+// Version: 6.4.1 EC10 INVOICE AUTO PREVIEW
 // ============================================================
-const CACHE_NAME = 'ps-cafe-v6.4.1-ec9';
-const OFFLINE_URL = './index.html?v=6.4.1-ec9';
+const CACHE_NAME = 'ps-cafe-v6.4.1-ec10';
+const OFFLINE_URL = './index.html?v=6.4.1-ec10';
 const PRECACHE_ASSETS = [
-  './', './index.html?v=6.4.1-ec9', './manifest.json?v=6.4.1-ec9',
+  './', './index.html?v=6.4.1-ec10', './manifest.json?v=6.4.1-ec10',
   './icon-72.png','./icon-96.png','./icon-128.png','./icon-144.png',
   './icon-152.png','./icon-192.png','./icon-384.png','./icon-512.png','./brand-avatar.png'
 ];
