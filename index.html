@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.1-EC6">
+<link rel="manifest" href="manifest.json?v=6.4.1-EC7">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.1-EC6">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.1-EC6">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.1-EC6">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.1-EC6">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.1-EC6">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.1-EC7">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.1-EC7">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.1-EC7">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.1-EC7">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.1-EC7">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -401,6 +401,12 @@ button{min-height:40px;}
 @keyframes pulseDanger{0%,100%{box-shadow:0 4px 24px rgba(0,0,0,0.5),0 0 0 0 rgba(255,61,87,0)}50%{box-shadow:0 4px 24px rgba(0,0,0,0.5),0 0 0 8px rgba(255,61,87,0.15)}}
 .device-card.warn-5,.device-card.overtime{animation:pulseDanger 0.8s ease-in-out infinite}
 [dir=rtl] th,[dir=rtl] td{text-align:right}
+
+/* EC7 — stable action sheets and no auto-scroll redraw */
+.invoice-actions{display:flex!important;flex-wrap:wrap!important;gap:10px!important;align-items:center!important}
+.invoice-actions>button{flex:1 1 150px!important;min-width:140px!important}
+@media(max-width:650px){.invoice-actions{display:grid!important;grid-template-columns:1fr!important}.invoice-actions>button{width:100%!important}}
+
 </style>
 </head>
 <body>
@@ -463,7 +469,7 @@ button{min-height:40px;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.1-EC6';
+const APP_VERSION='V6.4.1-EC7';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -543,7 +549,17 @@ function toggleActionMenu(id,ev){
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.action-wrap'))closeActionMenus();});
 window.addEventListener('resize',closeActionMenus);
-window.addEventListener('scroll',closeActionMenus,true);
+// EC7: do not close action UI on scroll; mobile scroll events can fire immediately after tap.
+function invoiceActionsModal(iid){
+  const i=state.invoices.find(x=>x.id===iid);if(!i)return;
+  modal(`<div class="big">⋯ إجراءات الفاتورة ${invNo(i)}</div>
+    <div class="col">
+      <button class="ok" onclick="showInv('${iid}')">🧾 عرض الفاتورة</button>
+      <button onclick="printInvoice('${iid}')">🖨 طباعة / PDF</button>
+      ${canCorrectInvoice()&&i.status!=='voided'?`<button class="btn-warn" onclick="invoiceCorrectionModal('${iid}')">✏ تصحيح موثّق</button><button class="danger" onclick="voidInvoiceModal('${iid}')">⛔ إلغاء موثّق</button>`:''}
+      <button class="gray" onclick="closeM()">إغلاق</button>
+    </div>`);
+}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function owner(){return user&&['Owner','Admin'].includes(user.role)}
 function manager(){return user&&user.role==='Manager'}
@@ -644,23 +660,12 @@ function renderActiveTab(){
   (map[tab]||rDash)();
 }
 
-// 1-second tick — EC6: preserve scroll and do not rebuild the screen while a modal/input is active
+// 1-second tick — EC7: no full-screen redraws.
+// The business uses fixed match prices, so a live timer is less important than a stable mobile screen.
 function isModalOpen(){return !document.getElementById('modal')?.classList.contains('hidden')}
-function preserveViewport(fn){
-  const x=window.scrollX,y=window.scrollY,active=document.activeElement;
-  fn();
-  requestAnimationFrame(()=>{
-    try{window.scrollTo(x,y)}catch(e){}
-    if(active&&['INPUT','TEXTAREA','SELECT'].includes(active.tagName)){try{active.focus({preventScroll:true})}catch(e){}}
-  });
-}
 function dashboardTick(){
-  if(!user||tab!=='Dashboard')return;
+  if(!user)return;
   checkAlerts();
-  if(isModalOpen())return;
-  const active=document.activeElement;
-  if(active&&['INPUT','TEXTAREA','SELECT'].includes(active.tagName))return;
-  preserveViewport(()=>rDash());
 }
 setInterval(dashboardTick,1000)
 
@@ -1071,7 +1076,7 @@ function showInv(iid){
     <div class="invoice-row"><span>المشروبات فقط</span><span>${money(i.drinkTotal)} ج</span></div>
     <div class="invoice-total-row ${i.status==='voided'?'voided-total':''}"><span>الإجمالي</span><span>${money(i.total)} ج</span></div>
     ${i.status==='voided'?'<div class="invoice-void-note">⛔ فاتورة ملغاة — محفوظة للمراجعة ولا تُحتسب ضمن الإيراد أو الربح.</div>':''}
-    <div class="row invoice-actions"><div class="action-wrap" id="invoiceActionMenu"><button onclick="toggleActionMenu('invoiceActionMenu',event)">⋯ إجراءات الفاتورة</button><div class="action-menu"><button onclick="printInvoice('${i.id}')">🖨 طباعة / PDF</button>${canCorrectInvoice()&&i.status!=='voided'?`<button class="btn-warn" onclick="invoiceCorrectionModal('${i.id}')">✏ تصحيح موثّق</button><button class="danger" onclick="voidInvoiceModal('${i.id}')">إلغاء موثّق</button>`:''}</div></div><button class="gray" onclick="closeM()">إغلاق</button></div>`);
+    <div class="row invoice-actions"><button onclick="printInvoice('${i.id}')">🖨 طباعة / PDF</button>${canCorrectInvoice()&&i.status!=='voided'?`<button class="btn-warn" onclick="invoiceCorrectionModal('${i.id}')">✏ تصحيح موثّق</button><button class="danger" onclick="voidInvoiceModal('${i.id}')">إلغاء موثّق</button>`:''}<button class="gray" onclick="closeM()">إغلاق</button></div>`);
 }
 function invoiceCorrectionModal(iid){
   if(!canCorrectInvoice())return showNotice('ليست لديك صلاحية تصحيح الفواتير.','danger');
@@ -1119,7 +1124,13 @@ function printInvoice(iid){
   if(!w){showNotice('اسمح بفتح النوافذ المنبثقة للطباعة.', 'warn');return;}
   w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>فاتورة ${invNo(i)}</title><style>
   *{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;color:#111;margin:0;padding:18px;background:#fff}.receipt{max-width:760px;margin:0 auto;border:1px solid #ddd;padding:22px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:15px}.head h1{font-size:23px;margin:0 0 4px}.muted{color:#555;font-size:12px}.row{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed #bbb;font-size:14px}.total{font-size:20px;font-weight:700;border-top:2px solid #111;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between}.total.voided{color:#666;text-decoration:line-through}.void-note{margin-top:12px;padding:10px;border:1px solid #a00;color:#a00;font-weight:700}table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}th,td{padding:7px 5px;border-bottom:1px solid #ddd;text-align:right}th{background:#f5f5f5}.print-actions{text-align:center;margin:18px 0}button{padding:10px 20px;border:0;background:#155eef;color:#fff;border-radius:6px;font-weight:700}@page{size:auto;margin:12mm}@media print{.print-actions{display:none}.receipt{border:none;padding:0;max-width:none}}
-  </style></head><body><div class="receipt"><div class="head"><h1>PS Cafe Manager</h1><div class="muted">فاتورة ${invNo(i)} • ${esc(fmt(i.date))}</div></div>
+  
+/* EC7 — stable action sheets and no auto-scroll redraw */
+.invoice-actions{display:flex!important;flex-wrap:wrap!important;gap:10px!important;align-items:center!important}
+.invoice-actions>button{flex:1 1 150px!important;min-width:140px!important}
+@media(max-width:650px){.invoice-actions{display:grid!important;grid-template-columns:1fr!important}.invoice-actions>button{width:100%!important}}
+
+</style></head><body><div class="receipt"><div class="head"><h1>PS Cafe Manager</h1><div class="muted">فاتورة ${invNo(i)} • ${esc(fmt(i.date))}</div></div>
   <div class="row"><span>حالة الفاتورة</span><strong>${invoiceStatusText(i)}</strong></div><div class="row"><span>أنشأ الفاتورة</span><strong>${esc(invActor(i))}</strong></div><div class="row"><span>بدأ الجلسة</span><strong>${esc(i.startedBy||'غير محدد — بيانات سابقة')}</strong></div>${invoiceRevisionRows(i,'row')}<div class="row"><span>الجهاز</span><strong>${esc(i.deviceName)} — ${esc(i.mode)}</strong></div>${i.sessionType==='match'?`<div class="row"><span>نوع الجلسة</span><strong>مباراة ${i.matchMins} دقيقة</strong></div>`:''}<div class="row"><span>عدد المباريات</span><strong>${matchCountLabel(invoiceMatchCount(i))}</strong></div><div class="row"><span>العميل</span><strong>${esc(i.customer||'—')}</strong></div><div class="row"><span>المدة الفعلية</span><strong>${i.minutes} دقيقة</strong></div><div class="row"><span>رسوم اللعب والمباريات</span><strong>${money(i.playTotal)} ج</strong></div>${itemRows?`<table><thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>${itemRows}</tbody></table>`:''}<div class="row"><span>المشروبات فقط</span><strong>${money(i.drinkTotal)} ج</strong></div><div class="total ${i.status==='voided'?'voided':''}"><span>الإجمالي</span><span>${money(i.total)} ج</span></div>${i.status==='voided'?'<div class="void-note">فاتورة ملغاة — لا تُحتسب ضمن الإيراد أو الربح.</div>':''}</div><div class="print-actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
   w.document.close();w.focus();
 }
@@ -1235,7 +1246,7 @@ function rInvoices(){vInvoices.innerHTML=`
     <td><strong>${invoiceMatchCount(i)>0?matchCountLabel(invoiceMatchCount(i)):'—'}</strong></td>
     <td><strong style="color:${i.status==='voided'?'var(--text-muted)':'var(--green)'};${i.status==='voided'?'text-decoration:line-through;':''}">${money(i.total)} ج</strong></td>
     <td>${i.status==='voided'?'<span class="badge b-bad">ملغاة</span>':(i.correctionSeq?'<span class="badge b-busy">مصححة</span>':'<span class="badge b-ok">مكتملة</span>')}</td>
-    <td><div class="action-wrap" id="invMenu_${i.id}"><button class="gray" onclick="toggleActionMenu('invMenu_${i.id}',event)">⋯ إجراءات</button><div class="action-menu"><button onclick="showInv('${i.id}')">🧾 عرض</button><button onclick="printInvoice('${i.id}')">🖨 طباعة / PDF</button>${canCorrectInvoice()&&i.status!=='voided'?`<button class="btn-warn" onclick="invoiceCorrectionModal('${i.id}')">✏ تصحيح</button><button class="danger" onclick="voidInvoiceModal('${i.id}')">⛔ إلغاء</button>`:''}</div></div></td>
+    <td><button class="gray" onclick="invoiceActionsModal('${i.id}')">⋯ إجراءات</button></td>
   </tr>`).join('')}
   </table></div>`
 }
