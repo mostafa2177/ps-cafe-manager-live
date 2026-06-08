@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC2</title>
+<title>PS Cafe Manager • V6.4.2-RC3</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc2">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc3">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc2">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc2">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc2">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc2">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc2">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc3">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc3">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc3">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc3">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc3">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -373,6 +373,39 @@ button{min-height:40px;}
 @media(max-width:850px){.shift-actions{grid-template-columns:1fr}.cashier-mini-grid{grid-template-columns:repeat(2,1fr)}.last-invoice-card{align-items:stretch}.last-invoice-card button{width:100%}}
 @media(max-width:480px){.cashier-mini-grid{grid-template-columns:1fr}.shift-period span{width:100%;text-align:center}}
 
+/* RC3 — Cashier daily polish and compact buttons */
+.btn-sm,.top-actions .top-btn{min-height:32px!important;padding:6px 10px!important;font-size:12px!important;border-radius:999px!important;gap:4px!important;box-shadow:none!important;}
+.top-actions{gap:6px!important;flex-wrap:nowrap!important;justify-content:flex-start!important;}
+.top-actions button{flex:0 0 auto!important;min-width:auto!important;}
+@media(max-width:720px){
+  .top{grid-template-columns:1fr!important;gap:8px!important;}
+  .top-actions{display:flex!important;justify-content:flex-end!important;align-items:center!important;}
+  .top-actions .top-btn{width:auto!important;min-width:72px!important;padding:6px 9px!important;}
+  .tabs{top:105px!important;}
+}
+button.gray:not(.top-btn),button.btn-blue,button.btn-warn{min-height:36px;}
+.modal .box{border-radius:22px;}
+.modal .big{margin-bottom:12px;padding-bottom:10px;}
+.match-choice-grid{grid-template-columns:repeat(auto-fit,minmax(125px,1fr))!important;gap:7px!important;}
+.match-choice{padding:8px 10px!important;border-radius:11px!important;}
+.match-choice strong{font-size:16px!important;}
+.match-choice small{margin-top:1px!important;font-size:11px!important;}
+.type-toggle button{min-height:34px!important;padding:7px 8px!important;font-size:12px!important;}
+.dash-header{padding:14px 16px!important;margin-bottom:12px!important;}
+.ops-summary{gap:8px!important;margin-bottom:12px!important;}
+.ops-card{min-height:64px!important;padding:10px 12px!important;}
+.ops-card .num{font-size:22px!important;}
+.ops-card .action-hint{font-size:10px!important;margin-top:3px;}
+.quick-actions button,.start-options button{min-height:38px!important;padding:8px 10px!important;font-size:12px!important;}
+.shift-hero{padding:14px!important;margin-bottom:12px!important;}
+.cashier-mini-card{min-height:62px!important;padding:9px!important;}
+.cashier-mini-card b{font-size:18px!important;}
+.last-invoice-card button,.shift-actions button{min-height:36px!important;padding:8px 10px!important;font-size:12px!important;}
+@media(max-width:650px){
+  .ops-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .dash-header .row{grid-template-columns:1fr 1fr!important;}
+}
+
 /* PRINT */
 
 /* EC11 — Daily use polish + invoice auto preview + non-blocking compact toasts */
@@ -499,8 +532,8 @@ button{min-height:40px;}
       </div>
     </div>
     <div class="top-actions no-print">
-      <button class="gray" onclick="manualSync()">🔄 مزامنة</button>
-      <button class="danger" onclick="logout()">خروج</button>
+      <button class="gray top-btn" onclick="manualSync()" title="مزامنة">↻ مزامنة</button>
+      <button class="danger top-btn" onclick="logout()" title="خروج">خروج</button>
     </div>
   </div>
   <div id="tabs" class="tabs no-print"></div>
@@ -525,7 +558,7 @@ button{min-height:40px;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC2';
+const APP_VERSION='V6.4.2-RC3';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -920,13 +953,14 @@ function rDash(){
         <button style="background:var(--purple-dim);border-color:rgba(124,58,237,0.4);color:#a78bfa" onclick="matchModal()">⚽ مباراة</button>
       </div>
     </div>
+    ${cashier()?cashierShiftWidget():''}
     <div class="ops-summary">
       <div class="ops-card tap-card green" onclick="openOpsCard('revenue')"><div class="label">إيراد اليوم</div><div class="num">${money(todayRevenue)} ج</div><div class="action-hint">فتح الفواتير ←</div></div>
       <div class="ops-card tap-card orange" onclick="openOpsCard('open')"><div class="label">جلسات مفتوحة</div><div class="num">${openSessions.length}</div><div class="action-hint">عرض الأجهزة ←</div></div>
       <div class="ops-card tap-card" onclick="openOpsCard('available')"><div class="label">أجهزة متاحة</div><div class="num">${available}</div><div class="action-hint">تشغيل سريع ←</div></div>
       <div class="ops-card tap-card purple" onclick="openOpsCard('matches')"><div class="label">مباريات اليوم</div><div class="num">${matchesToday}</div><div class="action-hint">فتح الفواتير ←</div></div>
     </div>
-    <div class="grid g5">${state.devices.map(d=>{
+    <div class="grid g5">${[...state.devices].sort((a,b)=>(sess(b.id)?1:0)-(sess(a.id)?1:0)).map(d=>{
       let s=sess(d.id),c=s?cost(s):null;
       let stBase=d.status==='available'?'available':d.status==='busy'?'busy':'maintenance';
       let alertCls=s?getDeviceAlertClass(s):'';
@@ -978,14 +1012,14 @@ function rDash(){
 // ============================================================
 function startModal(did=''){
   let av=state.devices.filter(d=>d.status==='available'&&!sess(d.id));
-  modal(`<div class="big">▶ جلسة مفتوحة جديدة</div>
+  modal(`<div class="big">▶ جلسة مفتوحة</div>
     <div class="grid g2">
       <div class="col"><label>الجهاز</label><select id="sd">${av.map(d=>`<option value="${d.id}" ${d.id==did?'selected':''}>${d.name}</option>`)}</select></div>
       <div class="col"><label>اسم العميل</label><input id="sc" placeholder="اختياري"></div>
       <div class="col" style="grid-column:1/-1"><label>نوع التشغيل</label>
         <div class="type-toggle">
-          <button type="button" class="sel" id="tm_single" onclick="toggleMode('single')">Single Player</button>
-          <button type="button" id="tm_multi" onclick="toggleMode('multi')">Multi Player</button>
+          <button type="button" class="sel" id="tm_single" onclick="toggleMode('single')">Single</button>
+          <button type="button" id="tm_multi" onclick="toggleMode('multi')">Multi</button>
         </div>
         <input type="hidden" id="sm" value="single">
       </div>
@@ -1021,26 +1055,26 @@ function matchModal(did=''){
   if(!av.length&&!did){return alert('لا توجد أجهزة متاحة');}
   // Build device selector
   let devSel=`<select id="msd" onchange="updateMatchPrices()">${av.map(d=>`<option value="${d.id}" ${d.id==did?'selected':''}>${d.name}</option>`)}</select>`;
-  modal(`<div class="big">⚽ بدء جلسة مباراة بسعر ثابت</div>
+  modal(`<div class="big">⚽ مباراة</div>
     <div class="grid g2">
       <div class="col"><label>الجهاز</label>${devSel}</div>
       <div class="col"><label>اسم العميل</label><input id="msc" placeholder="اختياري"></div>
       <div class="col" style="grid-column:1/-1"><label>نوع التشغيل</label>
         <div class="type-toggle">
-          <button type="button" class="sel" id="mm_single" onclick="toggleMatchMode('single')">Single Player</button>
-          <button type="button" id="mm_multi" onclick="toggleMatchMode('multi')">Multi Player</button>
+          <button type="button" class="sel" id="mm_single" onclick="toggleMatchMode('single')">Single</button>
+          <button type="button" id="mm_multi" onclick="toggleMatchMode('multi')">Multi</button>
         </div>
         <input type="hidden" id="msm" value="single">
       </div>
       <div class="col" style="grid-column:1/-1">
-        <label>اختر المباراة / السعر</label>
+        <label>المدة والسعر</label>
         <div id="match-prices-list"></div>
         <input type="hidden" id="sel-match-mins" value="">
         <input type="hidden" id="sel-match-price" value="">
       </div>
     </div>
     <br><div class="row">
-      <button class="ok" onclick="startMatch()">⚽ بدء الجلسة</button>
+      <button class="ok" onclick="startMatch()">⚽ بدء المباراة</button>
       <button class="gray" onclick="closeM()">إلغاء</button>
     </div>`);
   updateMatchPrices();
@@ -1160,7 +1194,7 @@ function showInv(iid){
     <div class="invoice-row"><span>المشروبات فقط</span><span>${money(i.drinkTotal)} ج</span></div>
     <div class="invoice-total-row ${i.status==='voided'?'voided-total':''}"><span>الإجمالي</span><span>${money(i.total)} ج</span></div>
     ${i.status==='voided'?'<div class="invoice-void-note">⛔ فاتورة ملغاة — محفوظة للمراجعة ولا تُحتسب ضمن الإيراد أو الربح.</div>':''}
-    <div class="row invoice-actions"><button onclick="printInvoice('${i.id}')">🖨 طباعة / PDF</button>${canCorrectInvoice()&&i.status!=='voided'?`<button class="btn-warn" onclick="invoiceCorrectionModal('${i.id}')">✏ تصحيح موثّق</button><button class="danger" onclick="voidInvoiceModal('${i.id}')">إلغاء موثّق</button>`:''}<button class="gray" onclick="closeM()">إغلاق</button></div>`);
+    <div class="row invoice-actions"><button onclick="printInvoice('${i.id}')">🖨 طباعة</button><button class="gray" onclick="closeM();show('Dashboard')">الرئيسية</button>${canCorrectInvoice()&&i.status!=='voided'?`<button class="btn-warn" onclick="invoiceCorrectionModal('${i.id}')">✏ تصحيح</button><button class="danger" onclick="voidInvoiceModal('${i.id}')">إلغاء</button>`:''}<button class="gray" onclick="closeM()">إغلاق</button></div>`);
 }
 function invoiceCorrectionModal(iid){
   if(!canCorrectInvoice())return showNotice('ليست لديك صلاحية تصحيح الفواتير.','danger');
@@ -1494,7 +1528,7 @@ function cashierShiftWidget(){
   return `<div class="shift-hero">
     <div class="page-header" style="margin-bottom:0">
       <div><div class="section-title">🔁 وردية ${esc(actorLabel())}</div><div class="page-subtitle">من آخر تسليم حتى الآن</div></div>
-      <button class="ok" onclick="show('Shifts')">تسليم / مراجعة الوردية</button>
+      <button class="ok" onclick="show('Shifts')">الوردية</button>
     </div>
     <div class="cashier-mini-grid">
       <div class="cashier-mini-card"><span class="mini-label">فواتير الوردية</span><b>${s.invoiceCount}</b></div>
@@ -1505,8 +1539,8 @@ function cashierShiftWidget(){
     ${last?`<div class="last-invoice-card"><span>آخر فاتورة: <strong>${invNo(last)}</strong> — ${money(last.total)} ج</span><button onclick="showInv('${last.id}')">عرض / طباعة آخر فاتورة</button></div>`:''}
     <div class="shift-actions">
       <button class="ok" onclick="shiftCloseModal()">✅ تسليم وردية</button>
-      <button onclick="printCurrentShift()">🖨 طباعة ملخص</button>
-      <button class="cashier-update-btn" onclick="cashierSafeUpdate()">🔄 تحديث التطبيق</button>
+      <button onclick="printCurrentShift()">🖨 طباعة</button>
+      <button class="cashier-update-btn" onclick="cashierSafeUpdate()">↻ تحديث</button>
     </div>
   </div>`;
 }
@@ -1526,7 +1560,7 @@ function rShifts(){
       <div class="cashier-mini-card"><span class="mini-label">المشروبات</span><b>${money(s.drinkTotal)} ج</b></div>
       <div class="cashier-mini-card"><span class="mini-label">الإجمالي</span><b>${money(s.total)} ج</b></div>
     </div>
-    <div class="shift-actions"><button class="ok" onclick="shiftCloseModal()">✅ تسليم وتصفير عداد الوردية</button><button onclick="printCurrentShift()">🖨 طباعة ملخص الوردية</button><button class="gray" onclick="cashierSafeUpdate()">🔄 تحديث التطبيق</button></div>
+    <div class="shift-actions"><button class="ok" onclick="shiftCloseModal()">✅ تسليم وتصفير عداد الوردية</button><button onclick="printCurrentShift()">🖨 طباعة الوردية</button><button class="gray" onclick="cashierSafeUpdate()">↻ تحديث</button></div>
   </div>
   <div class="section-title mb">سجل التسليمات</div>
   <div class="tw"><table><tr><th>وقت التسليم</th><th>الكاشير</th><th>الفترة</th><th>فواتير</th><th>الإجمالي</th><th>الفعلي</th><th>فرق</th><th></th></tr>${visible.length?visible.map(x=>`<tr><td>${shortTime(shiftClosedAt(x))}</td><td><strong>${esc(shiftLabelFromRecord(x))}</strong></td><td>${shortTime(x.openedAt||x.opened_at)} → ${shortTime(shiftClosedAt(x))}</td><td>${x.invoiceCount||x.invoice_count||0}</td><td><strong>${money(x.total||0)} ج</strong></td><td>${money(x.actualCash||x.actual_cash||0)} ج</td><td>${money(x.difference||0)} ج</td><td><button onclick="showShiftClosure('${x.id}')">عرض</button></td></tr>`).join(''):'<tr><td colspan="8" class="muted">لا توجد تسليمات وردية بعد.</td></tr>'}</table></div>`;
@@ -1893,7 +1927,7 @@ load();setup();setupMobileBackNavigation();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc2')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc3')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
