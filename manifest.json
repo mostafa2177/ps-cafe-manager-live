@@ -1,8 +1,8 @@
 {
   "name": "PS Cafe Manager",
   "short_name": "PS Cafe",
-  "description": "إدارة تشغيل كافيه بلايستيشن وفواتيره — إصدار V6.4.2-RC7.6",
-  "start_url": "./index.html?source=pwa&v=6.4.2-rc7-6",
+  "description": "إدارة تشغيل كافيه بلايستيشن وفواتيره — إصدار V6.4.2-RC7.7",
+  "start_url": "./index.html?source=pwa&v=6.4.2-rc7-7",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
