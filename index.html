@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC3</title>
+<title>PS Cafe Manager • V6.4.2-RC4</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc3">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc4">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc3">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc3">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc3">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc3">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc3">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc4">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc4">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc4">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc4">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc4">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -406,6 +406,16 @@ button.gray:not(.top-btn),button.btn-blue,button.btn-warn{min-height:36px;}
   .dash-header .row{grid-template-columns:1fr 1fr!important;}
 }
 
+
+/* RC4 — Receipt & Daily Review Polish (UI only) */
+.daily-review-strip{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;align-items:center;justify-content:flex-start;background:rgba(41,121,255,.045);border:1px solid rgba(41,121,255,.12);border-radius:14px;padding:9px 10px}
+.daily-review-strip button{min-height:34px!important;padding:7px 11px!important;font-size:12px!important;border-radius:999px!important;box-shadow:none!important;transform:none!important}
+.daily-review-strip .daily-total{margin-inline-start:auto;font-size:12px;color:var(--text-secondary)}
+.daily-review-strip .daily-total strong{color:var(--green);font-size:14px}
+.receipt-action-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.receipt-action-row button{min-height:36px!important;padding:8px 10px!important;font-size:12px!important}
+@media(max-width:650px){.daily-review-strip{display:grid;grid-template-columns:1fr 1fr}.daily-review-strip .daily-total{grid-column:1/-1;margin:0;text-align:center}.receipt-action-row{grid-template-columns:1fr}}
+
 /* PRINT */
 
 /* EC11 — Daily use polish + invoice auto preview + non-blocking compact toasts */
@@ -558,7 +568,7 @@ button.gray:not(.top-btn),button.btn-blue,button.btn-warn{min-height:36px;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC3';
+const APP_VERSION='V6.4.2-RC4';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -945,6 +955,7 @@ function rDash(){
   const busy=state.devices.filter(d=>sess(d.id)).length;
   const available=state.devices.filter(d=>d.status==='available'&&!sess(d.id)).length;
   const matchesToday=todayInvoices.reduce((a,i)=>a+invoiceMatchCount(i),0);
+  const lastInvoice=[...state.invoices].filter(i=>i.status!=='voided').sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
   vDashboard.innerHTML=`
     <div class="dash-header">
       <div><div class="dash-header-title">🎮 لوحة التشغيل</div></div>
@@ -959,6 +970,12 @@ function rDash(){
       <div class="ops-card tap-card orange" onclick="openOpsCard('open')"><div class="label">جلسات مفتوحة</div><div class="num">${openSessions.length}</div><div class="action-hint">عرض الأجهزة ←</div></div>
       <div class="ops-card tap-card" onclick="openOpsCard('available')"><div class="label">أجهزة متاحة</div><div class="num">${available}</div><div class="action-hint">تشغيل سريع ←</div></div>
       <div class="ops-card tap-card purple" onclick="openOpsCard('matches')"><div class="label">مباريات اليوم</div><div class="num">${matchesToday}</div><div class="action-hint">فتح الفواتير ←</div></div>
+    </div>
+    <div class="daily-review-strip">
+      <button class="gray" onclick="printDailyReview()">🖨 تقرير اليوم</button>
+      ${lastInvoice?`<button onclick="showInv('${lastInvoice.id}')">🧾 آخر فاتورة</button>`:''}
+      <button class="gray" onclick="show('Shifts')">🔁 الورديات</button>
+      <div class="daily-total">اليوم: <strong>${money(todayRevenue)} ج</strong></div>
     </div>
     <div class="grid g5">${[...state.devices].sort((a,b)=>(sess(b.id)?1:0)-(sess(a.id)?1:0)).map(d=>{
       let s=sess(d.id),c=s?cost(s):null;
@@ -1237,19 +1254,21 @@ async function confirmVoidInvoice(iid){
 
 function printInvoice(iid){
   const i=state.invoices.find(x=>x.id===iid); if(!i)return;
-  const itemRows=(i.items||[]).map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.price*x.qty)}</td></tr>`).join('');
+  const business=esc((state.profile&&state.profile.businessName)||'PS Cafe Manager');
+  const phone=esc((state.profile&&state.profile.phone)||'');
+  const address=esc((state.profile&&state.profile.address)||'');
+  const matchRows=(i.items||[]).filter(isMatchLine).map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.price*x.qty)}</td></tr>`).join('');
+  const drinkRows=(i.items||[]).filter(x=>!isMatchLine(x)).map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.price*x.qty)}</td></tr>`).join('');
   const w=window.open('','_blank','width=460,height=760');
   if(!w){showNotice('اسمح بفتح النوافذ المنبثقة للطباعة.', 'warn');return;}
   w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>فاتورة ${invNo(i)}</title><style>
-  *{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;color:#111;margin:0;padding:18px;background:#fff}.receipt{max-width:760px;margin:0 auto;border:1px solid #ddd;padding:22px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:15px}.head h1{font-size:23px;margin:0 0 4px}.muted{color:#555;font-size:12px}.row{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed #bbb;font-size:14px}.total{font-size:20px;font-weight:700;border-top:2px solid #111;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between}.total.voided{color:#666;text-decoration:line-through}.void-note{margin-top:12px;padding:10px;border:1px solid #a00;color:#a00;font-weight:700}table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}th,td{padding:7px 5px;border-bottom:1px solid #ddd;text-align:right}th{background:#f5f5f5}.print-actions{text-align:center;margin:18px 0}button{padding:10px 20px;border:0;background:#155eef;color:#fff;border-radius:6px;font-weight:700}@page{size:auto;margin:12mm}@media print{.print-actions{display:none}.receipt{border:none;padding:0;max-width:none}}
-  
-/* EC8 — stable action sheets and no auto-scroll redraw */
-.invoice-actions{display:flex!important;flex-wrap:wrap!important;gap:10px!important;align-items:center!important}
-.invoice-actions>button{flex:1 1 150px!important;min-width:140px!important}
-@media(max-width:650px){.invoice-actions{display:grid!important;grid-template-columns:1fr!important}.invoice-actions>button{width:100%!important}}
-
-</style></head><body><div class="receipt"><div class="head"><h1>PS Cafe Manager</h1><div class="muted">فاتورة ${invNo(i)} • ${esc(fmt(i.date))}</div></div>
-  <div class="row"><span>حالة الفاتورة</span><strong>${invoiceStatusText(i)}</strong></div><div class="row"><span>أنشأ الفاتورة</span><strong>${esc(invActor(i))}</strong></div><div class="row"><span>بدأ الجلسة</span><strong>${esc(i.startedBy||'غير محدد — بيانات سابقة')}</strong></div>${invoiceRevisionRows(i,'row')}<div class="row"><span>الجهاز</span><strong>${esc(i.deviceName)} — ${esc(i.mode)}</strong></div>${i.sessionType==='match'?`<div class="row"><span>نوع الجلسة</span><strong>مباراة ${i.matchMins} دقيقة</strong></div>`:''}<div class="row"><span>عدد المباريات</span><strong>${matchCountLabel(invoiceMatchCount(i))}</strong></div><div class="row"><span>العميل</span><strong>${esc(i.customer||'—')}</strong></div><div class="row"><span>المدة الفعلية</span><strong>${i.minutes} دقيقة</strong></div><div class="row"><span>رسوم اللعب والمباريات</span><strong>${money(i.playTotal)} ج</strong></div>${itemRows?`<table><thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>${itemRows}</tbody></table>`:''}<div class="row"><span>المشروبات فقط</span><strong>${money(i.drinkTotal)} ج</strong></div><div class="total ${i.status==='voided'?'voided':''}"><span>الإجمالي</span><span>${money(i.total)} ج</span></div>${i.status==='voided'?'<div class="void-note">فاتورة ملغاة — لا تُحتسب ضمن الإيراد أو الربح.</div>':''}</div><div class="print-actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
+  *{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;color:#111;margin:0;padding:14px;background:#fff}.receipt{max-width:760px;margin:0 auto;padding:12px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:12px}.brand{font-size:24px;font-weight:900;margin:0}.sub{font-size:12px;color:#555;margin-top:3px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}.box{border:1px solid #ddd;border-radius:8px;padding:8px;font-size:13px}.box span{display:block;color:#555;font-size:11px}.row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed #bbb;font-size:13px}h3{font-size:14px;margin:12px 0 6px;border-bottom:1px solid #111;padding-bottom:4px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:6px 4px;border-bottom:1px solid #ddd;text-align:right}th{background:#f5f5f5}.total{font-size:22px;font-weight:900;border-top:2px solid #111;margin-top:12px;padding-top:10px;display:flex;justify-content:space-between}.total.voided{color:#666;text-decoration:line-through}.void-note{margin-top:10px;padding:8px;border:1px solid #a00;color:#a00;font-weight:700;font-size:12px}.actions{text-align:center;margin:14px 0}button{padding:9px 18px;border:0;background:#155eef;color:#fff;border-radius:6px;font-weight:700}.foot{text-align:center;color:#777;font-size:11px;margin-top:14px;border-top:1px dashed #bbb;padding-top:8px}@page{size:auto;margin:10mm}@media print{.actions{display:none}.receipt{padding:0;max-width:none}}
+  </style></head><body><div class="receipt"><div class="head"><div class="brand">${business}</div>${phone?`<div class="sub">${phone}</div>`:''}${address?`<div class="sub">${address}</div>`:''}</div>
+  <div class="meta"><div class="box"><span>الفاتورة</span><strong>${invNo(i)}</strong></div><div class="box"><span>التاريخ</span><strong>${esc(fmt(i.date))}</strong></div><div class="box"><span>الجهاز</span><strong>${esc(i.deviceName||'—')} — ${esc(i.mode||'')}</strong></div><div class="box"><span>العميل</span><strong>${esc(i.customer||'—')}</strong></div></div>
+  <div class="row"><span>بدأ الجلسة</span><strong>${esc(i.startedBy||'—')}</strong></div><div class="row"><span>أنشأ الفاتورة</span><strong>${esc(invActor(i))}</strong></div><div class="row"><span>المدة</span><strong>${i.minutes||0} دقيقة</strong></div><div class="row"><span>عدد المباريات</span><strong>${matchCountLabel(invoiceMatchCount(i))}</strong></div>
+  <h3>اللعب والمباريات</h3><div class="row"><span>رسوم الجلسة/اللعب</span><strong>${money(i.playTotal - matchItemsTotal(i.items||[]))} ج</strong></div>${matchRows?`<table><thead><tr><th>البند</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>${matchRows}</tbody></table>`:''}
+  ${drinkRows?`<h3>المشروبات</h3><table><thead><tr><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>${drinkRows}</tbody></table>`:''}
+  <div class="row"><span>إجمالي المشروبات</span><strong>${money(i.drinkTotal)} ج</strong></div><div class="total ${i.status==='voided'?'voided':''}"><span>الإجمالي</span><span>${money(i.total)} ج</span></div>${i.status==='voided'?'<div class="void-note">فاتورة ملغاة — لا تُحتسب ضمن الإيراد.</div>':''}<div class="foot">شكرًا لزيارتكم</div></div><div class="actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
   w.document.close();w.focus();
 }
 
@@ -1477,25 +1496,36 @@ async function confirmVoidExpense(idv){
 // ============================================================
 // REPORTS
 // ============================================================
+function todayReviewStats(){
+  const ti=state.invoices.filter(i=>localBusinessDate(i.date)==today()&&i.status!=='voided');
+  const te=state.expenses.filter(e=>e.date==today()&&!e.voidedAt);
+  const play=ti.reduce((a,i)=>a+(+i.playTotal||0),0), drinks=ti.reduce((a,i)=>a+(+i.drinkTotal||0),0), total=ti.reduce((a,i)=>a+(+i.total||0),0);
+  const expenses=te.reduce((a,e)=>a+(+e.amount||0),0), matches=ti.reduce((a,i)=>a+invoiceMatchCount(i),0);
+  return {invoices:ti,expenses:te,play,drinks,total,expensesTotal:expenses,net:total-expenses,matches};
+}
+function printDailyReview(){
+  const s=todayReviewStats(), business=esc((state.profile&&state.profile.businessName)||'PS Cafe Manager');
+  const w=window.open('','_blank','width=620,height=780');
+  if(!w){showNotice('اسمح بفتح النوافذ المنبثقة للطباعة.','warn');return;}
+  const expLine=owner()?`<div class="row"><span>المصروفات</span><strong>${money(s.expensesTotal)} ج</strong></div><div class="total"><span>صافي اليوم</span><span>${money(s.net)} ج</span></div>`:'';
+  const invoiceRows=s.invoices.slice(-30).map(i=>`<tr><td>${invNo(i)}</td><td>${esc(i.deviceName||'—')}</td><td>${money(i.playTotal)}</td><td>${money(i.drinkTotal)}</td><td>${money(i.total)}</td></tr>`).join('');
+  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير اليوم</title><style>*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;padding:16px;color:#111}.sheet{max-width:820px;margin:0 auto}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:12px}h1{margin:0;font-size:23px}.sub{color:#555;font-size:12px;margin-top:4px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.k{border:1px solid #ddd;border-radius:8px;padding:9px}.k span{display:block;color:#555;font-size:11px}.k b{font-size:18px}.row,.total{display:flex;justify-content:space-between;border-bottom:1px dashed #bbb;padding:8px 0}.total{border-top:2px solid #111;border-bottom:0;font-size:20px;font-weight:900;margin-top:8px}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}th,td{border-bottom:1px solid #ddd;padding:6px;text-align:right}th{background:#f5f5f5}.actions{text-align:center;margin:16px 0}button{padding:9px 18px;border:0;background:#155eef;color:#fff;border-radius:6px;font-weight:700}@page{size:auto;margin:10mm}@media print{.actions{display:none}}</style></head><body><div class="sheet"><div class="head"><h1>${business}</h1><div class="sub">تقرير اليوم — ${today()}</div></div><div class="grid"><div class="k"><span>إجمالي اليوم</span><b>${money(s.total)} ج</b></div><div class="k"><span>عدد الفواتير</span><b>${s.invoices.length}</b></div><div class="k"><span>اللعب</span><b>${money(s.play)} ج</b></div><div class="k"><span>المشروبات</span><b>${money(s.drinks)} ج</b></div></div><div class="row"><span>عدد المباريات</span><strong>${s.matches}</strong></div>${expLine}<table><thead><tr><th>الفاتورة</th><th>الجهاز</th><th>اللعب</th><th>مشروبات</th><th>الإجمالي</th></tr></thead><tbody>${invoiceRows||'<tr><td colspan="5">لا توجد فواتير اليوم</td></tr>'}</tbody></table></div><div class="actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
+  w.document.close();w.focus();
+}
 function rReports(){
-  let ti=state.invoices.filter(i=>localBusinessDate(i.date)==today()&&i.status!=='voided'),te=state.expenses.filter(e=>e.date==today()&&!e.voidedAt),
-    play=ti.reduce((a,i)=>a+i.playTotal,0),dr=ti.reduce((a,i)=>a+i.drinkTotal,0),
-    tot=ti.reduce((a,i)=>a+i.total,0),ex=te.reduce((a,e)=>a+e.amount,0),
-    matches=ti.reduce((a,i)=>a+(i.sessionType==='match'?1:0)+matchItemsCount(i.items||[]),0),
-    open=ti.filter(i=>i.sessionType!=='match').length;
+  const s=todayReviewStats();
   vReports.innerHTML=`
     <div class="page-header">
       <div class="page-header-left"><div class="section-title">📊 تقرير اليوم</div><div class="page-subtitle muted">${today()}</div></div>
+      <button class="gray" onclick="printDailyReview()">🖨 طباعة التقرير</button>
     </div>
     <div class="grid g3">
-      <div class="kpi kpi-green"><div class="kpi-label">دخل اللعب والمباريات</div><b>${money(play)} ج</b></div>
-      <div class="kpi"><div class="kpi-label">دخل المشروبات</div><b>${money(dr)} ج</b></div>
-      <div class="kpi kpi-green"><div class="kpi-label">إجمالي الإيراد</div><b>${money(tot)} ج</b></div>
-      <div class="kpi kpi-red"><div class="kpi-label">المصروفات</div><b>${money(ex)} ج</b></div>
-      <div class="kpi kpi-${(tot-ex)>=0?'green':'red'}"><div class="kpi-label">صافي الربح</div><b>${money(tot-ex)} ج</b></div>
-      <div class="kpi kpi-orange"><div class="kpi-label">عدد الجلسات</div><b>${ti.length}</b></div>
-      <div class="kpi"><div class="kpi-label">جلسات مفتوحة</div><b>${open}</b></div>
-      <div class="kpi" style="--kpi-c:var(--purple)"><div class="kpi-label">إجمالي المباريات</div><b style="color:#a78bfa">${matches}</b></div>
+      <div class="kpi kpi-green"><div class="kpi-label">إجمالي الإيراد</div><b>${money(s.total)} ج</b></div>
+      <div class="kpi"><div class="kpi-label">اللعب والمباريات</div><b>${money(s.play)} ج</b></div>
+      <div class="kpi"><div class="kpi-label">المشروبات</div><b>${money(s.drinks)} ج</b></div>
+      <div class="kpi kpi-orange"><div class="kpi-label">عدد الفواتير</div><b>${s.invoices.length}</b></div>
+      <div class="kpi" style="--kpi-c:var(--purple)"><div class="kpi-label">المباريات</div><b style="color:#a78bfa">${s.matches}</b></div>
+      ${owner()?`<div class="kpi kpi-red"><div class="kpi-label">المصروفات</div><b>${money(s.expensesTotal)} ج</b></div><div class="kpi kpi-${s.net>=0?'green':'red'}"><div class="kpi-label">صافي اليوم</div><b>${money(s.net)} ج</b></div>`:''}
     </div>`;
 }
 
@@ -1629,7 +1659,7 @@ function printShiftReport(summary,closure){
   const diff=isClosed?(closure.difference||0):0;
   const w=window.open('','_blank','width=520,height=760');
   if(!w){showNotice('اسمح بفتح النوافذ المنبثقة للطباعة.','warn');return;}
-  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تسليم وردية</title><style>*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;padding:18px;color:#111}.sheet{max-width:760px;margin:0 auto;border:1px solid #ddd;padding:22px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:14px}h1{font-size:22px;margin:0}.row{display:flex;justify-content:space-between;border-bottom:1px dashed #bbb;padding:9px 0;font-size:14px}.total{display:flex;justify-content:space-between;border-top:2px solid #111;margin-top:10px;padding-top:12px;font-size:20px;font-weight:700}.actions{text-align:center;margin:18px 0}button{padding:10px 20px;border:0;background:#155eef;color:white;border-radius:6px;font-weight:700}@page{size:auto;margin:12mm}@media print{.actions{display:none}.sheet{border:none;padding:0}}</style></head><body><div class="sheet"><div class="head"><h1>تقرير تسليم وردية</h1><div>${esc((state.profile&&state.profile.businessName)||'PS Cafe Manager')}</div></div><div class="row"><span>الكاشير</span><strong>${esc(label)}</strong></div><div class="row"><span>من</span><strong>${shortTime(from)}</strong></div><div class="row"><span>إلى</span><strong>${shortTime(to)}</strong></div><div class="row"><span>عدد الفواتير</span><strong>${count}</strong></div><div class="row"><span>أول / آخر فاتورة</span><strong>${first?('#'+first):'—'} / ${last?('#'+last):'—'}</strong></div><div class="row"><span>إيراد اللعب</span><strong>${money(play)} ج</strong></div><div class="row"><span>إيراد المشروبات</span><strong>${money(drinks)} ج</strong></div><div class="total"><span>الإجمالي النظامي</span><span>${money(total)} ج</span></div><div class="row"><span>المبلغ الفعلي المسلم</span><strong>${money(actual)} ج</strong></div><div class="row"><span>فرق عجز/زيادة</span><strong>${money(diff)} ج</strong></div>${isClosed&&closure.notes?`<div class="row"><span>ملاحظات</span><strong>${esc(closure.notes)}</strong></div>`:''}</div><div class="actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
+  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تسليم وردية</title><style>*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;padding:18px;color:#111}.sheet{max-width:760px;margin:0 auto;border:1px solid #ddd;padding:22px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:14px}h1{font-size:22px;margin:0}.row{display:flex;justify-content:space-between;border-bottom:1px dashed #bbb;padding:9px 0;font-size:14px}.total{display:flex;justify-content:space-between;border-top:2px solid #111;margin-top:10px;padding-top:12px;font-size:20px;font-weight:700}.actions{text-align:center;margin:18px 0}button{padding:10px 20px;border:0;background:#155eef;color:white;border-radius:6px;font-weight:700}@page{size:auto;margin:12mm}@media print{.actions{display:none}.sheet{border:none;padding:0}}</style></head><body><div class="sheet"><div class="head"><h1>تقرير تسليم وردية</h1><div>${esc((state.profile&&state.profile.businessName)||'PS Cafe Manager')}</div></div><div class="row"><span>الكاشير</span><strong>${esc(label)}</strong></div><div class="row"><span>من</span><strong>${shortTime(from)}</strong></div><div class="row"><span>إلى</span><strong>${shortTime(to)}</strong></div><div class="row"><span>عدد الفواتير</span><strong>${count}</strong></div><div class="row"><span>أول / آخر فاتورة</span><strong>${first?('#'+first):'—'} / ${last?('#'+last):'—'}</strong></div><div class="row"><span>إيراد اللعب</span><strong>${money(play)} ج</strong></div><div class="row"><span>إيراد المشروبات</span><strong>${money(drinks)} ج</strong></div><div class="total"><span>الإجمالي النظامي</span><span>${money(total)} ج</span></div><div class="row"><span>المبلغ الفعلي المسلم</span><strong>${money(actual)} ج</strong></div><div class="row"><span>فرق عجز/زيادة</span><strong>${money(diff)} ج</strong></div>${isClosed&&closure.notes?`<div class="row"><span>ملاحظات</span><strong>${esc(closure.notes)}</strong></div>`:''}<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px;font-size:13px"><div>توقيع الكاشير: ________________</div><div>توقيع المراجع: ________________</div></div></div><div class="actions"><button onclick="window.print()">طباعة / حفظ PDF</button></div></body></html>`);
   w.document.close();w.focus();
 }
 
@@ -1927,7 +1957,7 @@ load();setup();setupMobileBackNavigation();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc3')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc4')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
