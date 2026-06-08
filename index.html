@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC7.3</title>
+<title>PS Cafe Manager • V6.4.2-RC7.6</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -869,71 +869,168 @@ button,.tab,.device-card,.ops-card,.kpi{touch-action:manipulation;}
 
 
 
-/* RC7.3 — Mobile scroll guard
-   Prevent Android/PWA pull-to-refresh overscroll from reloading the app and returning to login.
-   Frontend only: no cloud, auth, sync, or accounting changes. */
+/* RC7.4 — Mobile scroll restore / safe overscroll
+   Keep native page scrolling on all screens. Prevent page stretch/reload by CSS only.
+   No touchmove preventDefault is used. */
 html,body{
-  overscroll-behavior:none!important;
-  overscroll-behavior-y:none!important;
-  touch-action:pan-y;
+  overscroll-behavior-y:contain!important;
+  overflow-x:hidden!important;
 }
 body{
+  min-height:100dvh;
   -webkit-overflow-scrolling:touch;
 }
-#app,.content,.tabs,.top,.device-card,.ops-card,.modal{
+#app,.content{
+  min-height:100dvh;
+  overscroll-behavior-y:contain!important;
+}
+.tabs,.tw,.modal .box{
+  -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain!important;
 }
-
-
-
-
-/* RC7.3 — Device status color polish
-   Frontend only: clearer states, less text, no cloud/accounting changes. */
-.app-device.open-session.busy{
-  border-color:rgba(56,189,248,.48)!important;
-  background:linear-gradient(145deg,rgba(8,31,48,.98),rgba(7,22,38,.96))!important;
-  box-shadow:0 0 0 1px rgba(56,189,248,.10),0 14px 34px rgba(0,0,0,.26)!important;
+/* RC7.6 — Extreme device status separation
+   Frontend only: state colors, badges and concise wording; no cloud/accounting changes. */
+.app-device{position:relative;}
+.app-device.available{
+  border-color:rgba(34,197,94,.46)!important;
+  background:linear-gradient(145deg,rgba(8,37,27,.97),rgba(8,17,30,.96))!important;
 }
-.app-device.open-session.busy::before{background:linear-gradient(90deg,#38bdf8,#2563eb)!important;}
-.app-device.match-session.busy{
-  border-color:rgba(168,85,247,.50)!important;
-  background:linear-gradient(145deg,rgba(35,20,64,.96),rgba(11,20,36,.96))!important;
-  box-shadow:0 0 0 1px rgba(168,85,247,.12),0 14px 34px rgba(0,0,0,.26)!important;
+.app-device.available::before{background:linear-gradient(90deg,#22c55e,#16a34a)!important;}
+.app-device.open-session.busy:not(.warn-10):not(.warn-5):not(.overtime){
+  border-color:rgba(14,165,233,.72)!important;
+  background:linear-gradient(145deg,rgba(3,33,56,.99),rgba(7,22,38,.97))!important;
+  box-shadow:0 0 0 1px rgba(14,165,233,.20),0 14px 34px rgba(0,0,0,.26)!important;
 }
-.app-device.match-session.busy::before{background:linear-gradient(90deg,#a855f7,#7c3aed)!important;}
-.app-device.available::before{background:linear-gradient(90deg,#14d37a,#0eaa61)!important;}
+.app-device.open-session.busy:not(.warn-10):not(.warn-5):not(.overtime)::before{background:linear-gradient(90deg,#0ea5e9,#0284c7)!important;}
+.app-device.match-session.busy:not(.warn-10):not(.warn-5):not(.overtime){
+  border-color:rgba(109,40,217,.78)!important;
+  background:linear-gradient(145deg,rgba(31,17,71,.99),rgba(10,16,34,.97))!important;
+  box-shadow:0 0 0 1px rgba(109,40,217,.24),0 14px 34px rgba(0,0,0,.26)!important;
+}
+.app-device.match-session.busy:not(.warn-10):not(.warn-5):not(.overtime)::before{background:linear-gradient(90deg,#6d28d9,#4c1d95)!important;}
 .app-device.warn-10{
-  border-color:rgba(251,191,36,.66)!important;
-  background:linear-gradient(145deg,rgba(58,39,8,.94),rgba(15,23,42,.96))!important;
+  border-color:rgba(250,204,21,.92)!important;
+  background:linear-gradient(145deg,rgba(74,51,4,.98),rgba(18,24,39,.97))!important;
+  box-shadow:0 0 0 1px rgba(250,204,21,.26),0 14px 34px rgba(0,0,0,.28)!important;
 }
-.app-device.warn-10::before{background:linear-gradient(90deg,#fbbf24,#f59e0b)!important;}
+.app-device.warn-10::before{background:linear-gradient(90deg,#fde047,#eab308)!important;}
 .app-device.warn-5,.app-device.overtime{
-  border-color:rgba(244,63,94,.74)!important;
-  background:linear-gradient(145deg,rgba(72,11,26,.97),rgba(18,24,39,.96))!important;
+  border-color:rgba(239,68,68,.95)!important;
+  background:linear-gradient(145deg,rgba(84,16,16,.99),rgba(18,24,39,.97))!important;
+  box-shadow:0 0 0 1px rgba(239,68,68,.30),0 14px 34px rgba(0,0,0,.30)!important;
 }
-.app-device.warn-5::before,.app-device.overtime::before{background:linear-gradient(90deg,#fb5470,#be123c)!important;}
-.open-session .b-busy{background:rgba(56,189,248,.14)!important;color:#7dd3fc!important;border-color:rgba(56,189,248,.34)!important;}
-.match-session .b-busy{background:rgba(168,85,247,.16)!important;color:#d8b4fe!important;border-color:rgba(168,85,247,.38)!important;}
-.warn-10 .b-busy{background:rgba(251,191,36,.15)!important;color:#fde68a!important;border-color:rgba(251,191,36,.42)!important;}
-.warn-5 .b-busy,.overtime .b-busy{background:rgba(244,63,94,.16)!important;color:#fecdd3!important;border-color:rgba(244,63,94,.46)!important;}
+.app-device.warn-5::before,.app-device.overtime::before{background:linear-gradient(90deg,#ef4444,#991b1b)!important;}
+.open-session .b-busy{background:rgba(14,165,233,.18)!important;color:#bae6fd!important;border-color:rgba(14,165,233,.50)!important;}
+.match-session .b-busy{background:rgba(109,40,217,.22)!important;color:#ddd6fe!important;border-color:rgba(109,40,217,.56)!important;}
+.warn-10 .b-busy{background:rgba(250,204,21,.20)!important;color:#fef08a!important;border-color:rgba(250,204,21,.64)!important;}
+.warn-5 .b-busy,.overtime .b-busy{background:rgba(239,68,68,.20)!important;color:#fecaca!important;border-color:rgba(239,68,68,.68)!important;}
 .open-session .open-timer strong{color:#7dd3fc!important;}
-.open-session .current-total strong{color:#58f0a8!important;}
-.match-session .match-fixed strong{color:#d8b4fe!important;}
-.match-session .current-total strong{color:#f0abfc!important;}
-.compact-line .mini-chip{background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.075)!important;color:#b8c8df!important;}
-.open-session .compact-line .mini-chip:first-child{background:rgba(56,189,248,.12)!important;color:#bae6fd!important;border-color:rgba(56,189,248,.30)!important;}
-.match-session .compact-line .mini-chip:first-child{background:rgba(168,85,247,.14)!important;color:#e9d5ff!important;border-color:rgba(168,85,247,.32)!important;}
-.available-line{color:#86efac!important;background:rgba(20,211,122,.08)!important;border-color:rgba(20,211,122,.20)!important;}
+.open-session .current-total strong{color:#6ee7b7!important;}
+.match-session .match-fixed strong{color:#ddd6fe!important;}
+.match-session .current-total strong{color:#c4b5fd!important;}
+.compact-line .mini-chip{background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.08)!important;color:#b8c8df!important;}
+.open-session .compact-line .mini-chip:first-child{background:rgba(14,165,233,.18)!important;color:#e0f2fe!important;border-color:rgba(14,165,233,.52)!important;}
+.match-session .compact-line .mini-chip:first-child{background:rgba(109,40,217,.24)!important;color:#ede9fe!important;border-color:rgba(109,40,217,.58)!important;}
+.warn-10 .compact-line .mini-chip:first-child{background:rgba(250,204,21,.20)!important;color:#fef9c3!important;border-color:rgba(250,204,21,.62)!important;}
+.warn-5 .compact-line .mini-chip:first-child,.overtime .compact-line .mini-chip:first-child{background:rgba(239,68,68,.22)!important;color:#fee2e2!important;border-color:rgba(239,68,68,.68)!important;}
+.available-line{color:#bbf7d0!important;background:rgba(34,197,94,.11)!important;border-color:rgba(34,197,94,.28)!important;}
 .maintenance-line{color:#fecdd3!important;background:rgba(244,63,94,.08)!important;border-color:rgba(244,63,94,.20)!important;}
 .app-session-info div{font-size:10.5px!important;color:#95a9c6!important;}
 .app-session-info strong{font-size:11.5px!important;color:#eef6ff!important;}
+.status-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:10.5px;font-weight:900;line-height:1;border:1px solid rgba(255,255,255,.12);white-space:nowrap;letter-spacing:.01em;}
+.status-chip.ok{background:rgba(34,197,94,.14);color:#bbf7d0;border-color:rgba(34,197,94,.38);}
+.status-chip.open{background:rgba(14,165,233,.18);color:#e0f2fe;border-color:rgba(14,165,233,.50);}
+.status-chip.match{background:rgba(109,40,217,.23);color:#ede9fe;border-color:rgba(109,40,217,.56);}
+.status-chip.soon{background:rgba(250,204,21,.20);color:#fef9c3;border-color:rgba(250,204,21,.62);}
+.status-chip.end{background:rgba(239,68,68,.22);color:#fee2e2;border-color:rgba(239,68,68,.68);}
+.status-chip.off{background:rgba(148,163,184,.12);color:#cbd5e1;border-color:rgba(148,163,184,.25);}
 @media(max-width:650px){
   .app-device{padding:10px!important;}
   .live-session-box{padding:6px 7px!important;}
   .live-session-box span{font-size:10px!important;}
   .live-session-box strong{font-size:13.5px!important;}
   .compact-line .mini-chip{font-size:10px!important;padding:4px 7px!important;}
-}</style>
+  .status-chip{font-size:10px;padding:4px 8px;}
+}
+
+/* RC7.6 — Extreme device status separation
+   الهدف: الحالة لا تعتمد على لون قريب فقط. كل حالة لها لون واضح + شريط جانبي + هيدر حالة + شكل مختلف. */
+.app-device{
+  overflow:hidden!important;
+}
+.app-device.available{
+  border-color:#22c55e!important;
+  box-shadow:inset 7px 0 0 #22c55e, 0 10px 28px rgba(0,0,0,.22)!important;
+  background:linear-gradient(145deg,rgba(7,32,24,.98),rgba(8,17,30,.98))!important;
+}
+.app-device.open-session.busy:not(.warn-10):not(.warn-5):not(.overtime){
+  border-color:#00d4ff!important;
+  box-shadow:inset 7px 0 0 #00d4ff, 0 0 0 1px rgba(0,212,255,.22), 0 12px 30px rgba(0,20,35,.28)!important;
+  background:linear-gradient(145deg,rgba(5,35,55,.99),rgba(5,17,30,.98))!important;
+}
+.app-device.match-session.busy:not(.warn-10):not(.warn-5):not(.overtime){
+  border-color:#a855f7!important;
+  box-shadow:inset 7px 0 0 #a855f7, 0 0 0 1px rgba(168,85,247,.28), 0 12px 30px rgba(30,8,60,.30)!important;
+  background:
+    linear-gradient(135deg,rgba(88,28,135,.24) 0 18%,transparent 18% 100%),
+    linear-gradient(145deg,rgba(28,18,58,.99),rgba(8,17,30,.98))!important;
+}
+.app-device.warn-10{
+  border-color:#facc15!important;
+  box-shadow:inset 7px 0 0 #facc15, 0 0 0 1px rgba(250,204,21,.36), 0 12px 32px rgba(80,55,0,.24)!important;
+  background:linear-gradient(145deg,rgba(52,42,7,.99),rgba(16,20,25,.98))!important;
+}
+.app-device.warn-5,.app-device.overtime{
+  border-color:#ef233c!important;
+  box-shadow:inset 7px 0 0 #ef233c, 0 0 0 1px rgba(239,35,60,.44), 0 12px 34px rgba(90,0,20,.34)!important;
+  background:linear-gradient(145deg,rgba(65,6,20,.99),rgba(16,18,28,.98))!important;
+}
+.app-device.available::before{background:#22c55e!important;height:4px!important;}
+.app-device.open-session.busy:not(.warn-10):not(.warn-5):not(.overtime)::before{background:#00d4ff!important;height:4px!important;}
+.app-device.match-session.busy:not(.warn-10):not(.warn-5):not(.overtime)::before{background:#a855f7!important;height:4px!important;}
+.app-device.warn-10::before{background:#facc15!important;height:4px!important;}
+.app-device.warn-5::before,.app-device.overtime::before{background:#ef233c!important;height:4px!important;}
+.status-chip{
+  min-width:86px;
+  justify-content:center;
+  padding:6px 10px!important;
+  border-radius:11px!important;
+  font-size:11px!important;
+  border-width:1.5px!important;
+}
+.status-chip.ok{background:#052e1a!important;color:#dcfce7!important;border-color:#22c55e!important;}
+.status-chip.open{background:#062b3a!important;color:#e0f7ff!important;border-color:#00d4ff!important;}
+.status-chip.match{background:#241042!important;color:#f3e8ff!important;border-color:#a855f7!important;}
+.status-chip.soon{background:#3d3000!important;color:#fff7ad!important;border-color:#facc15!important;}
+.status-chip.end{background:#3f0614!important;color:#ffe4e6!important;border-color:#ef233c!important;}
+.open-session .live-session-box.open-timer,
+.open-session .live-session-box.current-total{
+  border-color:rgba(0,212,255,.34)!important;
+  background:rgba(0,212,255,.08)!important;
+}
+.match-session .live-session-box.match-fixed,
+.match-session .live-session-box.current-total{
+  border-color:rgba(168,85,247,.36)!important;
+  background:rgba(168,85,247,.10)!important;
+}
+.warn-10 .live-session-box,
+.warn-10 .device-status-line{
+  border-color:rgba(250,204,21,.45)!important;
+}
+.warn-5 .live-session-box,.overtime .live-session-box,
+.warn-5 .device-status-line,.overtime .device-status-line{
+  border-color:rgba(239,35,60,.48)!important;
+}
+.open-session .device-status-line strong{color:#67e8f9!important;}
+.match-session .device-status-line strong{color:#d8b4fe!important;}
+.warn-10 .device-status-line strong{color:#fde047!important;}
+.warn-5 .device-status-line strong,.overtime .device-status-line strong{color:#fda4af!important;}
+@media(max-width:650px){
+  .status-chip{min-width:78px;font-size:10.5px!important;padding:5px 8px!important;}
+  .app-device{box-shadow:inset 6px 0 0 currentColor, 0 8px 22px rgba(0,0,0,.22)!important;}
+}
+
+</style>
 </head>
 <body>
 
@@ -998,7 +1095,7 @@ body{
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC7.3';
+const APP_VERSION='V6.4.2-RC7.6';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -1081,32 +1178,7 @@ function toggleActionMenu(id,ev){
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.action-wrap'))closeActionMenus();});
 window.addEventListener('resize',closeActionMenus);
-// RC7.3: prevent mobile overscroll/pull-to-refresh reload that can return the PWA to login.
-(function installMobileOverscrollGuard(){
-  if(!('ontouchstart' in window))return;
-  let lastY=0, scroller=null;
-  function scrollParent(el){
-    while(el&&el!==document.body&&el!==document.documentElement){
-      const cs=getComputedStyle(el);
-      if(/auto|scroll/.test(cs.overflowY)&&el.scrollHeight>el.clientHeight+1)return el;
-      el=el.parentElement;
-    }
-    return document.scrollingElement||document.documentElement;
-  }
-  document.addEventListener('touchstart',e=>{
-    if(e.touches.length!==1)return;
-    lastY=e.touches[0].clientY;
-    scroller=scrollParent(e.target);
-  },{passive:false});
-  document.addEventListener('touchmove',e=>{
-    if(e.touches.length!==1||!scroller)return;
-    const y=e.touches[0].clientY, dy=y-lastY;
-    lastY=y;
-    const atTop=scroller.scrollTop<=0;
-    const atBottom=scroller.scrollTop+scroller.clientHeight>=scroller.scrollHeight-1;
-    if((atTop&&dy>0)||(atBottom&&dy<0))e.preventDefault();
-  },{passive:false});
-})();
+// RC7.4: mobile scroll must remain native. Pull-to-refresh is handled by CSS only.
 // EC9: do not close action UI on scroll; mobile scroll events can fire immediately after tap.
 function invoiceActionsModal(iid){
   const i=state.invoices.find(x=>x.id===iid);if(!i)return;
@@ -1293,6 +1365,14 @@ function badge(d){
   let c=d.status==='available'?'b-ok':d.status==='busy'?'b-busy':'b-bad';
   let t=d.status==='available'?'✔ متاح':d.status==='busy'?'● مشغول':'✕ صيانة';
   return `<span class="badge ${c}">${t}</span>`
+}
+function statusChip(d,s,alertCls){
+  if(d.status==='maintenance')return '<span class="status-chip off">🛠 صيانة</span>';
+  if(!s)return '<span class="status-chip ok">✅ متاح</span>';
+  if(alertCls==='overtime'||alertCls==='warn-5')return '<span class="status-chip end">⛔ انتهت</span>';
+  if(alertCls==='warn-10')return '<span class="status-chip soon">⚠ قربت</span>';
+  if(s.sessionType==='match')return '<span class="status-chip match">🎮 مباراة</span>';
+  return '<span class="status-chip open">⏱ مفتوحة</span>';
 }
 
 
@@ -1497,11 +1577,11 @@ function rDash(){
             <div class="device-name">${d.name}</div>
             <div class="device-rate small muted">Single ${money(d.singleRate)} | Multi ${money(d.multiRate)} ج/س</div>
           </div>
-          ${badge(d)}
+          ${statusChip(d,s,alertCls)}
         </div>
         ${s?`
           <div class="session-topline compact-line">
-            <span class="mini-chip">${s.sessionType==='match'?'⚽ مباراة':'⏱️ مفتوحة'}</span>
+            <span class="mini-chip">${s.sessionType==='match'?'🎮 مباراة':'⏱ مفتوحة'}</span>
             <span class="mini-chip">${s.mode==='multi'?'Multi':'Single'}</span>
             ${sessionMatchCount(s)>0?`<span class="mini-chip">${matchCountLabel(sessionMatchCount(s))}</span>`:''}
           </div>
