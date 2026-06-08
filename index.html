@@ -2,8 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>PS Cafe Manager • V6.4.2-RC5.2</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc5">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc5-2">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-2">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-2">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-2">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-2">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-2">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -675,6 +675,64 @@ tr:hover td{background:rgba(59,130,246,.055)!important;color:#eef6ff!important;}
 .invoice-actions>button{flex:1 1 150px!important;min-width:140px!important}
 @media(max-width:650px){.invoice-actions{display:grid!important;grid-template-columns:1fr!important}.invoice-actions>button{width:100%!important}}
 
+
+/* RC5.2 — Viewport & mobile scale guard (frontend only)
+   Fixes RC5 visual zoom-out / sheet-like scaling without changing accounting, sync, or cloud logic. */
+html{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  overflow-x:hidden!important;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
+body,#app{
+  width:100%;
+  min-width:0!important;
+  max-width:100vw!important;
+  overflow-x:hidden!important;
+  overscroll-behavior-x:none;
+}
+*{box-sizing:border-box;}
+img,svg,canvas,video{max-width:100%;height:auto;}
+.content,.top,.tabs,.card,.dash-header,.page-header,.grid,.device-card,.ops-card,.kpi,.owner-card,.settings-section,.modal .box{
+  min-width:0!important;
+  max-width:100%!important;
+}
+.row,.top-brand,.top-actions,.dash-header .row,.page-header .row,.device-actions,.quick-actions,.start-options,.invoice-actions{
+  min-width:0!important;
+}
+.tw,.invoice-table-wrap{
+  max-width:100%!important;
+  overflow-x:auto!important;
+  -webkit-overflow-scrolling:touch;
+}
+.tw table,.invoice-table-wrap table{width:100%;}
+button,.tab,.device-card,.ops-card,.kpi{touch-action:manipulation;}
+@media(max-width:720px){
+  body{position:relative;}
+  .content{width:100%!important;max-width:100%!important;padding:10px!important;}
+  .grid,.grid.g2,.grid.g3,.grid.g4,.grid.g5,#vDashboard .grid.g5{grid-template-columns:1fr!important;}
+  .ops-summary{grid-template-columns:1fr 1fr!important;}
+  .top{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;width:100%!important;}
+  .top-brand{max-width:100%!important;overflow:hidden;}
+  .top-brand-name,.top-meta{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .top-actions{display:flex!important;flex-wrap:wrap!important;justify-content:flex-end!important;width:100%!important;}
+  .top-actions .top-btn{flex:0 0 auto!important;min-width:0!important;width:auto!important;}
+  .tabs{max-width:100vw!important;overflow-x:auto!important;}
+  .tab{flex:0 0 auto!important;}
+  .modal{width:100vw!important;max-width:100vw!important;padding:10px!important;}
+  .modal .box{width:100%!important;max-width:calc(100vw - 20px)!important;padding:16px!important;}
+  .invoice-toolbar,.receipt-action-row,.shift-actions,.support-actions,.owner-simple-grid{grid-template-columns:1fr!important;}
+  .device-card,.card{border-radius:18px!important;}
+  input,select,textarea{font-size:16px!important;}
+}
+@media(max-width:480px){
+  .ops-summary{grid-template-columns:1fr!important;}
+  table{min-width:480px!important;}
+  .match-choice-grid,.cashier-mini-grid{grid-template-columns:1fr!important;}
+}
+
 </style>
 </head>
 <body>
@@ -738,7 +796,7 @@ tr:hover td{background:rgba(59,130,246,.055)!important;color:#eef6ff!important;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5';
+const APP_VERSION='V6.4.2-RC5.2';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -2127,7 +2185,7 @@ load();setup();setupMobileBackNavigation();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-2')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
