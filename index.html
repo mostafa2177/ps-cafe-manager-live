@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC7.1</title>
+<title>PS Cafe Manager • V6.4.2-RC7.3</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc7-1-1">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc7-3-1">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc7-1-1">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc7-1-1">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc7-1-1">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc7-1-1">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc7-1-1">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc7-3-1">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc7-3-1">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc7-3-1">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc7-3-1">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc7-3-1">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -867,7 +867,73 @@ button,.tab,.device-card,.ops-card,.kpi{touch-action:manipulation;}
 }
 @media(min-width:901px){.app-devices-grid{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}.mobile-app-home{gap:14px}.app-mini-stats .ops-card .num{font-size:16px!important}}
 
-</style>
+
+
+/* RC7.3 — Mobile scroll guard
+   Prevent Android/PWA pull-to-refresh overscroll from reloading the app and returning to login.
+   Frontend only: no cloud, auth, sync, or accounting changes. */
+html,body{
+  overscroll-behavior:none!important;
+  overscroll-behavior-y:none!important;
+  touch-action:pan-y;
+}
+body{
+  -webkit-overflow-scrolling:touch;
+}
+#app,.content,.tabs,.top,.device-card,.ops-card,.modal{
+  overscroll-behavior:contain!important;
+}
+
+
+
+
+/* RC7.3 — Device status color polish
+   Frontend only: clearer states, less text, no cloud/accounting changes. */
+.app-device.open-session.busy{
+  border-color:rgba(56,189,248,.48)!important;
+  background:linear-gradient(145deg,rgba(8,31,48,.98),rgba(7,22,38,.96))!important;
+  box-shadow:0 0 0 1px rgba(56,189,248,.10),0 14px 34px rgba(0,0,0,.26)!important;
+}
+.app-device.open-session.busy::before{background:linear-gradient(90deg,#38bdf8,#2563eb)!important;}
+.app-device.match-session.busy{
+  border-color:rgba(168,85,247,.50)!important;
+  background:linear-gradient(145deg,rgba(35,20,64,.96),rgba(11,20,36,.96))!important;
+  box-shadow:0 0 0 1px rgba(168,85,247,.12),0 14px 34px rgba(0,0,0,.26)!important;
+}
+.app-device.match-session.busy::before{background:linear-gradient(90deg,#a855f7,#7c3aed)!important;}
+.app-device.available::before{background:linear-gradient(90deg,#14d37a,#0eaa61)!important;}
+.app-device.warn-10{
+  border-color:rgba(251,191,36,.66)!important;
+  background:linear-gradient(145deg,rgba(58,39,8,.94),rgba(15,23,42,.96))!important;
+}
+.app-device.warn-10::before{background:linear-gradient(90deg,#fbbf24,#f59e0b)!important;}
+.app-device.warn-5,.app-device.overtime{
+  border-color:rgba(244,63,94,.74)!important;
+  background:linear-gradient(145deg,rgba(72,11,26,.97),rgba(18,24,39,.96))!important;
+}
+.app-device.warn-5::before,.app-device.overtime::before{background:linear-gradient(90deg,#fb5470,#be123c)!important;}
+.open-session .b-busy{background:rgba(56,189,248,.14)!important;color:#7dd3fc!important;border-color:rgba(56,189,248,.34)!important;}
+.match-session .b-busy{background:rgba(168,85,247,.16)!important;color:#d8b4fe!important;border-color:rgba(168,85,247,.38)!important;}
+.warn-10 .b-busy{background:rgba(251,191,36,.15)!important;color:#fde68a!important;border-color:rgba(251,191,36,.42)!important;}
+.warn-5 .b-busy,.overtime .b-busy{background:rgba(244,63,94,.16)!important;color:#fecdd3!important;border-color:rgba(244,63,94,.46)!important;}
+.open-session .open-timer strong{color:#7dd3fc!important;}
+.open-session .current-total strong{color:#58f0a8!important;}
+.match-session .match-fixed strong{color:#d8b4fe!important;}
+.match-session .current-total strong{color:#f0abfc!important;}
+.compact-line .mini-chip{background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.075)!important;color:#b8c8df!important;}
+.open-session .compact-line .mini-chip:first-child{background:rgba(56,189,248,.12)!important;color:#bae6fd!important;border-color:rgba(56,189,248,.30)!important;}
+.match-session .compact-line .mini-chip:first-child{background:rgba(168,85,247,.14)!important;color:#e9d5ff!important;border-color:rgba(168,85,247,.32)!important;}
+.available-line{color:#86efac!important;background:rgba(20,211,122,.08)!important;border-color:rgba(20,211,122,.20)!important;}
+.maintenance-line{color:#fecdd3!important;background:rgba(244,63,94,.08)!important;border-color:rgba(244,63,94,.20)!important;}
+.app-session-info div{font-size:10.5px!important;color:#95a9c6!important;}
+.app-session-info strong{font-size:11.5px!important;color:#eef6ff!important;}
+@media(max-width:650px){
+  .app-device{padding:10px!important;}
+  .live-session-box{padding:6px 7px!important;}
+  .live-session-box span{font-size:10px!important;}
+  .live-session-box strong{font-size:13.5px!important;}
+  .compact-line .mini-chip{font-size:10px!important;padding:4px 7px!important;}
+}</style>
 </head>
 <body>
 
@@ -927,10 +993,12 @@ button,.tab,.device-card,.ops-card,.kpi{touch-action:manipulation;}
 <div id="alert-toast"></div>
 
 <script>
+
+
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC7.1';
+const APP_VERSION='V6.4.2-RC7.3';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -1013,6 +1081,32 @@ function toggleActionMenu(id,ev){
 }
 document.addEventListener('click',e=>{if(!e.target.closest('.action-wrap'))closeActionMenus();});
 window.addEventListener('resize',closeActionMenus);
+// RC7.3: prevent mobile overscroll/pull-to-refresh reload that can return the PWA to login.
+(function installMobileOverscrollGuard(){
+  if(!('ontouchstart' in window))return;
+  let lastY=0, scroller=null;
+  function scrollParent(el){
+    while(el&&el!==document.body&&el!==document.documentElement){
+      const cs=getComputedStyle(el);
+      if(/auto|scroll/.test(cs.overflowY)&&el.scrollHeight>el.clientHeight+1)return el;
+      el=el.parentElement;
+    }
+    return document.scrollingElement||document.documentElement;
+  }
+  document.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1)return;
+    lastY=e.touches[0].clientY;
+    scroller=scrollParent(e.target);
+  },{passive:false});
+  document.addEventListener('touchmove',e=>{
+    if(e.touches.length!==1||!scroller)return;
+    const y=e.touches[0].clientY, dy=y-lastY;
+    lastY=y;
+    const atTop=scroller.scrollTop<=0;
+    const atBottom=scroller.scrollTop+scroller.clientHeight>=scroller.scrollHeight-1;
+    if((atTop&&dy>0)||(atBottom&&dy<0))e.preventDefault();
+  },{passive:false});
+})();
 // EC9: do not close action UI on scroll; mobile scroll events can fire immediately after tap.
 function invoiceActionsModal(iid){
   const i=state.invoices.find(x=>x.id===iid);if(!i)return;
@@ -1170,17 +1264,17 @@ function liveSessionPanel(s,c){
   const sid=esc(s.id);
   if(s.sessionType==='match'){
     return `<div class="live-session-panel">
-      <div class="live-session-box match-fixed"><span>المباراة</span><strong>${Number(s.matchMins)||0} د — ثابت</strong></div>
-      <div class="live-session-box current-total"><span>الإجمالي الحالي</span><strong data-live-total="${sid}">${money(c.total)} ج</strong></div>
-      <div class="live-session-box drink-total"><span>المشروبات</span><strong data-live-drinks="${sid}">${money(c.dr)} ج</strong></div>
-      <div class="live-session-box"><span>المباريات المضافة</span><strong data-live-matchadd="${sid}">${money(c.matchAdd)} ج</strong></div>
+      <div class="live-session-box match-fixed"><span>المدة</span><strong>${Number(s.matchMins)||0} د</strong></div>
+      <div class="live-session-box current-total"><span>الإجمالي</span><strong data-live-total="${sid}">${money(c.total)} ج</strong></div>
+      <div class="live-session-box drink-total"><span>مشروبات</span><strong data-live-drinks="${sid}">${money(c.dr)} ج</strong></div>
+      <div class="live-session-box"><span>إضافات</span><strong data-live-matchadd="${sid}">${money(c.matchAdd)} ج</strong></div>
     </div>`;
   }
   return `<div class="live-session-panel">
-    <div class="live-session-box open-timer"><span>عداد الجلسة</span><strong data-live-timer="${sid}">${sessionClock(s)}</strong></div>
-    <div class="live-session-box current-total"><span>الإجمالي الحالي</span><strong data-live-total="${sid}">${money(c.total)} ج</strong></div>
-    <div class="live-session-box"><span>لعب ومباريات</span><strong data-live-play="${sid}">${money(c.play)} ج</strong></div>
-    <div class="live-session-box drink-total"><span>المشروبات</span><strong data-live-drinks="${sid}">${money(c.dr)} ج</strong></div>
+    <div class="live-session-box open-timer"><span>الوقت</span><strong data-live-timer="${sid}">${sessionClock(s)}</strong></div>
+    <div class="live-session-box current-total"><span>الإجمالي</span><strong data-live-total="${sid}">${money(c.total)} ج</strong></div>
+    <div class="live-session-box"><span>اللعب</span><strong data-live-play="${sid}">${money(c.play)} ج</strong></div>
+    <div class="live-session-box drink-total"><span>مشروبات</span><strong data-live-drinks="${sid}">${money(c.dr)} ج</strong></div>
   </div>`;
 }
 function updateLiveSessionWidgets(){
@@ -1395,8 +1489,9 @@ function rDash(){
       let s=sess(d.id),c=s?cost(s):null;
       let stBase=d.status==='available'?'available':d.status==='busy'?'busy':'maintenance';
       let alertCls=s?getDeviceAlertClass(s):'';
+      let sessionKindCls=s?(s.sessionType==='match'?'match-session':'open-session'):'';
       let timerCls=s?getTimerClass(s):'';
-      return `<div class="device-card app-device ${stBase} ${alertCls}" id="dc_${d.id}">
+      return `<div class="device-card app-device ${stBase} ${sessionKindCls} ${alertCls}" id="dc_${d.id}">
         <div class="device-card-header">
           <div>
             <div class="device-name">${d.name}</div>
@@ -1406,9 +1501,9 @@ function rDash(){
         </div>
         ${s?`
           <div class="session-topline compact-line">
-            <span class="mini-chip">${s.sessionType==='match'?'⚽ مباراة ثابتة':'⏱️ جلسة مفتوحة'}</span>
+            <span class="mini-chip">${s.sessionType==='match'?'⚽ مباراة':'⏱️ مفتوحة'}</span>
             <span class="mini-chip">${s.mode==='multi'?'Multi':'Single'}</span>
-            <span class="mini-chip">${matchCountLabel(sessionMatchCount(s))}</span>
+            ${sessionMatchCount(s)>0?`<span class="mini-chip">${matchCountLabel(sessionMatchCount(s))}</span>`:''}
           </div>
           ${liveSessionPanel(s,c)}
           <div class="session-info app-session-info">
@@ -1421,13 +1516,13 @@ function rDash(){
             <button class="danger" onclick="endSession('${s.id}')">⏹ إنهاء</button>
           </div>
         `:d.status==='available'?`
-          <div class="available-line">جاهز للتشغيل</div>
+          <div class="available-line">متاح</div>
           <div class="start-options app-device-actions">
             <button class="device-start-btn" onclick="startModal('${d.id}')">▶ جلسة</button>
             <button class="match-start-btn" onclick="matchModal('${d.id}')">⚽ مباراة</button>
           </div>
         `:`
-          <p class="muted small maintenance-line">🔧 تحت الصيانة</p>
+          <p class="muted small maintenance-line">صيانة</p>
         `}
       </div>`
     }).join('');
@@ -1436,8 +1531,7 @@ function rDash(){
       <div class="app-hero">
         <div>
           <div class="eyebrow">تشغيل اليوم</div>
-          <div class="app-hero-title">الأجهزة أولًا</div>
-          <div class="app-hero-sub">افتح جلسة أو مباراة بسرعة من نفس الشاشة</div>
+          <div class="app-hero-title">الأجهزة</div>
         </div>
         <div class="hero-actions">
           <button class="ok" onclick="startModal()">▶ جلسة</button>
@@ -2413,7 +2507,7 @@ load();setup();setupMobileBackNavigation();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc7-1-1')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc7-3-1')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
