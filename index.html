@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.6</title>
+<title>PS Cafe Manager • V6.4.2-RC5.7</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc5-6">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc5-7">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-6">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-6">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-6">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-6">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-6">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-7">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-7">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-7">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-7">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-7">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -684,6 +684,55 @@ tr:hover td{background:rgba(59,130,246,.055)!important;color:#eef6ff!important;}
 @keyframes badgeBlinkDanger{0%,100%{filter:brightness(1)}50%{filter:brightness(1.45)}}
 @media(max-width:650px){.device-card::after{inset:7px auto 7px 7px;width:4px}.device-card{padding-inline-start:15px!important}}
 
+
+/* RC5.7 — Compact Device Card Layout
+   Scope: device card density/layout only. No scroll/touch/session/cloud/accounting changes. */
+.device-card{padding:12px!important;}
+.device-card-header{align-items:center!important;margin-bottom:6px!important;}
+.device-card .device-divider{margin:8px 0!important;}
+.device-card .session-topline.compact-status{display:flex;gap:6px;flex-wrap:wrap;margin:5px 0 6px!important;}
+.device-card .mini-chip{padding:4px 8px!important;border-radius:999px;font-size:11px!important;line-height:1.15!important;min-height:auto!important;}
+.device-card .session-info.compact-device-meta{grid-template-columns:1fr 1.45fr!important;gap:6px!important;margin-top:5px!important;}
+.device-card .session-info.compact-device-meta div{padding:6px 8px!important;border-radius:10px!important;min-height:36px!important;font-size:11px!important;display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.device-card .session-info.compact-device-meta span{color:var(--text-muted);font-size:10px;white-space:nowrap;}
+.device-card .session-info.compact-device-meta strong{font-size:11.5px!important;line-height:1.25!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.device-card .live-session-panel{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;margin:7px 0 5px!important;}
+.device-card .live-session-box{padding:6px 7px!important;border-radius:10px!important;min-height:48px!important;}
+.device-card .live-session-box span{font-size:9.8px!important;margin-bottom:2px!important;line-height:1.1!important;}
+.device-card .live-session-box strong{font-size:12.5px!important;line-height:1.15!important;}
+.device-card .quick-actions{grid-template-columns:1fr 1fr!important;gap:6px!important;margin-top:7px!important;}
+.device-card .quick-actions button{min-height:34px!important;padding:6px 8px!important;font-size:11.5px!important;border-radius:12px!important;}
+.device-card .quick-actions .danger{grid-column:1/-1!important;min-height:35px!important;padding:7px 8px!important;}
+.device-card .start-options{gap:7px!important;margin-top:7px!important;}
+.device-card .start-options button,.device-card .device-start-btn{min-height:35px!important;padding:7px 9px!important;font-size:12px!important;border-radius:12px!important;}
+@media(max-width:650px){
+  .device-card{padding:9px 11px 10px 15px!important;border-radius:16px!important;}
+  .device-card::after{inset:7px auto 7px 7px!important;width:4px!important;}
+  .device-card-header{margin-bottom:4px!important;gap:6px!important;}
+  .device-card .device-name{font-size:15px!important;line-height:1.15!important;}
+  .device-card .device-rate{font-size:9.7px!important;margin-top:1px!important;}
+  .device-card .badge{font-size:10.2px!important;padding:4px 7px!important;}
+  .device-card .device-divider{margin:6px 0!important;}
+  .device-card .session-topline.compact-status{gap:5px!important;margin:4px 0 5px!important;}
+  .device-card .mini-chip{font-size:10px!important;padding:3px 7px!important;}
+  .device-card .session-info.compact-device-meta{grid-template-columns:1fr!important;gap:5px!important;margin-top:4px!important;}
+  .device-card .session-info.compact-device-meta div{padding:5px 7px!important;min-height:30px!important;font-size:10.5px!important;}
+  .device-card .session-info.compact-device-meta span{font-size:9.5px!important;}
+  .device-card .session-info.compact-device-meta strong{font-size:10.8px!important;}
+  .device-card .live-session-panel{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important;margin:6px 0 4px!important;}
+  .device-card .live-session-box{padding:5px 7px!important;min-height:39px!important;border-radius:9px!important;}
+  .device-card .live-session-box span{font-size:9.3px!important;}
+  .device-card .live-session-box strong{font-size:12.2px!important;}
+  .device-card .quick-actions{gap:5px!important;margin-top:6px!important;}
+  .device-card .quick-actions button{min-height:32px!important;padding:5px 7px!important;font-size:11px!important;border-radius:11px!important;}
+  .device-card .quick-actions .danger{min-height:33px!important;padding:6px 7px!important;}
+  .device-card .start-options button,.device-card .device-start-btn{min-height:33px!important;padding:6px 8px!important;font-size:11.5px!important;}
+}
+@media(max-width:380px){
+  .device-card .live-session-box strong{font-size:11.5px!important;}
+  .device-card .quick-actions button{font-size:10.5px!important;}
+}
+
 @media print{
   .top,.tabs,button,.no-print,#sl,.top-actions,#alert-toast{display:none!important}
   .print-only{display:block!important}
@@ -969,7 +1018,7 @@ button,.tab,.device-card,.ops-card,.kpi{touch-action:manipulation;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.6';
+const APP_VERSION='V6.4.2-RC5.7';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -1209,16 +1258,16 @@ function liveSessionPanel(s,c){
   const sid=esc(s.id);
   if(s.sessionType==='match'){
     return `<div class="live-session-panel">
-      <div class="live-session-box match-fixed"><span>مباراة</span><strong>${Number(s.matchMins)||0} د — ثابت</strong></div>
+      <div class="live-session-box match-fixed"><span>المدة</span><strong>${Number(s.matchMins)||0} د</strong></div>
       <div class="live-session-box current-total"><span>الإجمالي</span><strong data-live-total="${sid}">${money(c.total)} ج</strong></div>
       <div class="live-session-box drink-total"><span>المشروبات</span><strong data-live-drinks="${sid}">${money(c.dr)} ج</strong></div>
-      <div class="live-session-box"><span>المباريات المضافة</span><strong data-live-matchadd="${sid}">${money(c.matchAdd)} ج</strong></div>
+      <div class="live-session-box"><span>إضافي</span><strong data-live-matchadd="${sid}">${money(c.matchAdd)} ج</strong></div>
     </div>`;
   }
   return `<div class="live-session-panel">
     <div class="live-session-box open-timer"><span>العداد</span><strong data-live-timer="${sid}">${sessionClock(s)}</strong></div>
     <div class="live-session-box current-total"><span>الإجمالي</span><strong data-live-total="${sid}">${money(c.total)} ج</strong></div>
-    <div class="live-session-box"><span>اللعب</span><strong data-live-play="${sid}">${money(c.play)} ج</strong></div>
+    <div class="live-session-box"><span>لعب</span><strong data-live-play="${sid}">${money(c.play)} ج</strong></div>
     <div class="live-session-box drink-total"><span>المشروبات</span><strong data-live-drinks="${sid}">${money(c.dr)} ج</strong></div>
   </div>`;
 }
@@ -1480,11 +1529,9 @@ function rDash(){
             <span class="mini-chip">${s.mode==='multi'?'Multi':'Single'}</span>
             <span class="mini-chip">${matchCountLabel(sessionMatchCount(s))}</span>
           </div>
-          <div class="session-info compact-session">
-            <div>العميل <strong>${esc(s.customer||'—')}</strong></div>
-            <div>بدأها <strong>${esc(s.startedBy||s.user||'—')}</strong></div>
-            <div>البداية <strong>${fmt(s.start)}</strong></div>
-            <div>${s.sessionType==='match'?'ثابت':'عداد'} <strong>${s.sessionType==='match'?'بدون عداد':'بدون كسور'}</strong></div>
+          <div class="session-info compact-session compact-device-meta">
+            <div><span>العميل</span><strong>${esc(s.customer||'—')}</strong></div>
+            <div><span>بدأ</span><strong>${esc(s.startedBy||s.user||'—')} • ${fmt(s.start)}</strong></div>
           </div>
           ${liveSessionPanel(s,c)}
           <div class="quick-actions">
@@ -2439,7 +2486,7 @@ load();setup();setupMobileBackNavigation();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-6')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-7')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
