@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.5</title>
+<title>PS Cafe Manager • V6.4.2-RC5.6</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc5-5">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc5-6">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-5">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-5">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-5">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-5">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-5">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-6">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-6">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-6">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-6">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-6">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -655,6 +655,35 @@ tr:hover td{background:rgba(59,130,246,.055)!important;color:#eef6ff!important;}
   .device-card .live-session-box strong{font-size:13px}
 }
 
+
+
+/* RC5.6 — Device Status Color & Alert Blink (device cards only)
+   Scope: visual status separation only. No scroll/touch/session/cloud changes. */
+.device-card{isolation:isolate;}
+.device-card::after{content:'';position:absolute;inset:8px auto 8px 8px;width:5px;border-radius:999px;background:rgba(148,163,184,.35);box-shadow:0 0 0 rgba(0,0,0,0);pointer-events:none;}
+.device-card.available{background:linear-gradient(160deg,rgba(7,34,24,.97),rgba(5,55,38,.82))!important;border-color:rgba(34,197,94,.62)!important;}
+.device-card.available::before,.device-card.available::after{background:#22c55e!important;box-shadow:0 0 18px rgba(34,197,94,.28);}
+.device-card.open-session{background:linear-gradient(160deg,rgba(7,28,58,.98),rgba(2,72,116,.72))!important;border-color:rgba(14,165,233,.72)!important;}
+.device-card.open-session::before,.device-card.open-session::after{background:#0ea5e9!important;box-shadow:0 0 20px rgba(14,165,233,.35);}
+.device-card.match-session{background:linear-gradient(160deg,rgba(37,18,71,.98),rgba(76,29,149,.78))!important;border-color:rgba(168,85,247,.72)!important;}
+.device-card.match-session::before,.device-card.match-session::after{background:#a855f7!important;box-shadow:0 0 22px rgba(168,85,247,.38);}
+.device-card.warn-10,.device-card.warn-5{background:linear-gradient(160deg,rgba(57,39,5,.99),rgba(113,63,18,.82))!important;border-color:rgba(250,204,21,.92)!important;animation:cardBlinkWarn 1.1s ease-in-out infinite!important;}
+.device-card.warn-10::before,.device-card.warn-10::after,.device-card.warn-5::before,.device-card.warn-5::after{background:#facc15!important;box-shadow:0 0 24px rgba(250,204,21,.55)!important;}
+.device-card.ended,.device-card.overtime{background:linear-gradient(160deg,rgba(76,5,25,.99),rgba(127,29,29,.86))!important;border-color:rgba(239,68,68,.98)!important;animation:cardBlinkDanger .75s ease-in-out infinite!important;}
+.device-card.ended::before,.device-card.ended::after,.device-card.overtime::before,.device-card.overtime::after{background:#ef4444!important;box-shadow:0 0 26px rgba(239,68,68,.65)!important;}
+.device-card .badge.b-ok{background:rgba(34,197,94,.20)!important;border-color:rgba(34,197,94,.56)!important;color:#bbf7d0!important;}
+.device-card .badge.b-open{background:rgba(14,165,233,.22)!important;border-color:rgba(14,165,233,.62)!important;color:#bae6fd!important;}
+.device-card .badge.b-match{background:rgba(168,85,247,.22)!important;border-color:rgba(168,85,247,.64)!important;color:#e9d5ff!important;}
+.device-card .badge.b-warn{background:rgba(250,204,21,.24)!important;border-color:rgba(250,204,21,.78)!important;color:#fef08a!important;animation:badgeBlinkWarn 1.1s ease-in-out infinite!important;}
+.device-card .badge.b-ended{background:rgba(239,68,68,.25)!important;border-color:rgba(239,68,68,.82)!important;color:#fecaca!important;animation:badgeBlinkDanger .75s ease-in-out infinite!important;}
+.device-card.warn-10 .device-name,.device-card.warn-5 .device-name{color:#fff7b8!important;}
+.device-card.ended .device-name,.device-card.overtime .device-name{color:#ffe4e6!important;}
+@keyframes cardBlinkWarn{0%,100%{box-shadow:0 4px 24px rgba(0,0,0,.50),0 0 0 0 rgba(250,204,21,.18)}50%{box-shadow:0 4px 24px rgba(0,0,0,.50),0 0 0 6px rgba(250,204,21,.22)}}
+@keyframes cardBlinkDanger{0%,100%{box-shadow:0 4px 24px rgba(0,0,0,.55),0 0 0 0 rgba(239,68,68,.20)}50%{box-shadow:0 4px 24px rgba(0,0,0,.55),0 0 0 7px rgba(239,68,68,.28)}}
+@keyframes badgeBlinkWarn{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
+@keyframes badgeBlinkDanger{0%,100%{filter:brightness(1)}50%{filter:brightness(1.45)}}
+@media(max-width:650px){.device-card::after{inset:7px auto 7px 7px;width:4px}.device-card{padding-inline-start:15px!important}}
+
 @media print{
   .top,.tabs,button,.no-print,#sl,.top-actions,#alert-toast{display:none!important}
   .print-only{display:block!important}
@@ -940,7 +969,7 @@ button,.tab,.device-card,.ops-card,.kpi{touch-action:manipulation;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.5';
+const APP_VERSION='V6.4.2-RC5.6';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -1138,7 +1167,7 @@ function renderActiveTab(){
   (map[tab]||rDash)();
 }
 
-// 1-second tick — RC5.5: update only live session fields, not the full screen.
+// 1-second tick — RC5.4: update only live session fields, not the full screen.
 // Open sessions show a live timer and calculated total. Matches remain fixed-price with alerts only.
 function isModalOpen(){return !document.getElementById('modal')?.classList.contains('hidden')}
 function dashboardTick(){
@@ -1207,8 +1236,9 @@ function updateLiveSessionWidgets(){
 
 function badge(d,s=null,alertCls=''){
   if(s){
-    if(alertCls.includes('overtime')||alertCls.includes('warn-5'))return `<span class="badge b-ended">⛔ انتهت</span>`;
-    if(alertCls.includes('warn-10'))return `<span class="badge b-warn">⚠ تنبيه</span>`;
+    if(alertCls.includes('overtime')||alertCls.includes('ended'))return `<span class="badge b-ended">⛔ انتهت</span>`;
+    if(alertCls.includes('warn-5'))return `<span class="badge b-warn">⚠ 5 د</span>`;
+    if(alertCls.includes('warn-10'))return `<span class="badge b-warn">⚠ 10 د</span>`;
     if(s.sessionType==='match')return `<span class="badge b-match">🎮 مباراة</span>`;
     return `<span class="badge b-open">⏱ مفتوحة</span>`;
   }
@@ -1376,6 +1406,7 @@ function getDeviceAlertClass(s){
   const target=Number(s.matchMins)||0;if(!target)return '';
   const elapsed=Math.max(0,(Date.now()-new Date(s.start))/60000),left=target-elapsed;
   if(elapsed>=target+5)return 'overtime';
+  if(elapsed>=target)return 'ended';
   if(left<=5)return 'warn-5';
   if(left<=10)return 'warn-10';
   return '';
@@ -1431,9 +1462,10 @@ function rDash(){
     <div class="grid g5">${[...state.devices].sort((a,b)=>(sess(b.id)?1:0)-(sess(a.id)?1:0)).map(d=>{
       let s=sess(d.id),c=s?cost(s):null;
       let stBase=d.status==='available'?'available':d.status==='busy'?'busy':'maintenance';
+      let statusCls=s?(s.sessionType==='match'?'match-session':'open-session'):'';
       let alertCls=s?getDeviceAlertClass(s):'';
       let timerCls=s?getTimerClass(s):'';
-      return `<div class="device-card ${stBase} ${alertCls}" id="dc_${d.id}">
+      return `<div class="device-card ${stBase} ${statusCls} ${alertCls}" id="dc_${d.id}">
         <div class="device-card-header">
           <div>
             <div class="device-name">${d.name}</div>
@@ -1757,7 +1789,7 @@ function rDevices(){vDevices.innerHTML=`
   <div class="tw"><table><tr><th>الجهاز</th><th>الحالة</th><th>Single ج/س</th><th>Multi ج/س</th><th>تسعير المباريات</th><th>تغيير الحالة</th><th></th></tr>
   ${state.devices.map(d=>`<tr>
     <td><input id="dn${d.id}" value="${esc(d.name)}" style="width:100px"></td>
-    <td>${badge(d)}</td>
+    <td>${badge(d,s,alertCls)}</td>
     <td><input id="ds${d.id}" type="number" value="${d.singleRate}" style="width:80px"></td>
     <td><input id="dm${d.id}" type="number" value="${d.multiRate}" style="width:80px"></td>
     <td><button onclick="editMatchPrices('${d.id}')">⚽ أسعار المباريات</button></td>
@@ -2407,7 +2439,7 @@ load();setup();setupMobileBackNavigation();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-5')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-6')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
