@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.2</title>
+<title>PS Cafe Manager • V6.4.2-RC5.3</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc5-2">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc5-3">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-2">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-2">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-2">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-2">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-2">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-3">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-3">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-3">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-3">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-3">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -733,6 +733,112 @@ button,.tab,.device-card,.ops-card,.kpi{touch-action:manipulation;}
   .match-choice-grid,.cashier-mini-grid{grid-template-columns:1fr!important;}
 }
 
+
+/* RC5.3 — Mobile premium density polish (frontend/CSS only)
+   Keeps RC5 premium look, fixes oversized mobile dashboard cards and action blocks. */
+@media(max-width:720px){
+  .content{padding:8px 9px calc(78px + env(safe-area-inset-bottom))!important;}
+  .dash-header{
+    padding:12px!important;
+    border-radius:18px!important;
+    margin:0 0 10px!important;
+    gap:10px!important;
+    box-shadow:0 12px 28px rgba(0,0,0,.24)!important;
+  }
+  .dash-header-title{font-size:17px!important;line-height:1.25!important;}
+  .dash-header .row{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
+    width:100%!important;
+  }
+  .dash-header .row button{
+    min-height:40px!important;
+    padding:8px 10px!important;
+    border-radius:15px!important;
+    font-size:13px!important;
+    box-shadow:0 8px 18px rgba(0,0,0,.20)!important;
+  }
+  .ops-summary{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin:0 0 10px!important;
+  }
+  .ops-card,.ops-card.tap-card{
+    min-height:64px!important;
+    padding:8px 10px!important;
+    border-radius:16px!important;
+    box-shadow:0 8px 20px rgba(0,0,0,.20)!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+  }
+  .ops-card:before{width:3px!important;}
+  .ops-card .label{font-size:11px!important;margin-bottom:3px!important;line-height:1.15!important;}
+  .ops-card .num{font-size:19px!important;line-height:1.1!important;letter-spacing:.1px!important;}
+  .ops-card .hint,.ops-card .action-hint{font-size:10px!important;margin-top:2px!important;line-height:1.25!important;opacity:.76!important;}
+  .ops-card.tap-card:hover{transform:none!important;}
+  .ops-card.tap-card:active{transform:scale(.985)!important;}
+  .daily-review-strip{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
+    padding:8px!important;
+    border-radius:16px!important;
+    margin:0 0 10px!important;
+    box-shadow:0 8px 20px rgba(0,0,0,.18)!important;
+  }
+  .daily-review-strip button{
+    min-height:34px!important;
+    padding:7px 8px!important;
+    border-radius:13px!important;
+    font-size:12px!important;
+    box-shadow:0 6px 14px rgba(0,0,0,.16)!important;
+  }
+  .daily-review-strip button:nth-child(3){grid-column:1/-1!important;}
+  .daily-review-strip .daily-total{
+    grid-column:1/-1!important;
+    margin:0!important;
+    text-align:center!important;
+    padding:5px 8px!important;
+    border-radius:12px!important;
+    background:rgba(255,255,255,.045)!important;
+    border:1px solid rgba(96,165,250,.13)!important;
+    font-size:11.5px!important;
+  }
+  .daily-review-strip .daily-total strong{font-size:13px!important;}
+  #vDashboard>.grid.g5{gap:10px!important;}
+  .device-card{padding:12px!important;border-radius:18px!important;}
+  .device-card-header{margin-bottom:7px!important;}
+  .device-name{font-size:16px!important;}
+  .device-rate{font-size:10.5px!important;}
+  .device-divider{margin:9px 0!important;}
+  .device-status-line{padding:7px 9px!important;margin:8px 0!important;border-radius:11px!important;}
+  .device-status-line strong{font-size:16px!important;}
+  .device-actions,.quick-actions,.start-options{gap:7px!important;margin-top:8px!important;}
+  .quick-actions button,.start-options button,.device-actions button,.device-start-btn{
+    min-height:36px!important;
+    padding:7px 9px!important;
+    font-size:12px!important;
+    border-radius:13px!important;
+  }
+  .session-timer{font-size:23px!important;margin:4px 0!important;}
+  .session-total{font-size:18px!important;margin:2px 0 8px!important;}
+}
+@media(max-width:480px){
+  .ops-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;}
+  .ops-card,.ops-card.tap-card{min-height:62px!important;padding:8px 9px!important;}
+  .ops-card .num{font-size:18px!important;}
+  .dash-header .row{grid-template-columns:1fr 1fr!important;}
+  .top{padding:9px!important;}
+  .tabs{padding:8px 8px!important;gap:6px!important;}
+  .tab{padding:7px 12px!important;font-size:12px!important;border-radius:14px!important;}
+}
+@media(max-width:350px){
+  .ops-card .num{font-size:16px!important;}
+  .ops-card .label,.ops-card .action-hint{font-size:9.8px!important;}
+}
+
 </style>
 </head>
 <body>
@@ -796,7 +902,7 @@ button,.tab,.device-card,.ops-card,.kpi{touch-action:manipulation;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.2';
+const APP_VERSION='V6.4.2-RC5.3';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -2185,7 +2291,7 @@ load();setup();setupMobileBackNavigation();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-2')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-3')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
