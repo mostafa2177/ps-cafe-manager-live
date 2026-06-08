@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC1</title>
+<title>PS Cafe Manager • V6.4.2-RC2</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc1">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc2">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc1">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc1">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc1">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc1">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc1">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc2">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc2">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc2">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc2">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc2">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -381,6 +381,17 @@ button{min-height:40px;}
 .ops-card:before{content:'';position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--blue)}
 .ops-card.green:before{background:var(--green)}.ops-card.orange:before{background:var(--orange)}.ops-card.purple:before{background:var(--purple)}
 .ops-card .label{font-size:12px;color:var(--text-muted);margin-bottom:6px}.ops-card .num{font-size:25px;font-weight:900;color:var(--text-primary);line-height:1.1}.ops-card .hint{font-size:11px;color:var(--text-secondary);margin-top:5px}
+.ops-card.tap-card{cursor:pointer;min-height:70px;padding:11px 13px;}
+.ops-card.tap-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 8px 24px rgba(41,121,255,.14)}
+.ops-card .action-hint{font-size:11px;color:var(--text-muted);margin-top:3px}
+.owner-simple-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.owner-simple-card{background:var(--bg-base);border:1px solid var(--border);border-radius:12px;padding:12px;min-height:70px}
+.owner-simple-card span{display:block;font-size:11px;color:var(--text-muted);margin-bottom:4px}
+.owner-simple-card b{display:block;font-size:18px;color:var(--text-primary)}
+.support-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.support-actions button{width:100%}
+@media(max-width:850px){.owner-simple-grid,.support-actions{grid-template-columns:1fr}.ops-card.tap-card{min-height:68px}}
+
 .device-status-line{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 8px;padding:9px 10px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.025);}
 .device-status-line strong{font-size:18px;color:var(--green)}
 .device-card.busy{box-shadow:0 0 0 1px rgba(255,152,0,.12), var(--shadow-card)}
@@ -514,7 +525,7 @@ button{min-height:40px;}
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC1';
+const APP_VERSION='V6.4.2-RC2';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -563,6 +574,8 @@ function baseSettings(){return {mode:'offline',url:'',key:'',businessId:'',cloud
 function st(){try{return {...baseSettings(),...(JSON.parse(localStorage.getItem(SK))||{})}}catch(e){return baseSettings()}}
 function setst(s){localStorage.setItem(SK,JSON.stringify({...baseSettings(),...s}));setup();render()}
 function money(n){return (Number(n)||0).toFixed(2)}
+function ceilToFive(n){n=Number(n)||0;return n<=0?0:Math.ceil(n/5)*5}
+function billOpenPlay(raw){raw=Number(raw)||0;return raw<=0?0:Math.max(5,ceilToFive(raw))}
 function fmt(d){return d?new Date(d).toLocaleString('ar-EG'):''}
 function localBusinessDate(value=new Date()){return new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Cairo'}).format(value instanceof Date?value:new Date(value))}
 function today(){return localBusinessDate()}
@@ -684,7 +697,11 @@ function tabs(){
   let allowed=allowedTabs();
   document.getElementById('tabs').innerHTML=all.filter(t=>allowed.includes(t[0])).map(t=>`<button class="tab ${tab==t[0]?'active':''}" onclick="show('${t[0]}')">${t[1]}</button>`).join('')
 }
-function show(t){if(!allowedTabs().includes(t)){showNotice('ليست لديك صلاحية لفتح هذه الصفحة.', 'danger');return;}tab=t;tabs();render()}
+function show(t,fromPop=false){
+  if(!allowedTabs().includes(t)){showNotice('ليست لديك صلاحية لفتح هذه الصفحة.', 'danger');return;}
+  tab=t;tabs();render();
+  if(!fromPop){try{history.pushState({tab:t},'', '#'+t)}catch(e){}}
+}
 function render(){
   if(!user)return;
   if(!allowedTabs().includes(tab))tab='Dashboard';
@@ -727,11 +744,11 @@ function cost(s){
     // Fixed price match
     play=+s.matchPrice||0;
   } else {
-    // Open session: billed by hour rate
+    // Open session only: billed by time, with minimum 5 EGP and no fractions.
     let rate=s.mode==='multi'?d.multiRate:d.singleRate;
-    play=elapsed/60*(+rate||0);
+    play=billOpenPlay(elapsed/60*(+rate||0));
   }
-  // Additional matches are part of play/match revenue, not drinks/add-ons.
+  // Additional matches are fixed-price match charges, not drinks/add-ons.
   play += matchItemsTotal(s.items||[]);
   let dr=nonMatchItemsTotal(s.items||[]);
   return{m,elapsed,play,dr,total:play+dr,matchAdd:matchItemsTotal(s.items||[])}
@@ -879,6 +896,14 @@ function checkAlerts(){return;}
 function getDeviceAlertClass(s){ return ''; }
 function getTimerClass(s){ return ''; }
 function matchProgressBar(s){ return ''; }
+function openOpsCard(kind){
+  if(kind==='revenue'||kind==='matches'){show('Invoices');return;}
+  if(kind==='available'){show('Devices');return;}
+  if(kind==='open'){
+    show('Dashboard');
+    setTimeout(()=>{(document.querySelector('.device-card.busy')||document.querySelector('.device-card'))?.scrollIntoView({behavior:'smooth',block:'center'});},80);
+  }
+}
 
 function rDash(){
   const openSessions=state.sessions.filter(x=>x.status==='open');
@@ -889,20 +914,17 @@ function rDash(){
   const matchesToday=todayInvoices.reduce((a,i)=>a+invoiceMatchCount(i),0);
   vDashboard.innerHTML=`
     <div class="dash-header">
-      <div>
-        <div class="dash-header-title">🎮 لوحة التشغيل</div>
-        <div class="dash-header-sub muted">تشغيل سريع، إضافة مباريات ومشروبات، ثم إنهاء الفاتورة بدون تعقيد</div>
-      </div>
+      <div><div class="dash-header-title">🎮 لوحة التشغيل</div></div>
       <div class="row">
         <button class="ok" onclick="startModal()">▶ جلسة مفتوحة</button>
-        <button style="background:var(--purple-dim);border-color:rgba(124,58,237,0.4);color:#a78bfa" onclick="matchModal()">⚽ جلسة مباراة</button>
+        <button style="background:var(--purple-dim);border-color:rgba(124,58,237,0.4);color:#a78bfa" onclick="matchModal()">⚽ مباراة</button>
       </div>
     </div>
     <div class="ops-summary">
-      <div class="ops-card green"><div class="label">إيراد اليوم</div><div class="num">${money(todayRevenue)} ج</div><div class="hint">من الفواتير غير الملغاة</div></div>
-      <div class="ops-card orange"><div class="label">جلسات مفتوحة الآن</div><div class="num">${openSessions.length}</div><div class="hint">أجهزة مشغولة حاليًا: ${busy}</div></div>
-      <div class="ops-card"><div class="label">أجهزة متاحة</div><div class="num">${available}</div><div class="hint">جاهزة للتشغيل فورًا</div></div>
-      <div class="ops-card purple"><div class="label">مباريات اليوم</div><div class="num">${matchesToday}</div><div class="hint">جلسات ومباريات إضافية</div></div>
+      <div class="ops-card tap-card green" onclick="openOpsCard('revenue')"><div class="label">إيراد اليوم</div><div class="num">${money(todayRevenue)} ج</div><div class="action-hint">فتح الفواتير ←</div></div>
+      <div class="ops-card tap-card orange" onclick="openOpsCard('open')"><div class="label">جلسات مفتوحة</div><div class="num">${openSessions.length}</div><div class="action-hint">عرض الأجهزة ←</div></div>
+      <div class="ops-card tap-card" onclick="openOpsCard('available')"><div class="label">أجهزة متاحة</div><div class="num">${available}</div><div class="action-hint">تشغيل سريع ←</div></div>
+      <div class="ops-card tap-card purple" onclick="openOpsCard('matches')"><div class="label">مباريات اليوم</div><div class="num">${matchesToday}</div><div class="action-hint">فتح الفواتير ←</div></div>
     </div>
     <div class="grid g5">${state.devices.map(d=>{
       let s=sess(d.id),c=s?cost(s):null;
@@ -939,7 +961,6 @@ function rDash(){
           </div>
         `:d.status==='available'?`
           <div class="device-divider"></div>
-          <p class="muted small" style="text-align:center;padding:8px 0">الجهاز جاهز للتشغيل</p>
           <div class="start-options">
             <button class="device-start-btn" onclick="startModal('${d.id}')">▶ مفتوحة</button>
             <button style="background:var(--purple-dim);border-color:rgba(124,58,237,0.4);color:#a78bfa" onclick="matchModal('${d.id}')">⚽ مباراة</button>
@@ -1627,11 +1648,12 @@ function saveUser(uid){
 function rSettings(){
   if(!owner()){vSettings.innerHTML='';return;}
   let s=st(),sm=syncMeta(),ns=notificationState();
-  let syncClass=s.mode!=='secure_cloud'?'status-warn':(sm.verified?'status-good':'status-warn');
+  let cloudReady=s.mode==='secure_cloud'&&!!s.businessId;
+  let syncText=cloudReady?(sm.syncing?'جاري التحديث…':(sm.lastSuccess?'محفوظ ومتصل ✓':'متصل ✓')):'غير مربوط';
   vSettings.innerHTML=`
   <div class="page-header">
-    <div class="page-header-left"><div class="section-title">🏪 إدارة النشاط</div><div class="page-subtitle muted">لوحة صاحب النشاط فقط</div></div>
-    <span class="owner-only-tag">OWNER ONLY</span>
+    <div class="page-header-left"><div class="section-title">🏪 إدارة النشاط</div><div class="page-subtitle muted">إعدادات التشغيل اليومية</div></div>
+    <span class="owner-only-tag">للمالك</span>
   </div>
   <div class="owner-card">
     <div class="big" style="font-size:16px;margin-bottom:12px">🏷️ بيانات النشاط</div>
@@ -1644,37 +1666,23 @@ function rSettings(){
     <div class="settings-actions"><button class="ok" onclick="saveBusinessProfile()">💾 حفظ بيانات النشاط</button></div>
   </div>
   <div class="owner-card">
-    <div class="big" style="font-size:16px;margin-bottom:12px">🔐 قاعدة بيانات صاحب النشاط</div>
-    <div class="settings-note">يتم الربط بمشروع Supabase يملكه صاحب النشاط. البيانات محفوظة في جداول منفصلة ومحمية بـ RLS؛ الفواتير وسجل الحركات غير قابلين للتعديل أو الحذف من الكاشير.</div>
-    <div class="status-panel ${syncClass}">
-      <div><strong>الحالة:</strong> ${s.mode!=='secure_cloud'?'غير مربوط — البيانات على هذا الجهاز':(sm.syncing?'جاري الاتصال…':(sm.verified?(sm.lastSuccess?'محفوظ في قاعدة بيانات النشاط ✓':'اتصال آمن جاهز ✓'):'يلزم تسجيل دخول المالك'))}</div>
-      <div><strong>آخر حفظ ناجح:</strong> ${shortTime(sm.lastSuccess)}</div>
-      <div><strong>طريقة الحفظ:</strong> عمليات مباشرة مسجلة في قاعدة البيانات</div>
-      ${sm.lastError?`<div style="color:var(--red)"><strong>آخر خطأ:</strong> ${esc(sm.lastError)}</div>`:''}
+    <div class="big" style="font-size:16px;margin-bottom:12px">🔁 الاتصال والتحديث</div>
+    <div class="owner-simple-grid">
+      <div class="owner-simple-card"><span>حالة الاتصال</span><b>${syncText}</b></div>
+      <div class="owner-simple-card"><span>آخر تحديث</span><b>${shortTime(sm.lastSuccess)}</b></div>
+      <div class="owner-simple-card"><span>الإصدار</span><b>${APP_VERSION}</b></div>
     </div>
-    <div class="grid g2 mt">
-      <div class="col"><label>وضع البيانات</label><select id="mode"><option value="offline" ${s.mode==='offline'?'selected':''}>الجهاز فقط</option><option value="secure_cloud" ${s.mode==='secure_cloud'?'selected':''}>قاعدة بيانات المالك الآمنة</option></select></div>
-      <div class="col"><label>معرف النشاط Business ID</label><input id="businessId" value="${esc(s.businessId)}" placeholder="UUID من ملف الإعداد"></div>
-      <div class="col"><label>Supabase Project URL</label><input id="url" value="${esc(s.url)}" placeholder="https://xxxx.supabase.co"></div>
-      <div class="col"><label>Publishable Key</label><input id="key" value="${esc(s.key)}" placeholder="sb_publishable_... أو anon العام"></div>
-      <div class="col"><label>بريد حساب هذا الجهاز في Supabase Auth</label><input id="cloudEmail" type="email" value="${esc(s.cloudEmail)}" placeholder="owner@email.com"></div>
-      <div class="col"><label>كلمة مرور حساب هذا الجهاز</label><input id="cloudPassword" type="password" placeholder="لا يتم حفظها في التطبيق"></div>
+    <div class="support-actions">
+      <button class="btn-blue" onclick="manualSync()">🔄 تحديث البيانات</button>
+      <button class="gray" onclick="clearAppCacheAndReload()">📱 تحديث التطبيق</button>
+      <button class="gray" onclick="checkForUpdate()">فحص تحديث</button>
     </div>
-    <div class="settings-actions">
-      <button class="ok" onclick="connectOwnerCloud()">🔒 ربط واختبار الاتصال</button>
-      <button onclick="manualSync()">🔄 مزامنة البيانات الآن</button>
-      <button class="gray" onclick="cloudSignOut()">تسجيل خروج السحابة</button>
-      <button class="gray" onclick="manualSync()">📥 تحديث البيانات</button>
-    </div>
+    ${cloudReady?'':`<div class="settings-actions"><button class="btn-warn" onclick="cloudDeviceSetupModal()">🔒 ربط جهاز بقاعدة بيانات المحل</button></div>`}
   </div>
   <div class="owner-card">
-    <div class="big" style="font-size:16px;margin-bottom:12px">📄 السياسات والبيانات</div>
-    <div class="settings-note">صفحات شروط الاستخدام والخصوصية تظهر برابط بسيط في شاشة الدخول، بينما تفاصيل الإدارة والربط تظل لصاحب النشاط فقط.</div>
-    <div class="settings-actions">
-      <button class="gray" onclick="showPolicy('terms')">شروط الاستخدام</button>
-      <button class="gray" onclick="showPolicy('privacy')">سياسة الخصوصية</button>
-      <button class="gray" onclick="showPolicy('support')">الملكية والدعم</button>
-    </div>
+    <div class="big" style="font-size:16px;margin-bottom:12px">🔔 التنبيهات</div>
+    <div class="status-panel ${ns.cls}"><strong>الحالة:</strong> ${ns.label}</div>
+    <div class="support-actions"><button class="btn-blue" onclick="enableNotifications()">تفعيل التنبيهات</button><button class="gray" onclick="testAlertNow()">اختبار تنبيه</button><button class="gray" onclick="installPwa()">تثبيت التطبيق</button></div>
   </div>
   <div class="owner-card">
     <div class="big" style="font-size:16px;margin-bottom:12px">💾 النسخ الاحتياطي</div>
@@ -1682,24 +1690,6 @@ function rSettings(){
       <button onclick="exportBackup()">📤 تصدير Backup</button>
       <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:var(--bg-elevated);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;font-weight:700;color:var(--text-secondary);flex:1;justify-content:center">📥 استيراد Backup <input type="file" onchange="importBackup(event)" style="display:none;width:auto"></label>
     </div>
-  </div>
-  <div class="owner-card owner-tech owner-tech-open">
-    <div class="owner-tech-header">
-      <div class="big" style="font-size:16px">🛠️ أدوات فنية ودعم التطبيق</div>
-      <span class="owner-only-tag">للمالك فقط</span>
-    </div>
-    <div class="settings-note">الدعم مخصص لتحديث التطبيق وفحص الاتصال فقط.</div>
-    <div class="settings-section mt">
-      <div class="big" style="font-size:15px;margin-bottom:10px">🔔 اختبار التنبيهات</div>
-      <div class="status-panel ${ns.cls}"><strong>الإشعارات:</strong> ${ns.label}</div>
-      <div class="settings-actions"><button class="btn-blue" onclick="enableNotifications()">تفعيل الإشعارات</button><button class="gray" onclick="testAlertNow()">اختبار تنبيه الآن</button></div>
-    </div>
-    <div class="settings-section">
-      <div class="big" style="font-size:15px;margin-bottom:10px">📱 التثبيت والتحديث</div>
-      <div class="status-panel ${installState().cls}"><strong>التثبيت:</strong> ${installState().label}<br><strong>الإصدار:</strong> ${APP_VERSION}</div>
-      <div class="settings-actions"><button class="btn-blue" onclick="installPwa()">تثبيت التطبيق</button><button class="gray" onclick="checkForUpdate()">فحص تحديث</button><button class="gray" onclick="clearAppCacheAndReload()">تحديث إجباري آمن</button></div>
-    </div>
-    <div class="settings-actions"><button class="danger" onclick="clearQueue()">مسح الانتظار</button><button class="danger" onclick="resetAll()">تصفير بيانات الجهاز</button></div>
   </div>`
 }
 async function saveBusinessProfile(){
@@ -1886,14 +1876,24 @@ async function clearAppCacheAndReload(){
   }catch(e){showNotice('تعذر تحديث الكاش الآن.', 'danger')}
 }
 
-load();setup();
+function setupMobileBackNavigation(){
+  try{history.replaceState({tab:tab||'Dashboard'},'', location.hash||'#Dashboard');}catch(e){}
+  window.addEventListener('popstate',()=>{
+    const m=document.getElementById('modal');
+    if(m&&!m.classList.contains('hidden')){closeM();try{history.pushState({tab:tab},'', '#'+tab)}catch(e){};return;}
+    if(tab!=='Dashboard'){show('Dashboard',true);return;}
+    const now=Date.now();
+    if(!window.__lastBackPress||now-window.__lastBackPress>1800){window.__lastBackPress=now;showNotice('اضغط رجوع مرة أخرى للخروج','info');try{history.pushState({tab:'Dashboard'},'', '#Dashboard')}catch(e){};}
+  });
+}
+load();setup();setupMobileBackNavigation();
 </script>
 
 <!-- Service Worker Registration -->
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc1')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc2')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
