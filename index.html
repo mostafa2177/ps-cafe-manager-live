@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.14</title>
+<title>PS Cafe Manager • V6.4.2-RC5.15</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -1090,6 +1090,44 @@ button{min-height:var(--btn-h)!important;padding:var(--btn-pad-y) var(--btn-pad-
   button{font-size:12.2px!important;}
   .invoice-actions{gap:7px!important;}
 }
+
+
+/* RC5.15 — Invoice Button Fine Polish
+   Scope: invoice modal buttons only. Keeps RC5.13 billing logic and RC5.14 general cleanup. */
+.invoice-actions{
+  gap:9px!important;
+  margin-top:11px!important;
+}
+.invoice-actions button{
+  min-height:36px!important;
+  padding:7px 10px!important;
+  font-size:12.5px!important;
+  font-weight:800!important;
+  border-radius:13px!important;
+  box-shadow:none!important;
+}
+.invoice-actions button:hover{
+  transform:none!important;
+}
+.invoice-actions .invoice-danger-btn{
+  background:linear-gradient(135deg,#e73357,#c21f40)!important;
+  border-color:rgba(255,95,125,.55)!important;
+}
+.invoice-actions .invoice-warn-btn{
+  background:linear-gradient(135deg,#c98200,#efa414)!important;
+  border-color:rgba(255,196,77,.50)!important;
+  color:#fff!important;
+}
+.invoice-actions .invoice-close-btn{
+  min-height:34px!important;
+  opacity:.92;
+}
+@media(max-width:650px){
+  .invoice-actions{gap:8px!important;margin-top:10px!important;}
+  .invoice-actions button{min-height:38px!important;font-size:12.4px!important;padding:7px 9px!important;}
+  .invoice-actions .invoice-close-btn{min-height:36px!important;}
+}
+
 </style>
 </head>
 <body>
@@ -1153,7 +1191,7 @@ button{min-height:var(--btn-h)!important;padding:var(--btn-pad-y) var(--btn-pad-
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.14';
+const APP_VERSION='V6.4.2-RC5.15';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];

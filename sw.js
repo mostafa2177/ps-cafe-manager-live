@@ -1,11 +1,11 @@
 // ============================================================
 // PS Cafe Manager — Service Worker
-// Version: 6.4.2-RC5.14 GLOBAL TEXT BUTTON CLEANUP
+// Version: 6.4.2-RC5.15 INVOICE BUTTON FINE POLISH
 // ============================================================
-const CACHE_NAME = 'ps-cafe-v6.4.2-rc5-14';
-const OFFLINE_URL = './index.html?v=6.4.2-rc5-14';
+const CACHE_NAME = 'ps-cafe-v6.4.2-rc5-15';
+const OFFLINE_URL = './index.html?v=6.4.2-rc5-15';
 const PRECACHE_ASSETS = [
-  './', './index.html?v=6.4.2-rc5-14', './manifest.json?v=6.4.2-rc5-14',
+  './', './index.html?v=6.4.2-rc5-15', './manifest.json?v=6.4.2-rc5-15',
   './icon-72.png','./icon-96.png','./icon-128.png','./icon-144.png',
   './icon-152.png','./icon-192.png','./icon-384.png','./icon-512.png','./brand-avatar.png'
 ];
