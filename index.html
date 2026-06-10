@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.15</title>
+<title>PS Cafe Manager • V6.4.2-RC5.16</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc5-14">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc5-16">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-14">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-14">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-14">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-14">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-14">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-16">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-16">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-16">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-16">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-16">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -50,6 +50,17 @@ html,body{max-width:100%;overflow-x:hidden;}
 ::-webkit-scrollbar-track{background:var(--bg-surface)}
 ::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:var(--blue)}
+
+
+/* RC5.16 — Safe Session Restore Guard */
+.boot-status{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
+  background:radial-gradient(ellipse 60% 50% at 30% 40%,rgba(41,121,255,0.08) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 60% at 80% 70%,rgba(124,58,237,0.06) 0%,transparent 60%),var(--bg-base);}
+.boot-card{width:min(360px,92vw);background:var(--bg-card);border:1px solid var(--border-light);border-radius:22px;padding:26px 22px;text-align:center;box-shadow:var(--shadow-card)}
+.boot-spinner{width:34px;height:34px;border-radius:50%;border:3px solid rgba(139,163,199,.25);border-top-color:var(--blue);margin:0 auto 14px;animation:bootSpin .85s linear infinite}
+.boot-title{font-size:17px;font-weight:800;color:var(--text-primary);margin-bottom:4px}
+.boot-sub{font-size:13px;color:var(--text-secondary)}
+@keyframes bootSpin{to{transform:rotate(360deg)}}
 
 /* LOGIN */
 .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
@@ -1132,7 +1143,15 @@ button{min-height:var(--btn-h)!important;padding:var(--btn-pad-y) var(--btn-pad-
 </head>
 <body>
 
-<div id="login" class="login">
+<div id="boot" class="boot-status">
+  <div class="boot-card">
+    <div class="boot-spinner"></div>
+    <div class="boot-title">جاري استعادة الجلسة</div>
+    <div class="boot-sub">يتم التحقق من تسجيل الدخول بأمان...</div>
+  </div>
+</div>
+
+<div id="login" class="login hidden">
   <div class="login-box">
     <div class="login-logo">
       <img class="brand-avatar login-avatar" src="brand-avatar.png" alt="PS Cafe Manager">
@@ -1191,7 +1210,7 @@ button{min-height:var(--btn-h)!important;padding:var(--btn-pad-y) var(--btn-pad-
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.15';
+const APP_VERSION='V6.4.2-RC5.16';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -2736,6 +2755,64 @@ async function clearAppCacheAndReload(){
   }catch(e){showNotice('تعذر تحديث الكاش الآن.', 'danger')}
 }
 
+
+// ============================================================
+// SAFE SESSION RESTORE GUARD — RC5.16
+// Restores the existing Supabase session after refresh/pull-to-refresh.
+// Does NOT touch scroll/touch behavior.
+// ============================================================
+function showLoginScreen(){
+  const boot=document.getElementById('boot'), login=document.getElementById('login'), app=document.getElementById('app');
+  if(boot)boot.classList.add('hidden');
+  if(app)app.classList.add('hidden');
+  if(login)login.classList.remove('hidden');
+  const cfg=st();
+  const u=document.getElementById('lu');
+  if(u&&cfg.mode==='secure_cloud'&&cfg.cloudEmail)u.value=cfg.cloudEmail;
+}
+function showAppScreen(){
+  const boot=document.getElementById('boot'), login=document.getElementById('login'), app=document.getElementById('app');
+  if(boot)boot.classList.add('hidden');
+  if(login)login.classList.add('hidden');
+  if(app)app.classList.remove('hidden');
+}
+async function restoreSavedCloudSession(){
+  const cfg=st();
+  if(cfg.mode!=='secure_cloud'||!cfg.session||!cfg.session.access_token)return false;
+  try{
+    setSyncMeta({syncing:true,lastError:''});
+    await ensureCloudToken();
+    const member=await fetchSignedInMember();
+    if(!member||!member.active)throw Error('هذا المستخدم غير مفعل في النشاط.');
+    user={id:member.user_id,username:member.display_name||cfg.cloudEmail||'User',role:jsRole(member.role),canCorrectInvoices:!!member.can_correct_invoices,active:true,cloud:true};
+    showAppScreen();
+    if(!allowedTabs().includes(tab))tab='Dashboard';
+    tabs();setup();render();
+    try{
+      await loadCloud(true);
+      setSyncMeta({verified:true,syncing:false,lastError:''});
+    }catch(loadErr){
+      setSyncMeta({verified:true,syncing:false,lastError:loadErr.message||String(loadErr)});
+      render();
+      showNotice('تم استعادة الدخول، وتعذر تحديث البيانات الآن.', 'warn');
+    }
+    return true;
+  }catch(e){
+    const s=st();
+    s.session=null;
+    setst(s);
+    setSyncMeta({verified:false,syncing:false,lastError:''});
+    user=null;
+    return false;
+  }
+}
+async function bootApplication(){
+  load();
+  setupMobileBackNavigation();
+  const restored=await restoreSavedCloudSession();
+  if(!restored){showLoginScreen();setup();}
+}
+
 function setupMobileBackNavigation(){
   try{history.replaceState({tab:tab||'Dashboard'},'', location.hash||'#Dashboard');}catch(e){}
   window.addEventListener('popstate',()=>{
@@ -2746,14 +2823,14 @@ function setupMobileBackNavigation(){
     if(!window.__lastBackPress||now-window.__lastBackPress>1800){window.__lastBackPress=now;showNotice('اضغط رجوع مرة أخرى للخروج','info');try{history.pushState({tab:'Dashboard'},'', '#Dashboard')}catch(e){};}
   });
 }
-load();setup();setupMobileBackNavigation();
+bootApplication();
 </script>
 
 <!-- Service Worker Registration -->
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-14')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-16')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
