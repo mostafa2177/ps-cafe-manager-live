@@ -1216,7 +1216,7 @@ button{min-height:var(--btn-h)!important;padding:var(--btn-pad-y) var(--btn-pad-
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.18.9';
+const APP_VERSION='V6.4.2-RC5.18.10';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -2078,9 +2078,9 @@ async function startTimedSession(){
   if(st().mode==='secure_cloud'){
     rememberTimedSession(sid,mins);
     try{
-      // RC5.18.9: timed sessions now use the SECURITY DEFINER RPC again.
+      // RC5.18.10: timed sessions use dedicated RPC wrappers to avoid PostgREST signature cache issues.
       // Direct table insert is intentionally avoided because RLS blocks browser inserts.
-      await rpc('ps_start_session',{p_business:st().businessId,p_id:sid,p_device_id:did,p_customer:customer||'',p_play_mode:mode,p_session_type:'timed',p_match_minutes:mins});
+      await rpc('ps_start_timed_session',{p_business:st().businessId,p_id:sid,p_device_id:did,p_customer:customer||'',p_play_mode:mode,p_match_minutes:mins});
       await loadCloud(true);
       await acceptStartedSession(sid);
     }catch(e){
@@ -2246,9 +2246,12 @@ async function endSession(sid){
           catch(me){console.warn('Timed marker cleanup skipped',me);}
         }
       }
-      // RC5.18.9: all session completion paths use the SECURITY DEFINER RPC.
-      // This keeps timed/open/match completion consistent and avoids direct RLS table writes from the browser.
-      await rpc('ps_complete_session',{p_business:st().businessId,p_session_id:sid,p_invoice_id:iid,p_payment_method:'Cash'});
+      // RC5.18.10: timed sessions use a dedicated RPC wrapper; open/match keep the existing completion RPC.
+      if(isTimedSession(s)){
+        await rpc('ps_complete_timed_session',{p_business:st().businessId,p_session_id:sid,p_invoice_id:iid,p_payment_method:'Cash'});
+      }else{
+        await rpc('ps_complete_session',{p_business:st().businessId,p_session_id:sid,p_invoice_id:iid,p_payment_method:'Cash'});
+      }
       forgetTimedSession(sid);
       delete alertedSessions[sid];
       await loadCloud(true);
@@ -2893,7 +2896,7 @@ function friendlySyncError(status,raw){
   if(status===400&&/invalid|login|credentials/i.test(txt))return 'بيانات دخول السحابة غير صحيحة.';
   if(status===401)return 'انتهت جلسة السحابة أو بيانات الدخول غير صحيحة.';
   if(status===403)return 'الحساب لا يملك صلاحية الوصول إلى بيانات النشاط.';
-  if(status===404)return 'خدمة قاعدة البيانات لم تجد العملية المطلوبة. حدّث التطبيق ثم اضغط تحديث البيانات، ولا تشغّل ملف 01_SCHEMA_PRODUCTION.';
+  if(status===404)return 'دالة التشغيل السحابية غير ظاهرة للواجهة. شغّل ملف RC5.18.10 SQL ثم حدّث التطبيق والبيانات.';
   if(/row-level security|rls/i.test(txt))return 'رفضت قاعدة البيانات العملية بسبب الصلاحيات المحددة.';
   if(/Failed to fetch|NetworkError/i.test(txt))return 'تعذر الوصول إلى قاعدة البيانات. افحص الإنترنت أو الرابط.';
   return 'تعذر إتمام العملية ('+status+').';
