@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.18.4</title>
+<title>PS Cafe Manager • V6.4.2-RC5.18.5</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc5-18-4">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc5-18-5">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-18-4">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-18-4">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-18-4">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-18-4">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-18-4">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-18-5">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-18-5">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-18-5">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-18-5">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-18-5">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -52,7 +52,7 @@ html,body{max-width:100%;overflow-x:hidden;}
 ::-webkit-scrollbar-thumb:hover{background:var(--blue)}
 
 
-/* RC5.18.4 — Timed Session Start & Card State Fix */
+/* RC5.18.5 — Mobile Timed Card Cloud Marker Fix */
 .boot-status{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
   background:radial-gradient(ellipse 60% 50% at 30% 40%,rgba(41,121,255,0.08) 0%,transparent 60%),
   radial-gradient(ellipse 50% 60% at 80% 70%,rgba(124,58,237,0.06) 0%,transparent 60%),var(--bg-base);}
@@ -1218,7 +1218,7 @@ button{min-height:var(--btn-h)!important;padding:var(--btn-pad-y) var(--btn-pad-
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.18.4';
+const APP_VERSION='V6.4.2-RC5.18.5';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -1276,9 +1276,15 @@ function today(){return localBusinessDate()}
 function val(x){return document.getElementById(x)?.value||''}
 function matchOptionPrice(opt,mode){return Number((mode==='multi'?opt.multi:opt.single) ?? opt.price ?? 0)||0}
 function matchOptionLabel(opt,mode){return `${Number(opt.mins)||0} دقيقة — ${money(matchOptionPrice(opt,mode))} ج`}
-function isMatchLine(x){return !!x && (x.type==='match'||x.itemType==='match'||x.item_type==='match'||String(x.name||'').trim().startsWith('مباراة'));}
+const TIMED_MARKER_PREFIX='__PS_TIMED_SESSION__:';
+function isTimedMarker(x){return !!x && String(x.name||'').startsWith(TIMED_MARKER_PREFIX);}
+function timedMarkerName(mins){return TIMED_MARKER_PREFIX+(Number(mins)||0);}
+function timedMinsFromMarker(x){const m=String(x?.name||'').match(/^__PS_TIMED_SESSION__:(\d+)/);return m?Number(m[1])||0:0;}
+function timedMinsFromItems(items){return (items||[]).reduce((max,i)=>Math.max(max,timedMinsFromMarker(i)),0);}
+function cleanVisibleItems(items){return (items||[]).filter(i=>!isTimedMarker(i));}
+function isMatchLine(x){return !!x && !isTimedMarker(x) && (x.type==='match'||x.itemType==='match'||x.item_type==='match'||String(x.name||'').trim().startsWith('مباراة'));}
 function matchItemsTotal(items){return (items||[]).filter(isMatchLine).reduce((a,i)=>a+(+i.price||0)*(+i.qty||1),0);}
-function nonMatchItemsTotal(items){return (items||[]).filter(i=>!isMatchLine(i)).reduce((a,i)=>a+(+i.price||0)*(+i.qty||1),0);}
+function nonMatchItemsTotal(items){return (items||[]).filter(i=>!isTimedMarker(i)&&!isMatchLine(i)).reduce((a,i)=>a+(+i.price||0)*(+i.qty||1),0);}
 function matchItemsCount(items){return (items||[]).filter(isMatchLine).reduce((a,i)=>a+(+i.qty||1),0);}
 function sessionMatchCount(s){return (s&&s.sessionType==='match'?1:0)+matchItemsCount((s&&s.items)||[]);}
 function invoiceMatchCount(i){return (i&&i.sessionType==='match'?1:0)+matchItemsCount((i&&i.items)||[]);}
@@ -1288,7 +1294,7 @@ const TMK='ps_cafe_v4_timed_meta';
 function timedMeta(){try{return JSON.parse(localStorage.getItem(TMK))||{}}catch(e){return {}}}
 function rememberTimedSession(sid,mins){if(!sid||!mins)return;const m=timedMeta();m[sid]=Number(mins)||0;localStorage.setItem(TMK,JSON.stringify(m));}
 function forgetTimedSession(sid){const m=timedMeta();if(m&&sid&&m[sid]){delete m[sid];localStorage.setItem(TMK,JSON.stringify(m));}}
-function timedMins(s){return Number((s&&(s.timedMins||s.timedMinutes||s.timedDuration||timedMeta()[s.id]||((s.sessionType==='timed'||s.sessionType==='open')?s.matchMins:0)))||0)||0}
+function timedMins(s){return Number((s&&(s.timedMins||s.timedMinutes||s.timedDuration||timedMeta()[s.id]||timedMinsFromItems(s.items)||((s.sessionType==='timed'||s.sessionType==='open')?s.matchMins:0)))||0)||0}
 function isTimedSession(s){return !!(s&&(s.sessionType==='timed'||(s.sessionType==='open'&&timedMins(s)>0)))}
 async function persistCloudTimedSession(sid,mins){
   const m=Number(mins)||0;if(!sid||!m)return;
@@ -1297,6 +1303,15 @@ async function persistCloudTimedSession(sid,mins){
   const b=st().businessId;
   await req('PATCH',`ps_sessions?business_id=eq.${encodeURIComponent(b)}&id=eq.${encodeURIComponent(sid)}&status=eq.open`,{session_type:'open',match_minutes:m},'return=minimal');
 }
+async function ensureTimedMarker(sid,mins){
+  const m=Number(mins)||0;if(!sid||!m||st().mode!=='secure_cloud')return;
+  const markerId='timed_'+sid;
+  try{
+    await rpc('ps_add_custom_session_item',{p_business:st().businessId,p_id:markerId,p_session_id:sid,p_name:timedMarkerName(m),p_price:0,p_qty:1});
+  }catch(e){
+    if(!isCloudConflictError(e))throw e;
+  }
+}
 function isCloudConflictError(e){return /409|conflict|duplicate|already|تعذر إتمام العملية \(409\)|تعارض|موجودة|مسجلة/i.test(String(e&&e.message?e.message:e||''));}
 function findOpenSessionOnDevice(did){return (state.sessions||[]).find(x=>x.deviceId===did&&x.status==='open')||null}
 function findTimedSessionOnDevice(did,mins){return (state.sessions||[]).find(x=>x.deviceId===did&&x.status==='open'&&(isTimedSession(x)||Number(x.matchMins)===Number(mins)||Number(x.timedMins)===Number(mins)))||null}
@@ -1304,7 +1319,7 @@ function handleTimedStartConflict(did,mins,sid){
   const existingTimed=findTimedSessionOnDevice(did,mins);
   if(existingTimed){rememberTimedSession(existingTimed.id,mins);return {ok:true,msg:'تم بدء الوقت المحدد والعداد التنازلي ✓'};}
   const anyOpen=findOpenSessionOnDevice(did);
-  if(anyOpen){return {ok:true,msg:'الجهاز عليه جلسة مفتوحة بالفعل. تم تحديث العرض.'};}
+  if(anyOpen){anyOpen.sessionType='timed';anyOpen.matchMins=Number(mins)||anyOpen.matchMins;anyOpen.timedMins=Number(mins)||anyOpen.timedMins;rememberTimedSession(anyOpen.id,mins);return {ok:true,msg:'تم بدء الوقت المحدد والعداد التنازلي ✓'};}
   return {ok:false,msg:''};
 }
 function sessionKind(s){return !s?'':(s.sessionType==='match'?'match':(isTimedSession(s)?'timed':'open'))}
@@ -2012,19 +2027,33 @@ async function startTimedSession(){
   const btn=document.getElementById('btn-start-timed');
   if(btn&&btn.disabled)return;
   if(btn){btn.disabled=true;btn.textContent='جاري البدء…';}
+  async function acceptTimed(startedSid){
+    rememberTimedSession(startedSid,mins);
+    const live=(state.sessions||[]).find(x=>x.id===startedSid)||(state.sessions||[]).find(x=>x.deviceId===did&&x.status==='open');
+    if(live){live.sessionType='timed';live.matchMins=mins;live.timedMins=mins;}
+    closeM();render();showNotice('تم بدء الوقت المحدد والعداد التنازلي ✓','success');
+  }
   if(st().mode==='secure_cloud'){
     rememberTimedSession(sid,mins);
     try{
       await rpc('ps_start_session',{p_business:st().businessId,p_id:sid,p_device_id:did,p_customer:customer,p_play_mode:mode,p_session_type:'open',p_match_minutes:mins});
-      try{await persistCloudTimedSession(sid,mins);}catch(pe){console.warn('Timed metadata persist skipped:',pe);}
+      try{await persistCloudTimedSession(sid,mins);}catch(pe){if(!isCloudConflictError(pe))console.warn('Timed patch failed',pe);}
+      try{await ensureTimedMarker(sid,mins);}catch(me){console.warn('Timed marker failed',me);}
       await loadCloud(true);
-      const existing=state.sessions.find(x=>x.id===sid&&x.status==='open')||findTimedSessionOnDevice(did,mins)||findOpenSessionOnDevice(did);
-      if(existing&&timedMins(existing)>0)rememberTimedSession(existing.id,mins);
-      closeM();showNotice('تم بدء الوقت المحدد والعداد التنازلي ✓','success');return;
+      await acceptTimed(sid);
     }catch(e){
-      try{await loadCloud(true);}catch(_ignore){}
-      const conflictHandled=isCloudConflictError(e)?handleTimedStartConflict(did,mins,sid):{ok:false,msg:''};
-      if(conflictHandled.ok){closeM();showNotice(conflictHandled.msg,'success');return;}
+      if(isCloudConflictError(e)){
+        try{
+          await loadCloud(true);
+          const existing=(state.sessions||[]).find(x=>x.deviceId===did&&x.status==='open');
+          if(existing){
+            rememberTimedSession(existing.id,mins);existing.sessionType='timed';existing.matchMins=mins;existing.timedMins=mins;
+            try{await ensureTimedMarker(existing.id,mins);}catch(me){console.warn('Timed marker after conflict failed',me);}
+            await acceptTimed(existing.id);
+            return;
+          }
+        }catch(_ignore){}
+      }
       forgetTimedSession(sid);
       showNotice('لم يبدأ الوقت المحدد: '+(e.message||e),'danger');
       if(btn){btn.disabled=false;btn.textContent='بدء الوقت المحدد';}
@@ -2144,7 +2173,7 @@ function drinkModal(sid){
     <div style="margin-top:10px"><button class="ok" onclick="addDrink('${sid}')">إضافة</button></div>
     <br>
     <div class="tw"><table><tr><th>الصنف</th><th>كمية</th><th>سعر</th><th>إجمالي</th><th></th></tr>
-    ${(s.items||[]).map((i,n)=>`<tr><td>${i.name}</td><td>${i.qty}</td><td>${money(i.price)}</td><td>${money(i.price*i.qty)}</td><td><button class="danger" onclick="remDrink('${sid}',${n})">حذف</button></td></tr>`).join('')}
+    ${cleanVisibleItems(s.items||[]).map((i,n)=>`<tr><td>${i.name}</td><td>${i.qty}</td><td>${money(i.price)}</td><td>${money(i.price*i.qty)}</td><td><button class="danger" onclick="remDrink('${sid}',${(s.items||[]).indexOf(i)})">حذف</button></td></tr>`).join('')}
     </table></div>
     <br><button class="gray" onclick="closeM()">إغلاق</button>`);
 }
@@ -2240,7 +2269,7 @@ function printInvoice(iid){
   const phone=esc((state.profile&&state.profile.phone)||'');
   const address=esc((state.profile&&state.profile.address)||'');
   const matchRows=(i.items||[]).filter(isMatchLine).map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.price*x.qty)}</td></tr>`).join('');
-  const drinkRows=(i.items||[]).filter(x=>!isMatchLine(x)).map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.price*x.qty)}</td></tr>`).join('');
+  const drinkRows=(i.items||[]).filter(x=>!isTimedMarker(x)&&!isMatchLine(x)).map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.price*x.qty)}</td></tr>`).join('');
   const w=window.open('','_blank','width=460,height=760');
   if(!w){showNotice('اسمح بفتح النوافذ المنبثقة للطباعة.', 'warn');return;}
   w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>فاتورة ${invNo(i)}</title><style>
@@ -2887,11 +2916,11 @@ async function loadCloud(force=false){
   const itemMap={};(sitems||[]).forEach(i=>(itemMap[i.session_id]||(itemMap[i.session_id]=[])).push({id:i.id,productId:i.product_id,name:i.name,price:+i.price,qty:+i.qty,type:i.item_type||'drink',item_type:i.item_type||'drink',addedAt:i.added_at}));
   const invItemMap={};(iitems||[]).forEach(i=>(invItemMap[i.invoice_id]||(invItemMap[i.invoice_id]=[])).push({id:i.id,productId:i.product_id,name:i.name,price:+i.price,qty:+i.qty,type:i.item_type||'drink',item_type:i.item_type||'drink'}));
   const localTimedMeta=timedMeta();
-  const mappedSessions=(sessions||[]).map(s=>{const tm=Number(localTimedMeta[s.id]||s.match_minutes||0);const isTimed=(s.session_type==='open' && tm>0);return {id:s.id,deviceId:s.device_id,customer:s.customer,mode:s.play_mode,sessionType:isTimed?'timed':s.session_type,matchMins:isTimed?tm:s.match_minutes,timedMins:isTimed?tm:null,matchPrice:+s.match_price||null,items:itemMap[s.id]||[],start:s.started_at,status:s.status,end:s.ended_at,startedBy:s.started_by_label||'غير محدد',startedById:s.started_by,endedBy:s.ended_by_label||'',endedById:s.ended_by};});
+  const mappedSessions=(sessions||[]).map(s=>{const rawItems=itemMap[s.id]||[];const markerMins=timedMinsFromItems(rawItems);const tm=Number(s.match_minutes||localTimedMeta[s.id]||markerMins||0);const isTimed=(s.session_type==='open' && tm>0);return {id:s.id,deviceId:s.device_id,customer:s.customer,mode:s.play_mode,sessionType:isTimed?'timed':s.session_type,matchMins:isTimed?tm:s.match_minutes,timedMins:isTimed?tm:null,matchPrice:+s.match_price||null,items:cleanVisibleItems(rawItems),start:s.started_at,status:s.status,end:s.ended_at,startedBy:s.started_by_label||'غير محدد',startedById:s.started_by,endedBy:s.ended_by_label||'',endedById:s.ended_by};});
   const sessionById={};mappedSessions.forEach(s=>{sessionById[s.id]=s});
   const openIds=new Set(mappedSessions.filter(s=>s.status==='open').map(s=>s.deviceId));
   const localUsers=state.users||[];
-  state={users:localUsers,profile:{businessName:state.profile?.businessName||'PS Cafe',ownerName:profiles[0]?.owner_name||'',phone:profiles[0]?.phone||'',address:profiles[0]?.address||''},devices:(devices||[]).map(d=>({id:d.id,name:d.name,status:d.maintenance?'maintenance':(openIds.has(d.id)?'busy':'available'),singleRate:+d.single_rate,multiRate:+d.multi_rate,matchPrices:d.match_prices||[],cloudUpdatedAt:d.updated_at})),products:(products||[]).map(p=>({id:p.id,name:p.name,price:+p.price,stock:+p.stock,active:p.active,cloudUpdatedAt:p.updated_at})),sessions:mappedSessions,invoices:(invoices||[]).map(i=>{const ss=sessionById[i.session_id]||{};return {id:i.id,sessionId:i.session_id,no:+i.invoice_no,date:i.created_at,deviceId:i.device_id,deviceName:i.device_name,customer:i.customer,mode:i.play_mode,sessionType:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?'timed':i.session_type,matchMins:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?Number(i.match_minutes||ss.matchMins||ss.timedMins||0):i.match_minutes,timedMins:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?Number(i.match_minutes||ss.matchMins||ss.timedMins||0):null,start:i.started_at||ss.start,end:i.ended_at||ss.end||i.created_at,minutes:i.minutes,playTotal:+i.play_total,drinkTotal:+i.drink_total,total:+i.total,items:invItemMap[i.id]||[],payment:i.payment_method,status:i.status||'completed',correctionSeq:+i.correction_seq||0,correctedAt:i.corrected_at,correctedByLabel:i.corrected_by_label,correctionReason:i.correction_reason,issuedBy:i.creator_label,startedBy:ss.startedBy||'غير محدد',endedBy:ss.endedBy||i.creator_label||'غير محدد'}}),expenses:(expenses||[]).map(e=>({id:e.id,date:e.expense_date,type:e.expense_type,amount:+e.amount,note:e.note,createdBy:e.creator_label,createdAt:e.created_at,voidedAt:e.voided_at,voidReason:e.void_reason||''})),shiftClosures:(shiftClosures||[]).map(x=>({id:x.id,openedAt:x.opened_at,closedAt:x.closed_at,closedBy:x.closed_by,closedByLabel:x.closed_by_label,invoiceCount:+x.invoice_count||0,firstInvoiceNo:+x.first_invoice_no||0,lastInvoiceNo:+x.last_invoice_no||0,playTotal:+x.play_total||0,drinkTotal:+x.drink_total||0,total:+x.total||0,actualCash:+x.actual_cash||0,difference:+x.difference||0,notes:x.notes||'',createdAt:x.created_at,cloudSynced:true})),auditLogs:(logs||[]).map(l=>({id:l.id,at:l.occurred_at,action:l.action,entityType:l.entity_type,entityId:l.entity_id,summary:l.summary,details:l.details,actor:l.actor_label,actorRole:l.actor_role,cloudSynced:true})),nextInvoice:Math.max(1,...(invoices||[]).map(i=>+i.invoice_no+1)),updatedAt:new Date().toISOString()};
+  state={users:localUsers,profile:{businessName:state.profile?.businessName||'PS Cafe',ownerName:profiles[0]?.owner_name||'',phone:profiles[0]?.phone||'',address:profiles[0]?.address||''},devices:(devices||[]).map(d=>({id:d.id,name:d.name,status:d.maintenance?'maintenance':(openIds.has(d.id)?'busy':'available'),singleRate:+d.single_rate,multiRate:+d.multi_rate,matchPrices:d.match_prices||[],cloudUpdatedAt:d.updated_at})),products:(products||[]).map(p=>({id:p.id,name:p.name,price:+p.price,stock:+p.stock,active:p.active,cloudUpdatedAt:p.updated_at})),sessions:mappedSessions,invoices:(invoices||[]).map(i=>{const ss=sessionById[i.session_id]||{};return {id:i.id,sessionId:i.session_id,no:+i.invoice_no,date:i.created_at,deviceId:i.device_id,deviceName:i.device_name,customer:i.customer,mode:i.play_mode,sessionType:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?'timed':i.session_type,matchMins:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?Number(i.match_minutes||ss.matchMins||ss.timedMins||0):i.match_minutes,timedMins:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?Number(i.match_minutes||ss.matchMins||ss.timedMins||0):null,start:i.started_at||ss.start,end:i.ended_at||ss.end||i.created_at,minutes:i.minutes,playTotal:+i.play_total,drinkTotal:+i.drink_total,total:+i.total,items:cleanVisibleItems(invItemMap[i.id]||[]),payment:i.payment_method,status:i.status||'completed',correctionSeq:+i.correction_seq||0,correctedAt:i.corrected_at,correctedByLabel:i.corrected_by_label,correctionReason:i.correction_reason,issuedBy:i.creator_label,startedBy:ss.startedBy||'غير محدد',endedBy:ss.endedBy||i.creator_label||'غير محدد'}}),expenses:(expenses||[]).map(e=>({id:e.id,date:e.expense_date,type:e.expense_type,amount:+e.amount,note:e.note,createdBy:e.creator_label,createdAt:e.created_at,voidedAt:e.voided_at,voidReason:e.void_reason||''})),shiftClosures:(shiftClosures||[]).map(x=>({id:x.id,openedAt:x.opened_at,closedAt:x.closed_at,closedBy:x.closed_by,closedByLabel:x.closed_by_label,invoiceCount:+x.invoice_count||0,firstInvoiceNo:+x.first_invoice_no||0,lastInvoiceNo:+x.last_invoice_no||0,playTotal:+x.play_total||0,drinkTotal:+x.drink_total||0,total:+x.total||0,actualCash:+x.actual_cash||0,difference:+x.difference||0,notes:x.notes||'',createdAt:x.created_at,cloudSynced:true})),auditLogs:(logs||[]).map(l=>({id:l.id,at:l.occurred_at,action:l.action,entityType:l.entity_type,entityId:l.entity_id,summary:l.summary,details:l.details,actor:l.actor_label,actorRole:l.actor_role,cloudSynced:true})),nextInvoice:Math.max(1,...(invoices||[]).map(i=>+i.invoice_no+1)),updatedAt:new Date().toISOString()};
   normalizeAllInvoices();localStorage.setItem(K,JSON.stringify(state));setSyncMeta({verified:true,syncing:false,lastError:''});dirty=false;setQueue([]);render();return true;
 }
 async function connectOwnerCloud(){
@@ -2930,7 +2959,7 @@ async function clearAppCacheAndReload(){
 
 
 // ============================================================
-// TIMED SESSION START & CARD STATE FIX — RC5.18.4
+// MOBILE TIMED CARD CLOUD MARKER FIX — RC5.18.5
 // Restores the existing Supabase session after refresh/pull-to-refresh.
 // Does NOT touch scroll/touch behavior.
 // ============================================================
@@ -3003,7 +3032,7 @@ bootApplication();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-18-4')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-18-5')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
