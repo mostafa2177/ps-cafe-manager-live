@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.18.1</title>
+<title>PS Cafe Manager • V6.4.2-RC5.18.2</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -52,7 +52,7 @@ html,body{max-width:100%;overflow-x:hidden;}
 ::-webkit-scrollbar-thumb:hover{background:var(--blue)}
 
 
-/* RC5.18.1 — Timed Session Display Fix */
+/* RC5.18.2 — Timed Session Display Fix */
 .boot-status{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
   background:radial-gradient(ellipse 60% 50% at 30% 40%,rgba(41,121,255,0.08) 0%,transparent 60%),
   radial-gradient(ellipse 50% 60% at 80% 70%,rgba(124,58,237,0.06) 0%,transparent 60%),var(--bg-base);}
@@ -649,6 +649,7 @@ tr:hover td{background:rgba(59,130,246,.055)!important;color:#eef6ff!important;}
 .device-card .badge{font-weight:800;letter-spacing:.01em;white-space:nowrap}
 .device-card .badge.b-open{background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.38);color:#7dd3fc}
 .device-card .badge.b-match{background:rgba(139,92,246,.16);border-color:rgba(139,92,246,.42);color:#c4b5fd}
+.device-card .badge.b-timed{background:rgba(20,184,166,.16);border-color:rgba(20,184,166,.48);color:#99f6e4}
 .device-card .badge.b-warn{background:rgba(245,158,11,.16);border-color:rgba(245,158,11,.48);color:#fcd34d}
 .device-card .badge.b-ended{background:rgba(239,68,68,.16);border-color:rgba(239,68,68,.50);color:#fca5a5}
 .session-topline.compact-status{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0 8px}
@@ -691,6 +692,7 @@ tr:hover td{background:rgba(59,130,246,.055)!important;color:#eef6ff!important;}
 .device-card .badge.b-ok{background:rgba(34,197,94,.20)!important;border-color:rgba(34,197,94,.56)!important;color:#bbf7d0!important;}
 .device-card .badge.b-open{background:rgba(14,165,233,.22)!important;border-color:rgba(14,165,233,.62)!important;color:#bae6fd!important;}
 .device-card .badge.b-match{background:rgba(168,85,247,.22)!important;border-color:rgba(168,85,247,.64)!important;color:#e9d5ff!important;}
+.device-card .badge.b-timed{background:rgba(20,184,166,.24)!important;border-color:rgba(20,184,166,.68)!important;color:#ccfbf1!important;}
 .device-card .badge.b-warn{background:rgba(250,204,21,.24)!important;border-color:rgba(250,204,21,.78)!important;color:#fef08a!important;animation:badgeBlinkWarn 1.1s ease-in-out infinite!important;}
 .device-card .badge.b-ended{background:rgba(239,68,68,.25)!important;border-color:rgba(239,68,68,.82)!important;color:#fecaca!important;animation:badgeBlinkDanger .75s ease-in-out infinite!important;}
 .device-card.warn-10 .device-name,.device-card.warn-5 .device-name{color:#fff7b8!important;}
@@ -1214,7 +1216,7 @@ button{min-height:var(--btn-h)!important;padding:var(--btn-pad-y) var(--btn-pad-
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.18.1';
+const APP_VERSION='V6.4.2-RC5.18.2';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -1280,8 +1282,19 @@ function sessionMatchCount(s){return (s&&s.sessionType==='match'?1:0)+matchItems
 function invoiceMatchCount(i){return (i&&i.sessionType==='match'?1:0)+matchItemsCount((i&&i.items)||[]);}
 function matchCountLabel(n){return n===1?'مباراة واحدة':(n===2?'مباراتان':(n>=3&&n<=10?n+' مباريات':n+' مباراة'));}
 const TIMED_SESSION_OPTIONS=[30,60,90,120];
-function timedMins(s){return Number((s&&(s.timedMins||s.timedMinutes||((s.sessionType==='timed'||s.sessionType==='open')?s.matchMins:0)))||0)||0}
+const TMK='ps_cafe_v4_timed_meta';
+function timedMeta(){try{return JSON.parse(localStorage.getItem(TMK))||{}}catch(e){return {}}}
+function rememberTimedSession(sid,mins){if(!sid||!mins)return;const m=timedMeta();m[sid]=Number(mins)||0;localStorage.setItem(TMK,JSON.stringify(m));}
+function forgetTimedSession(sid){const m=timedMeta();if(m&&sid&&m[sid]){delete m[sid];localStorage.setItem(TMK,JSON.stringify(m));}}
+function timedMins(s){return Number((s&&(s.timedMins||s.timedMinutes||s.timedDuration||timedMeta()[s.id]||((s.sessionType==='timed'||s.sessionType==='open')?s.matchMins:0)))||0)||0}
 function isTimedSession(s){return !!(s&&(s.sessionType==='timed'||(s.sessionType==='open'&&timedMins(s)>0)))}
+async function persistCloudTimedSession(sid,mins){
+  const m=Number(mins)||0;if(!sid||!m)return;
+  rememberTimedSession(sid,m);
+  if(st().mode!=='secure_cloud')return;
+  const b=st().businessId;
+  await req('PATCH',`ps_sessions?business_id=eq.${encodeURIComponent(b)}&id=eq.${encodeURIComponent(sid)}&status=eq.open`,{session_type:'open',match_minutes:m},'return=minimal');
+}
 function sessionKind(s){return !s?'':(s.sessionType==='match'?'match':(isTimedSession(s)?'timed':'open'))}
 function rateForSession(s,d){return Number((s&&s.mode)==='multi'?d?.multiRate:d?.singleRate)||0}
 function timedSessionPrice(d,mode,mins){const rate=Number(mode==='multi'?d?.multiRate:d?.singleRate)||0;return billOpenPlay((Number(mins)||0)/60*rate)}
@@ -1560,7 +1573,7 @@ function badge(d,s=null,alertCls=''){
     if(alertCls.includes('overtime')||alertCls.includes('ended'))return `<span class="badge b-ended">⛔ انتهت</span>`;
     if(alertCls.includes('warn-2'))return `<span class="badge b-warn">⚠ قربت</span>`;
     if(s.sessionType==='match')return `<span class="badge b-match">🎮 ${Number(s.matchMins)||0} د</span>`;
-    if(isTimedSession(s))return `<span class="badge b-open">⏳ ${timedMins(s)} د</span>`;
+    if(isTimedSession(s))return `<span class="badge b-timed">⏳ وقت محدد ${timedMins(s)} د</span>`;
     return `<span class="badge b-open">⏱ مفتوحة</span>`;
   }
   let c=d.status==='available'?'b-ok':d.status==='busy'?'b-busy':'b-bad';
@@ -1984,8 +1997,11 @@ async function startTimedSession(){
   let mins=+val('sel-timed-mins')||0;if(!mins)return alert('اختار مدة الوقت المحدد');
   const sid=id(),mode=document.getElementById('tsm').value,d=state.devices.find(x=>x.id==did);
   if(st().mode==='secure_cloud'){
-    try{await rpc('ps_start_session',{p_business:st().businessId,p_id:sid,p_device_id:did,p_customer:val('tsc'),p_play_mode:mode,p_session_type:'open',p_match_minutes:mins});closeM();await loadCloud(true);showNotice('تم بدء الوقت المحدد وتسجيل المستخدم في السجل ✓','success');}
-    catch(e){showNotice('لم يبدأ الوقت المحدد: '+e.message,'danger');}
+    try{
+      await rpc('ps_start_session',{p_business:st().businessId,p_id:sid,p_device_id:did,p_customer:val('tsc'),p_play_mode:mode,p_session_type:'open',p_match_minutes:mins});
+      await persistCloudTimedSession(sid,mins);
+      closeM();await loadCloud(true);showNotice('تم بدء الوقت المحدد وتثبيت المدة والعداد التنازلي ✓','success');
+    }catch(e){showNotice('لم يبدأ الوقت المحدد بشكل صحيح: '+e.message,'danger');}
     return;
   }
   const when=new Date().toISOString();
@@ -2115,7 +2131,7 @@ async function endSession(sid){
   let s=state.sessions.find(x=>x.id==sid),d=state.devices.find(x=>x.id==s.deviceId),c=cost(s);
   if(st().mode==='secure_cloud'){
     const iid=id();
-    try{showNotice('جاري إنهاء الجلسة وتجهيز الفاتورة…','info');await rpc('ps_complete_session',{p_business:st().businessId,p_session_id:sid,p_invoice_id:iid,p_payment_method:'Cash'});await loadCloud(true);const inv=state.invoices.find(x=>x.id===iid)||state.invoices.find(x=>x.sessionId===sid)||state.invoices[0];showNotice('تم إنهاء الجلسة وفتح الفاتورة تلقائيًا ✓','success');if(inv){setTimeout(()=>showInv(inv.id),120);}else{tab='Invoices';tabs();render();showNotice('تم الإنشاء، وتم فتح صفحة الفواتير للمراجعة.','warn');}}
+    try{showNotice('جاري إنهاء الجلسة وتجهيز الفاتورة…','info');if(isTimedSession(s))await persistCloudTimedSession(sid,timedMins(s));await rpc('ps_complete_session',{p_business:st().businessId,p_session_id:sid,p_invoice_id:iid,p_payment_method:'Cash'});forgetTimedSession(sid);await loadCloud(true);const inv=state.invoices.find(x=>x.id===iid)||state.invoices.find(x=>x.sessionId===sid)||state.invoices[0];showNotice('تم إنهاء الجلسة وفتح الفاتورة تلقائيًا ✓','success');if(inv){setTimeout(()=>showInv(inv.id),120);}else{tab='Invoices';tabs();render();showNotice('تم الإنشاء، وتم فتح صفحة الفواتير للمراجعة.','warn');}}
     catch(e){showNotice('تعذر إنهاء الجلسة: '+e.message,'danger');}
     return;
   }
@@ -2843,11 +2859,12 @@ async function loadCloud(force=false){
   cloudMembers=members||[];
   const itemMap={};(sitems||[]).forEach(i=>(itemMap[i.session_id]||(itemMap[i.session_id]=[])).push({id:i.id,productId:i.product_id,name:i.name,price:+i.price,qty:+i.qty,type:i.item_type||'drink',item_type:i.item_type||'drink',addedAt:i.added_at}));
   const invItemMap={};(iitems||[]).forEach(i=>(invItemMap[i.invoice_id]||(invItemMap[i.invoice_id]=[])).push({id:i.id,productId:i.product_id,name:i.name,price:+i.price,qty:+i.qty,type:i.item_type||'drink',item_type:i.item_type||'drink'}));
-  const mappedSessions=(sessions||[]).map(s=>{const isTimed=(s.session_type==='open' && Number(s.match_minutes)>0);return {id:s.id,deviceId:s.device_id,customer:s.customer,mode:s.play_mode,sessionType:isTimed?'timed':s.session_type,matchMins:s.match_minutes,timedMins:isTimed?Number(s.match_minutes):null,matchPrice:+s.match_price||null,items:itemMap[s.id]||[],start:s.started_at,status:s.status,end:s.ended_at,startedBy:s.started_by_label||'غير محدد',startedById:s.started_by,endedBy:s.ended_by_label||'',endedById:s.ended_by};});
+  const localTimedMeta=timedMeta();
+  const mappedSessions=(sessions||[]).map(s=>{const tm=Number(s.match_minutes||localTimedMeta[s.id]||0);const isTimed=(s.session_type==='open' && tm>0);return {id:s.id,deviceId:s.device_id,customer:s.customer,mode:s.play_mode,sessionType:isTimed?'timed':s.session_type,matchMins:isTimed?tm:s.match_minutes,timedMins:isTimed?tm:null,matchPrice:+s.match_price||null,items:itemMap[s.id]||[],start:s.started_at,status:s.status,end:s.ended_at,startedBy:s.started_by_label||'غير محدد',startedById:s.started_by,endedBy:s.ended_by_label||'',endedById:s.ended_by};});
   const sessionById={};mappedSessions.forEach(s=>{sessionById[s.id]=s});
   const openIds=new Set(mappedSessions.filter(s=>s.status==='open').map(s=>s.deviceId));
   const localUsers=state.users||[];
-  state={users:localUsers,profile:{businessName:state.profile?.businessName||'PS Cafe',ownerName:profiles[0]?.owner_name||'',phone:profiles[0]?.phone||'',address:profiles[0]?.address||''},devices:(devices||[]).map(d=>({id:d.id,name:d.name,status:d.maintenance?'maintenance':(openIds.has(d.id)?'busy':'available'),singleRate:+d.single_rate,multiRate:+d.multi_rate,matchPrices:d.match_prices||[],cloudUpdatedAt:d.updated_at})),products:(products||[]).map(p=>({id:p.id,name:p.name,price:+p.price,stock:+p.stock,active:p.active,cloudUpdatedAt:p.updated_at})),sessions:mappedSessions,invoices:(invoices||[]).map(i=>{const ss=sessionById[i.session_id]||{};return {id:i.id,sessionId:i.session_id,no:+i.invoice_no,date:i.created_at,deviceId:i.device_id,deviceName:i.device_name,customer:i.customer,mode:i.play_mode,sessionType:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?'timed':i.session_type,matchMins:i.match_minutes,timedMins:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?Number(i.match_minutes||ss.matchMins||ss.timedMins||0):null,start:i.started_at||ss.start,end:i.ended_at||ss.end||i.created_at,minutes:i.minutes,playTotal:+i.play_total,drinkTotal:+i.drink_total,total:+i.total,items:invItemMap[i.id]||[],payment:i.payment_method,status:i.status||'completed',correctionSeq:+i.correction_seq||0,correctedAt:i.corrected_at,correctedByLabel:i.corrected_by_label,correctionReason:i.correction_reason,issuedBy:i.creator_label,startedBy:ss.startedBy||'غير محدد',endedBy:ss.endedBy||i.creator_label||'غير محدد'}}),expenses:(expenses||[]).map(e=>({id:e.id,date:e.expense_date,type:e.expense_type,amount:+e.amount,note:e.note,createdBy:e.creator_label,createdAt:e.created_at,voidedAt:e.voided_at,voidReason:e.void_reason||''})),shiftClosures:(shiftClosures||[]).map(x=>({id:x.id,openedAt:x.opened_at,closedAt:x.closed_at,closedBy:x.closed_by,closedByLabel:x.closed_by_label,invoiceCount:+x.invoice_count||0,firstInvoiceNo:+x.first_invoice_no||0,lastInvoiceNo:+x.last_invoice_no||0,playTotal:+x.play_total||0,drinkTotal:+x.drink_total||0,total:+x.total||0,actualCash:+x.actual_cash||0,difference:+x.difference||0,notes:x.notes||'',createdAt:x.created_at,cloudSynced:true})),auditLogs:(logs||[]).map(l=>({id:l.id,at:l.occurred_at,action:l.action,entityType:l.entity_type,entityId:l.entity_id,summary:l.summary,details:l.details,actor:l.actor_label,actorRole:l.actor_role,cloudSynced:true})),nextInvoice:Math.max(1,...(invoices||[]).map(i=>+i.invoice_no+1)),updatedAt:new Date().toISOString()};
+  state={users:localUsers,profile:{businessName:state.profile?.businessName||'PS Cafe',ownerName:profiles[0]?.owner_name||'',phone:profiles[0]?.phone||'',address:profiles[0]?.address||''},devices:(devices||[]).map(d=>({id:d.id,name:d.name,status:d.maintenance?'maintenance':(openIds.has(d.id)?'busy':'available'),singleRate:+d.single_rate,multiRate:+d.multi_rate,matchPrices:d.match_prices||[],cloudUpdatedAt:d.updated_at})),products:(products||[]).map(p=>({id:p.id,name:p.name,price:+p.price,stock:+p.stock,active:p.active,cloudUpdatedAt:p.updated_at})),sessions:mappedSessions,invoices:(invoices||[]).map(i=>{const ss=sessionById[i.session_id]||{};return {id:i.id,sessionId:i.session_id,no:+i.invoice_no,date:i.created_at,deviceId:i.device_id,deviceName:i.device_name,customer:i.customer,mode:i.play_mode,sessionType:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?'timed':i.session_type,matchMins:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?Number(i.match_minutes||ss.matchMins||ss.timedMins||0):i.match_minutes,timedMins:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?Number(i.match_minutes||ss.matchMins||ss.timedMins||0):null,start:i.started_at||ss.start,end:i.ended_at||ss.end||i.created_at,minutes:i.minutes,playTotal:+i.play_total,drinkTotal:+i.drink_total,total:+i.total,items:invItemMap[i.id]||[],payment:i.payment_method,status:i.status||'completed',correctionSeq:+i.correction_seq||0,correctedAt:i.corrected_at,correctedByLabel:i.corrected_by_label,correctionReason:i.correction_reason,issuedBy:i.creator_label,startedBy:ss.startedBy||'غير محدد',endedBy:ss.endedBy||i.creator_label||'غير محدد'}}),expenses:(expenses||[]).map(e=>({id:e.id,date:e.expense_date,type:e.expense_type,amount:+e.amount,note:e.note,createdBy:e.creator_label,createdAt:e.created_at,voidedAt:e.voided_at,voidReason:e.void_reason||''})),shiftClosures:(shiftClosures||[]).map(x=>({id:x.id,openedAt:x.opened_at,closedAt:x.closed_at,closedBy:x.closed_by,closedByLabel:x.closed_by_label,invoiceCount:+x.invoice_count||0,firstInvoiceNo:+x.first_invoice_no||0,lastInvoiceNo:+x.last_invoice_no||0,playTotal:+x.play_total||0,drinkTotal:+x.drink_total||0,total:+x.total||0,actualCash:+x.actual_cash||0,difference:+x.difference||0,notes:x.notes||'',createdAt:x.created_at,cloudSynced:true})),auditLogs:(logs||[]).map(l=>({id:l.id,at:l.occurred_at,action:l.action,entityType:l.entity_type,entityId:l.entity_id,summary:l.summary,details:l.details,actor:l.actor_label,actorRole:l.actor_role,cloudSynced:true})),nextInvoice:Math.max(1,...(invoices||[]).map(i=>+i.invoice_no+1)),updatedAt:new Date().toISOString()};
   normalizeAllInvoices();localStorage.setItem(K,JSON.stringify(state));setSyncMeta({verified:true,syncing:false,lastError:''});dirty=false;setQueue([]);render();return true;
 }
 async function connectOwnerCloud(){
@@ -2886,7 +2903,7 @@ async function clearAppCacheAndReload(){
 
 
 // ============================================================
-// TIMED SESSION DISPLAY FIX — RC5.18.1
+// TIMED SESSION DISPLAY FIX — RC5.18.2
 // Restores the existing Supabase session after refresh/pull-to-refresh.
 // Does NOT touch scroll/touch behavior.
 // ============================================================
