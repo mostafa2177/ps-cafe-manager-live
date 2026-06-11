@@ -1,6 +1,6 @@
 // ============================================================
 // PS Cafe Manager — Service Worker
-// Version: 6.4.2-RC5.18.11 TIMED SESSION SINGLE-PAYLOAD RPC WRAPPERS
+// Version: 6.4.2-RC5.18.12 TIMED SESSION SINGLE-PAYLOAD RPC WRAPPERS
 // ============================================================
 const CACHE_NAME = 'ps-cafe-v6.4.2-rc5-18-11';
 const OFFLINE_URL = './index.html?v=6.4.2-rc5-18-11';
