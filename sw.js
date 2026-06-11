@@ -1,11 +1,11 @@
 // ============================================================
 // PS Cafe Manager — Service Worker
-// Version: 6.4.2-RC5.18.5 TIMED SESSION PERSIST DISPLAY FIX
+// Version: 6.4.2-RC5.18.6 TIMED SESSION PERSIST DISPLAY FIX
 // ============================================================
-const CACHE_NAME = 'ps-cafe-v6.4.2-rc5-18-5';
-const OFFLINE_URL = './index.html?v=6.4.2-rc5-18-5';
+const CACHE_NAME = 'ps-cafe-v6.4.2-rc5-18-6';
+const OFFLINE_URL = './index.html?v=6.4.2-rc5-18-6';
 const PRECACHE_ASSETS = [
-  './', './index.html?v=6.4.2-rc5-18-5', './manifest.json?v=6.4.2-rc5-18-5',
+  './', './index.html?v=6.4.2-rc5-18-6', './manifest.json?v=6.4.2-rc5-18-6',
   './icon-72.png','./icon-96.png','./icon-128.png','./icon-144.png',
   './icon-152.png','./icon-192.png','./icon-384.png','./icon-512.png','./brand-avatar.png'
 ];
