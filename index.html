@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.18</title>
+<title>PS Cafe Manager • V6.4.2-RC5.18.1</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -52,7 +52,7 @@ html,body{max-width:100%;overflow-x:hidden;}
 ::-webkit-scrollbar-thumb:hover{background:var(--blue)}
 
 
-/* RC5.18 — Timed Session Mode */
+/* RC5.18.1 — Timed Session Display Fix */
 .boot-status{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
   background:radial-gradient(ellipse 60% 50% at 30% 40%,rgba(41,121,255,0.08) 0%,transparent 60%),
   radial-gradient(ellipse 50% 60% at 80% 70%,rgba(124,58,237,0.06) 0%,transparent 60%),var(--bg-base);}
@@ -1033,6 +1033,10 @@ button,.tab,.device-card,.ops-card,.kpi{touch-action:manipulation;}
 .mini-device-card.md-open{--md-accent:#0ea5e9;--md-glow:rgba(14,165,233,.50);background:linear-gradient(160deg,rgba(7,28,58,.98),rgba(2,72,116,.72));border-color:rgba(14,165,233,.70)}
 .mini-device-card.md-open::before{background:#0ea5e9;box-shadow:0 0 20px rgba(14,165,233,.40)}
 .mini-device-card.md-open .md-state{color:#bae6fd;border-color:rgba(14,165,233,.58);background:rgba(14,165,233,.16)}
+.mini-device-card.md-timed{--md-accent:#14b8a6;--md-glow:rgba(20,184,166,.52);background:linear-gradient(160deg,rgba(4,47,46,.98),rgba(15,118,110,.76));border-color:rgba(20,184,166,.76)}
+.mini-device-card.md-timed::before{background:#14b8a6;box-shadow:0 0 22px rgba(20,184,166,.42)}
+.mini-device-card.md-timed .md-state{color:#ccfbf1;border-color:rgba(20,184,166,.62);background:rgba(20,184,166,.17)}
+
 .mini-device-card.md-match{--md-accent:#a855f7;--md-glow:rgba(168,85,247,.48);background:linear-gradient(160deg,rgba(37,18,71,.98),rgba(76,29,149,.78));border-color:rgba(168,85,247,.72)}
 .mini-device-card.md-match::before{background:#a855f7;box-shadow:0 0 20px rgba(168,85,247,.40)}
 .mini-device-card.md-match .md-state{color:#e9d5ff;border-color:rgba(168,85,247,.60);background:rgba(168,85,247,.17)}
@@ -1210,7 +1214,7 @@ button{min-height:var(--btn-h)!important;padding:var(--btn-pad-y) var(--btn-pad-
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.18';
+const APP_VERSION='V6.4.2-RC5.18.1';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -1750,7 +1754,7 @@ function openOpsCard(kind){
   }
   if(kind==='open'){
     show('Dashboard');
-    setTimeout(()=>{document.querySelector('.mini-device-card.md-open,.mini-device-card.md-match,.mini-device-card.md-warn,.mini-device-card.md-ended,.mini-device-card')?.scrollIntoView({behavior:'smooth',block:'center'});},80);
+    setTimeout(()=>{document.querySelector('.mini-device-card.md-open,.mini-device-card.md-timed,.mini-device-card.md-match,.mini-device-card.md-warn,.mini-device-card.md-ended,.mini-device-card')?.scrollIntoView({behavior:'smooth',block:'center'});},80);
   }
 }
 
@@ -1791,7 +1795,7 @@ function miniDeviceCard(d){
     if(isEnded){cls='md-ended';stateText='انتهت'}
     else if(isWarn){cls='md-warn';stateText='قربت'}
     else if(s.sessionType==='match'){cls='md-match';stateText='مباراة'}
-    else if(isTimedSession(s)){cls='md-open';stateText='وقت محدد'}
+    else if(isTimedSession(s)){cls='md-timed';stateText='وقت محدد'}
     else {cls='md-open';stateText='مفتوحة'}
     if(s.sessionType==='match'){
       const elapsed=Math.max(0,(Date.now()-new Date(s.start))/60000);
@@ -2839,11 +2843,11 @@ async function loadCloud(force=false){
   cloudMembers=members||[];
   const itemMap={};(sitems||[]).forEach(i=>(itemMap[i.session_id]||(itemMap[i.session_id]=[])).push({id:i.id,productId:i.product_id,name:i.name,price:+i.price,qty:+i.qty,type:i.item_type||'drink',item_type:i.item_type||'drink',addedAt:i.added_at}));
   const invItemMap={};(iitems||[]).forEach(i=>(invItemMap[i.invoice_id]||(invItemMap[i.invoice_id]=[])).push({id:i.id,productId:i.product_id,name:i.name,price:+i.price,qty:+i.qty,type:i.item_type||'drink',item_type:i.item_type||'drink'}));
-  const mappedSessions=(sessions||[]).map(s=>({id:s.id,deviceId:s.device_id,customer:s.customer,mode:s.play_mode,sessionType:s.session_type,matchMins:s.match_minutes,matchPrice:+s.match_price||null,items:itemMap[s.id]||[],start:s.started_at,status:s.status,end:s.ended_at,startedBy:s.started_by_label||'غير محدد',startedById:s.started_by,endedBy:s.ended_by_label||'',endedById:s.ended_by}));
+  const mappedSessions=(sessions||[]).map(s=>{const isTimed=(s.session_type==='open' && Number(s.match_minutes)>0);return {id:s.id,deviceId:s.device_id,customer:s.customer,mode:s.play_mode,sessionType:isTimed?'timed':s.session_type,matchMins:s.match_minutes,timedMins:isTimed?Number(s.match_minutes):null,matchPrice:+s.match_price||null,items:itemMap[s.id]||[],start:s.started_at,status:s.status,end:s.ended_at,startedBy:s.started_by_label||'غير محدد',startedById:s.started_by,endedBy:s.ended_by_label||'',endedById:s.ended_by};});
   const sessionById={};mappedSessions.forEach(s=>{sessionById[s.id]=s});
   const openIds=new Set(mappedSessions.filter(s=>s.status==='open').map(s=>s.deviceId));
   const localUsers=state.users||[];
-  state={users:localUsers,profile:{businessName:state.profile?.businessName||'PS Cafe',ownerName:profiles[0]?.owner_name||'',phone:profiles[0]?.phone||'',address:profiles[0]?.address||''},devices:(devices||[]).map(d=>({id:d.id,name:d.name,status:d.maintenance?'maintenance':(openIds.has(d.id)?'busy':'available'),singleRate:+d.single_rate,multiRate:+d.multi_rate,matchPrices:d.match_prices||[],cloudUpdatedAt:d.updated_at})),products:(products||[]).map(p=>({id:p.id,name:p.name,price:+p.price,stock:+p.stock,active:p.active,cloudUpdatedAt:p.updated_at})),sessions:mappedSessions,invoices:(invoices||[]).map(i=>{const ss=sessionById[i.session_id]||{};return {id:i.id,sessionId:i.session_id,no:+i.invoice_no,date:i.created_at,deviceId:i.device_id,deviceName:i.device_name,customer:i.customer,mode:i.play_mode,sessionType:i.session_type,matchMins:i.match_minutes,start:i.started_at||ss.start,end:i.ended_at||ss.end||i.created_at,minutes:i.minutes,playTotal:+i.play_total,drinkTotal:+i.drink_total,total:+i.total,items:invItemMap[i.id]||[],payment:i.payment_method,status:i.status||'completed',correctionSeq:+i.correction_seq||0,correctedAt:i.corrected_at,correctedByLabel:i.corrected_by_label,correctionReason:i.correction_reason,issuedBy:i.creator_label,startedBy:ss.startedBy||'غير محدد',endedBy:ss.endedBy||i.creator_label||'غير محدد'}}),expenses:(expenses||[]).map(e=>({id:e.id,date:e.expense_date,type:e.expense_type,amount:+e.amount,note:e.note,createdBy:e.creator_label,createdAt:e.created_at,voidedAt:e.voided_at,voidReason:e.void_reason||''})),shiftClosures:(shiftClosures||[]).map(x=>({id:x.id,openedAt:x.opened_at,closedAt:x.closed_at,closedBy:x.closed_by,closedByLabel:x.closed_by_label,invoiceCount:+x.invoice_count||0,firstInvoiceNo:+x.first_invoice_no||0,lastInvoiceNo:+x.last_invoice_no||0,playTotal:+x.play_total||0,drinkTotal:+x.drink_total||0,total:+x.total||0,actualCash:+x.actual_cash||0,difference:+x.difference||0,notes:x.notes||'',createdAt:x.created_at,cloudSynced:true})),auditLogs:(logs||[]).map(l=>({id:l.id,at:l.occurred_at,action:l.action,entityType:l.entity_type,entityId:l.entity_id,summary:l.summary,details:l.details,actor:l.actor_label,actorRole:l.actor_role,cloudSynced:true})),nextInvoice:Math.max(1,...(invoices||[]).map(i=>+i.invoice_no+1)),updatedAt:new Date().toISOString()};
+  state={users:localUsers,profile:{businessName:state.profile?.businessName||'PS Cafe',ownerName:profiles[0]?.owner_name||'',phone:profiles[0]?.phone||'',address:profiles[0]?.address||''},devices:(devices||[]).map(d=>({id:d.id,name:d.name,status:d.maintenance?'maintenance':(openIds.has(d.id)?'busy':'available'),singleRate:+d.single_rate,multiRate:+d.multi_rate,matchPrices:d.match_prices||[],cloudUpdatedAt:d.updated_at})),products:(products||[]).map(p=>({id:p.id,name:p.name,price:+p.price,stock:+p.stock,active:p.active,cloudUpdatedAt:p.updated_at})),sessions:mappedSessions,invoices:(invoices||[]).map(i=>{const ss=sessionById[i.session_id]||{};return {id:i.id,sessionId:i.session_id,no:+i.invoice_no,date:i.created_at,deviceId:i.device_id,deviceName:i.device_name,customer:i.customer,mode:i.play_mode,sessionType:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?'timed':i.session_type,matchMins:i.match_minutes,timedMins:((i.session_type==='open'&&Number(i.match_minutes)>0)||(ss.sessionType==='timed'))?Number(i.match_minutes||ss.matchMins||ss.timedMins||0):null,start:i.started_at||ss.start,end:i.ended_at||ss.end||i.created_at,minutes:i.minutes,playTotal:+i.play_total,drinkTotal:+i.drink_total,total:+i.total,items:invItemMap[i.id]||[],payment:i.payment_method,status:i.status||'completed',correctionSeq:+i.correction_seq||0,correctedAt:i.corrected_at,correctedByLabel:i.corrected_by_label,correctionReason:i.correction_reason,issuedBy:i.creator_label,startedBy:ss.startedBy||'غير محدد',endedBy:ss.endedBy||i.creator_label||'غير محدد'}}),expenses:(expenses||[]).map(e=>({id:e.id,date:e.expense_date,type:e.expense_type,amount:+e.amount,note:e.note,createdBy:e.creator_label,createdAt:e.created_at,voidedAt:e.voided_at,voidReason:e.void_reason||''})),shiftClosures:(shiftClosures||[]).map(x=>({id:x.id,openedAt:x.opened_at,closedAt:x.closed_at,closedBy:x.closed_by,closedByLabel:x.closed_by_label,invoiceCount:+x.invoice_count||0,firstInvoiceNo:+x.first_invoice_no||0,lastInvoiceNo:+x.last_invoice_no||0,playTotal:+x.play_total||0,drinkTotal:+x.drink_total||0,total:+x.total||0,actualCash:+x.actual_cash||0,difference:+x.difference||0,notes:x.notes||'',createdAt:x.created_at,cloudSynced:true})),auditLogs:(logs||[]).map(l=>({id:l.id,at:l.occurred_at,action:l.action,entityType:l.entity_type,entityId:l.entity_id,summary:l.summary,details:l.details,actor:l.actor_label,actorRole:l.actor_role,cloudSynced:true})),nextInvoice:Math.max(1,...(invoices||[]).map(i=>+i.invoice_no+1)),updatedAt:new Date().toISOString()};
   normalizeAllInvoices();localStorage.setItem(K,JSON.stringify(state));setSyncMeta({verified:true,syncing:false,lastError:''});dirty=false;setQueue([]);render();return true;
 }
 async function connectOwnerCloud(){
@@ -2882,7 +2886,7 @@ async function clearAppCacheAndReload(){
 
 
 // ============================================================
-// TIMED SESSION MODE — RC5.18
+// TIMED SESSION DISPLAY FIX — RC5.18.1
 // Restores the existing Supabase session after refresh/pull-to-refresh.
 // Does NOT touch scroll/touch behavior.
 // ============================================================
