@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.18.3</title>
+<title>PS Cafe Manager • V6.4.2-RC5.18.4</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc5-18-3">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc5-18-4">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-18-3">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-18-3">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-18-3">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-18-3">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-18-3">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-18-4">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-18-4">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-18-4">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-18-4">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-18-4">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -52,7 +52,7 @@ html,body{max-width:100%;overflow-x:hidden;}
 ::-webkit-scrollbar-thumb:hover{background:var(--blue)}
 
 
-/* RC5.18.3 — Timed Session Display Fix */
+/* RC5.18.4 — Timed Session Start & Card State Fix */
 .boot-status{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
   background:radial-gradient(ellipse 60% 50% at 30% 40%,rgba(41,121,255,0.08) 0%,transparent 60%),
   radial-gradient(ellipse 50% 60% at 80% 70%,rgba(124,58,237,0.06) 0%,transparent 60%),var(--bg-base);}
@@ -1013,7 +1013,9 @@ button,.tab,.device-card,.ops-card,.kpi{touch-action:manipulation;}
 .mini-device-card:active{transform:scale(.985)}
 .mini-device-card::before{content:'';position:absolute;inset:0 auto 0 0;width:5px;background:rgba(148,163,184,.55)}
 .mini-device-card::after{content:'';position:absolute;inset:auto 9px 7px auto;width:42px;height:24px;border-radius:12px;background:radial-gradient(circle at 26% 48%,rgba(255,255,255,.13) 0 2px,transparent 3px),radial-gradient(circle at 64% 48%,rgba(255,255,255,.13) 0 2px,transparent 3px),linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.01));opacity:.34;filter:drop-shadow(0 7px 10px rgba(0,0,0,.22));}
-.md-mini-top{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0;position:relative;z-index:2}
+.md-mini-top{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0;position:relative;z-index:2;flex-wrap:nowrap}
+.mini-device-card .md-name{max-width:58%;text-overflow:ellipsis;overflow:hidden;}
+.mini-device-card.md-timed .md-state{font-size:9.2px;padding:3px 6px;letter-spacing:0}
 .mini-device-card .md-name{font-size:14.5px;font-weight:950;color:#f8fbff;line-height:1.1;white-space:nowrap;min-width:0;overflow:visible;padding-left:0;letter-spacing:.01em;}
 .mini-device-card .md-state{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:900;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:3px 7px;line-height:1;background:rgba(255,255,255,.07);white-space:nowrap;flex-shrink:0;}
 .md-ps5-icon{position:relative;z-index:1;min-height:34px;margin:0 2px;display:flex;align-items:center;justify-content:center;opacity:.98;}
@@ -1216,7 +1218,7 @@ button{min-height:var(--btn-h)!important;padding:var(--btn-pad-y) var(--btn-pad-
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.18.3';
+const APP_VERSION='V6.4.2-RC5.18.4';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -1295,7 +1297,16 @@ async function persistCloudTimedSession(sid,mins){
   const b=st().businessId;
   await req('PATCH',`ps_sessions?business_id=eq.${encodeURIComponent(b)}&id=eq.${encodeURIComponent(sid)}&status=eq.open`,{session_type:'open',match_minutes:m},'return=minimal');
 }
-function isCloudConflictError(e){return /409|conflict|duplicate|already|تعارض|موجودة|مسجلة/i.test(String(e&&e.message?e.message:e||''));}
+function isCloudConflictError(e){return /409|conflict|duplicate|already|تعذر إتمام العملية \(409\)|تعارض|موجودة|مسجلة/i.test(String(e&&e.message?e.message:e||''));}
+function findOpenSessionOnDevice(did){return (state.sessions||[]).find(x=>x.deviceId===did&&x.status==='open')||null}
+function findTimedSessionOnDevice(did,mins){return (state.sessions||[]).find(x=>x.deviceId===did&&x.status==='open'&&(isTimedSession(x)||Number(x.matchMins)===Number(mins)||Number(x.timedMins)===Number(mins)))||null}
+function handleTimedStartConflict(did,mins,sid){
+  const existingTimed=findTimedSessionOnDevice(did,mins);
+  if(existingTimed){rememberTimedSession(existingTimed.id,mins);return {ok:true,msg:'تم بدء الوقت المحدد والعداد التنازلي ✓'};}
+  const anyOpen=findOpenSessionOnDevice(did);
+  if(anyOpen){return {ok:true,msg:'الجهاز عليه جلسة مفتوحة بالفعل. تم تحديث العرض.'};}
+  return {ok:false,msg:''};
+}
 function sessionKind(s){return !s?'':(s.sessionType==='match'?'match':(isTimedSession(s)?'timed':'open'))}
 function rateForSession(s,d){return Number((s&&s.mode)==='multi'?d?.multiRate:d?.singleRate)||0}
 function timedSessionPrice(d,mode,mins){const rate=Number(mode==='multi'?d?.multiRate:d?.singleRate)||0;return billOpenPlay((Number(mins)||0)/60*rate)}
@@ -1804,20 +1815,21 @@ function miniDeviceCard(d){
   const s=sess(d.id), c=s?cost(s):null, alertCls=s?getDeviceAlertClass(s):'';
   let cls='md-maint', stateText='صيانة', metric='غير متاح', sub='', name=miniDeviceName(d);
   if(s){
+    const kind=sessionKind(s);
     const isEnded=alertCls.includes('overtime')||alertCls.includes('ended');
     const isWarn=alertCls.includes('warn-2');
     if(isEnded){cls='md-ended';stateText='انتهت'}
     else if(isWarn){cls='md-warn';stateText='قربت'}
-    else if(s.sessionType==='match'){cls='md-match';stateText='مباراة'}
-    else if(isTimedSession(s)){cls='md-timed';stateText='وقت محدد'}
+    else if(kind==='match'){cls='md-match';stateText='مباراة'}
+    else if(kind==='timed'){cls='md-timed';stateText='وقت محدد'}
     else {cls='md-open';stateText='مفتوحة'}
-    if(s.sessionType==='match'){
+    if(kind==='match'){
       const elapsed=Math.max(0,(Date.now()-new Date(s.start))/60000);
       const total=Number(s.matchMins)||0;
       const left=Math.max(0,Math.ceil(total-elapsed));
       metric=isEnded?'انتهت':(isWarn?`باقي ${left} د`:`${total} د`);
       sub=`${money(c.total)} ج`;
-    }else if(isTimedSession(s)){
+    }else if(kind==='timed'){
       metric=isEnded?'انتهت':sessionDisplayClock(s);
       sub=`${timedMins(s)} د • ${money(c.total)} ج`;
     }else{
@@ -2004,17 +2016,15 @@ async function startTimedSession(){
     rememberTimedSession(sid,mins);
     try{
       await rpc('ps_start_session',{p_business:st().businessId,p_id:sid,p_device_id:did,p_customer:customer,p_play_mode:mode,p_session_type:'open',p_match_minutes:mins});
-      try{await persistCloudTimedSession(sid,mins);}catch(pe){if(!isCloudConflictError(pe))throw pe;}
+      try{await persistCloudTimedSession(sid,mins);}catch(pe){console.warn('Timed metadata persist skipped:',pe);}
       await loadCloud(true);
-      closeM();showNotice('تم بدء الوقت المحدد والعداد التنازلي ✓','success');
+      const existing=state.sessions.find(x=>x.id===sid&&x.status==='open')||findTimedSessionOnDevice(did,mins)||findOpenSessionOnDevice(did);
+      if(existing&&timedMins(existing)>0)rememberTimedSession(existing.id,mins);
+      closeM();showNotice('تم بدء الوقت المحدد والعداد التنازلي ✓','success');return;
     }catch(e){
-      if(isCloudConflictError(e)){
-        try{
-          await loadCloud(true);
-          const existing=state.sessions.find(x=>x.id===sid&&x.status==='open');
-          if(existing){closeM();showNotice('تم بدء الوقت المحدد والعداد التنازلي ✓','success');return;}
-        }catch(_ignore){}
-      }
+      try{await loadCloud(true);}catch(_ignore){}
+      const conflictHandled=isCloudConflictError(e)?handleTimedStartConflict(did,mins,sid):{ok:false,msg:''};
+      if(conflictHandled.ok){closeM();showNotice(conflictHandled.msg,'success');return;}
       forgetTimedSession(sid);
       showNotice('لم يبدأ الوقت المحدد: '+(e.message||e),'danger');
       if(btn){btn.disabled=false;btn.textContent='بدء الوقت المحدد';}
@@ -2877,7 +2887,7 @@ async function loadCloud(force=false){
   const itemMap={};(sitems||[]).forEach(i=>(itemMap[i.session_id]||(itemMap[i.session_id]=[])).push({id:i.id,productId:i.product_id,name:i.name,price:+i.price,qty:+i.qty,type:i.item_type||'drink',item_type:i.item_type||'drink',addedAt:i.added_at}));
   const invItemMap={};(iitems||[]).forEach(i=>(invItemMap[i.invoice_id]||(invItemMap[i.invoice_id]=[])).push({id:i.id,productId:i.product_id,name:i.name,price:+i.price,qty:+i.qty,type:i.item_type||'drink',item_type:i.item_type||'drink'}));
   const localTimedMeta=timedMeta();
-  const mappedSessions=(sessions||[]).map(s=>{const tm=Number(s.match_minutes||localTimedMeta[s.id]||0);const isTimed=(s.session_type==='open' && tm>0);return {id:s.id,deviceId:s.device_id,customer:s.customer,mode:s.play_mode,sessionType:isTimed?'timed':s.session_type,matchMins:isTimed?tm:s.match_minutes,timedMins:isTimed?tm:null,matchPrice:+s.match_price||null,items:itemMap[s.id]||[],start:s.started_at,status:s.status,end:s.ended_at,startedBy:s.started_by_label||'غير محدد',startedById:s.started_by,endedBy:s.ended_by_label||'',endedById:s.ended_by};});
+  const mappedSessions=(sessions||[]).map(s=>{const tm=Number(localTimedMeta[s.id]||s.match_minutes||0);const isTimed=(s.session_type==='open' && tm>0);return {id:s.id,deviceId:s.device_id,customer:s.customer,mode:s.play_mode,sessionType:isTimed?'timed':s.session_type,matchMins:isTimed?tm:s.match_minutes,timedMins:isTimed?tm:null,matchPrice:+s.match_price||null,items:itemMap[s.id]||[],start:s.started_at,status:s.status,end:s.ended_at,startedBy:s.started_by_label||'غير محدد',startedById:s.started_by,endedBy:s.ended_by_label||'',endedById:s.ended_by};});
   const sessionById={};mappedSessions.forEach(s=>{sessionById[s.id]=s});
   const openIds=new Set(mappedSessions.filter(s=>s.status==='open').map(s=>s.deviceId));
   const localUsers=state.users||[];
@@ -2920,7 +2930,7 @@ async function clearAppCacheAndReload(){
 
 
 // ============================================================
-// TIMED SESSION DISPLAY FIX — RC5.18.3
+// TIMED SESSION START & CARD STATE FIX — RC5.18.4
 // Restores the existing Supabase session after refresh/pull-to-refresh.
 // Does NOT touch scroll/touch behavior.
 // ============================================================
@@ -2993,7 +3003,7 @@ bootApplication();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-18-3')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-18-4')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
