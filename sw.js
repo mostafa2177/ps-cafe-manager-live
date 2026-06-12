@@ -1,6 +1,6 @@
 // ============================================================
 // PS Cafe Manager — Service Worker
-// Version: 6.4.2-RC5.19.0 CORE OPERATIONS RECOVERY
+// Version: 6.4.2-RC5.19.1 CORE OPERATIONS RECOVERY
 // ============================================================
 const CACHE_NAME = 'ps-cafe-v6.4.2-rc5-19-0';
 const OFFLINE_URL = './index.html?v=6.4.2-rc5-19-0';
