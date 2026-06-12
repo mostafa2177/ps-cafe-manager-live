@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.21.0</title>
+<title>PS Cafe Manager • V6.4.2-RC5.21.1</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc5-21-0">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc5-21-1">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-21-0">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-21-0">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-21-0">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-21-0">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-21-0">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-21-1">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-21-1">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-21-1">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-21-1">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-21-1">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -52,7 +52,7 @@ html,body{max-width:100%;overflow-x:hidden;}
 ::-webkit-scrollbar-thumb:hover{background:var(--blue)}
 
 
-/* RC5.21.0 — Premium UI Absolute Polish. UI-only layer over verified Core Direct Operations. */
+/* RC5.21.1 — Premium UI Absolute Polish. UI-only layer over verified Core Direct Operations. */
 .boot-status{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
   background:radial-gradient(ellipse 60% 50% at 30% 40%,rgba(41,121,255,0.08) 0%,transparent 60%),
   radial-gradient(ellipse 50% 60% at 80% 70%,rgba(124,58,237,0.06) 0%,transparent 60%),var(--bg-base);}
@@ -1143,7 +1143,7 @@ button{min-height:var(--btn-h)!important;padding:var(--btn-pad-y) var(--btn-pad-
 
 
 /* ============================================================
-   RC5.21.0 — PREMIUM_UI_FINAL_OVERRIDES
+   RC5.21.1 — PREMIUM_UI_FINAL_OVERRIDES
    UI ONLY: no Supabase / SQL / RPC / operation logic changes.
    ============================================================ */
 :root{
@@ -1178,6 +1178,36 @@ body{
 #alert-toast{top:76px!important;left:14px!important;right:auto!important;bottom:auto!important;width:min(318px,calc(100vw - 28px))!important;max-height:32vh!important;gap:6px!important;pointer-events:none!important}.toast-item{min-height:36px!important;padding:8px 10px!important;border-radius:13px!important;font-size:11.5px!important;line-height:1.38!important;box-shadow:0 12px 28px rgba(0,0,0,.28)!important;backdrop-filter:blur(12px)!important;pointer-events:none!important}.toast-icon{font-size:16px!important}.toast-item span:last-child{display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;white-space:normal!important;overflow:hidden!important}.toast-item.t-ok{background:rgba(6,78,59,.92)!important}.toast-item.t-info{background:rgba(12,32,58,.92)!important}.toast-item.t-warn{background:rgba(69,47,8,.92)!important}.toast-item.t-danger{background:rgba(69,10,21,.92)!important}
 @media(max-width:850px){.content{padding:10px!important}.top{padding:9px 10px!important}.top-brand{min-width:0}.top-brand-name{font-size:15px!important}.top-meta{font-size:10.5px!important}.tabs{padding:7px 8px!important}.tab{font-size:12px!important;padding:7px 11px!important}.dash-header{padding:13px!important;border-radius:20px!important}.dash-header>.row{display:grid!important;grid-template-columns:1fr!important;width:100%;border-radius:18px}.dash-header>.row button{width:100%;min-height:46px}.ops-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}.mini-devices-section{padding:10px;border-radius:20px}.mini-device-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}.mini-device-card{min-height:112px!important;border-radius:18px!important;padding:10px!important}.mini-device-card .md-name{font-size:13.5px!important}.mini-device-card .md-state{font-size:9.5px!important}.mini-device-card .md-metric{font-size:12px!important}.modal{align-items:flex-start!important;padding:10px!important;padding-top:calc(10px + env(safe-area-inset-top))!important}.modal .box{width:calc(100vw - 20px)!important;max-height:calc(100dvh - 22px - env(safe-area-inset-top))!important;border-radius:20px!important;padding:17px!important}.modal .grid.g2{grid-template-columns:1fr!important}.modal .row>button{flex-basis:100%!important}.match-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.invoice-row{grid-template-columns:1fr!important;gap:3px!important}.invoice-total-row{display:flex!important;justify-content:space-between!important;align-items:center!important}#alert-toast{top:72px!important;left:8px!important;width:min(300px,calc(100vw - 16px))!important}.toast-item{font-size:11px!important;padding:7px 9px!important}}
 @media(max-width:390px){.ops-summary{grid-template-columns:1fr!important}.mini-device-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}.mini-device-card{min-height:104px!important;padding:9px 8px!important}.mini-device-card .md-name{font-size:12.6px!important}.mini-device-card .md-sub{font-size:9px!important}.match-choice-grid{grid-template-columns:1fr!important}.modal .big{font-size:18px!important}}
+
+
+
+/* ============================================================
+   RC5.21.1 — CARDS & MENUS VISUAL BALANCE
+   UI ONLY: cards/menu polish; no Supabase / SQL / RPC / operation logic changes.
+   ============================================================ */
+.mini-device-grid{grid-template-columns:repeat(auto-fit,minmax(184px,1fr))!important;gap:14px!important;align-items:stretch!important}
+.mini-device-card{min-height:158px!important;padding:14px 14px 12px!important;border-radius:24px!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;align-items:stretch!important;overflow:hidden!important;position:relative!important;isolation:isolate!important;box-shadow:0 15px 34px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.06)!important}
+.mini-device-card::after{content:'';position:absolute;inset:42% -24% -42% -24%;background:radial-gradient(circle,rgba(255,255,255,.10),transparent 58%);opacity:.55;z-index:-1;pointer-events:none;transform:rotate(-8deg)}
+.mini-device-card .md-mini-top{min-height:28px!important;align-items:center!important;position:relative;z-index:2}
+.mini-device-card .md-name{font-size:16px!important;font-weight:950!important;letter-spacing:-.01em!important;line-height:1.25!important;max-width:calc(100% - 66px)!important}
+.mini-device-card .md-state{font-size:10.8px!important;font-weight:900!important;min-width:52px!important;text-align:center!important;padding:5px 9px!important;border-radius:999px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important}
+.md-ps5-icon{display:flex!important;align-items:center!important;justify-content:center!important;min-height:72px!important;margin:2px 0 5px!important;position:relative!important}
+.md-ps5-icon::before{content:'';position:absolute;width:116px;height:54px;border-radius:999px;background:radial-gradient(ellipse at center,var(--md-glow,rgba(148,163,184,.20)),transparent 68%);filter:blur(4px);opacity:.82;pointer-events:none}
+.md-device-svg{width:132px!important;height:72px!important;max-width:100%!important;position:relative!important;z-index:1!important;filter:drop-shadow(0 11px 14px rgba(0,0,0,.34)) drop-shadow(0 0 14px var(--md-glow,rgba(148,163,184,.24)))!important}
+.md-device-svg .ps-shell{stroke-width:1.2!important}.md-device-svg .ps-core{stroke-width:.85!important}.md-device-svg .ps-accent{stroke-width:2.35!important}.md-device-svg .pad-shell{stroke-width:1.15!important}.md-device-svg .pad-cut{stroke-width:2.2!important}
+.mini-device-card .md-mini-bottom{border-top:1px solid rgba(255,255,255,.08)!important;padding-top:8px!important;align-items:flex-end!important;position:relative;z-index:2}
+.mini-device-card .md-metric{font-size:17px!important;font-weight:950!important;line-height:1.15!important;max-width:54%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.mini-device-card .md-sub{font-size:11.3px!important;font-weight:850!important;line-height:1.2!important;max-width:45%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;color:#c3d2e7!important;opacity:.94!important}
+.mini-device-card.md-available .md-metric{font-size:18px!important;color:#f8fafc!important}.mini-device-card.md-available .md-sub{color:#d4fce6!important}
+.mini-device-card.md-open .md-metric{color:#7dd3fc!important}.mini-device-card.md-match .md-metric{color:#ddd6fe!important}.mini-device-card.md-timed .md-metric{color:#fef3c7!important}.mini-device-card.md-ended .md-metric,.mini-device-card.md-warn .md-metric{color:#fecaca!important}
+.device-detail-head{padding:10px 12px!important;border:1px solid rgba(148,163,184,.15)!important;border-radius:18px!important;background:linear-gradient(135deg,rgba(15,23,42,.60),rgba(2,6,23,.30))!important;margin-bottom:12px!important}
+.device-detail-title{font-size:23px!important;font-weight:950!important;letter-spacing:-.01em!important}.device-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;margin-bottom:12px!important}.device-detail-box{min-height:70px!important;padding:12px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:4px!important}.device-detail-box span{font-size:12px!important;color:#9fb1ca!important}.device-detail-box strong{font-size:15px!important;line-height:1.45!important;overflow-wrap:anywhere!important}.device-detail-actions{margin-top:13px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}.device-detail-actions .danger{grid-column:1/-1!important}.device-detail-actions .gray:last-child{grid-column:1/-1!important;min-height:38px!important;background:rgba(30,50,78,.55)!important;color:#d7e4f5!important}
+.modal .box:has(.invoice-action-modal){width:min(560px,calc(100vw - 22px))!important;padding:22px 22px 18px!important}
+.invoice-action-modal{display:flex;flex-direction:column;gap:12px}.invoice-action-title{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid rgba(148,163,184,.15)}.invoice-action-title strong{font-size:21px;font-weight:950;letter-spacing:-.01em}.invoice-action-title span{font-size:12px;color:#a7bbd4;border:1px solid rgba(148,163,184,.16);border-radius:999px;padding:5px 10px;background:rgba(15,23,42,.55)}
+.invoice-action-sheet{display:grid;gap:9px}.invoice-action-card{width:100%!important;min-height:58px!important;border-radius:17px!important;padding:10px 12px!important;display:grid!important;grid-template-columns:38px 1fr auto!important;align-items:center!important;text-align:right!important;gap:10px!important;transform:none!important;box-shadow:0 10px 22px rgba(0,0,0,.16)!important}.invoice-action-card:hover{transform:translateY(-1px)!important}.invoice-action-card .ia-icon{width:38px;height:38px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.11);font-size:17px}.invoice-action-card .ia-text{display:flex;flex-direction:column;gap:2px;min-width:0}.invoice-action-card .ia-text strong{font-size:14px;font-weight:950;color:#f8fbff;line-height:1.2}.invoice-action-card .ia-text small{font-size:11px;color:#b7c7dc;line-height:1.25;white-space:normal}.invoice-action-card .ia-chevron{color:#cbd5e1;opacity:.78;font-weight:900}.invoice-action-primary{background:linear-gradient(135deg,#16a34a,#22c55e)!important;border-color:rgba(134,239,172,.40)!important}.invoice-action-print{background:linear-gradient(135deg,#2563eb,#3b82f6)!important;border-color:rgba(147,197,253,.40)!important}.invoice-action-warn{background:linear-gradient(135deg,#b77900,#f59e0b)!important;border-color:rgba(253,230,138,.42)!important}.invoice-action-danger{background:linear-gradient(135deg,#e11d48,#fb466c)!important;border-color:rgba(254,164,180,.44)!important}.invoice-action-close{min-height:42px!important;border-radius:15px!important;background:rgba(30,50,78,.62)!important;border-color:rgba(148,163,184,.18)!important;color:#d7e4f5!important;box-shadow:none!important}
+@media(max-width:900px){.mini-device-grid{grid-template-columns:repeat(auto-fit,minmax(164px,1fr))!important}.mini-device-card{min-height:150px!important}.md-device-svg{width:124px!important;height:68px!important}.device-detail-actions{grid-template-columns:1fr!important}}
+@media(max-width:650px){.mini-device-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}.mini-device-card{min-height:142px!important;padding:12px!important;border-radius:20px!important}.mini-device-card .md-name{font-size:14px!important;max-width:calc(100% - 58px)!important}.mini-device-card .md-state{font-size:10px!important;min-width:48px!important;padding:4px 7px!important}.md-ps5-icon{min-height:62px!important}.md-device-svg{width:112px!important;height:62px!important}.mini-device-card .md-metric{font-size:15.5px!important}.mini-device-card .md-sub{font-size:10.4px!important}.device-detail-grid{grid-template-columns:1fr!important}.invoice-action-title{align-items:flex-start;flex-direction:column}.invoice-action-card{min-height:56px!important;grid-template-columns:34px 1fr!important}.invoice-action-card .ia-chevron{display:none}.invoice-action-card .ia-icon{width:34px;height:34px}}
+@media(max-width:390px){.mini-device-grid{grid-template-columns:1fr!important}.mini-device-card{min-height:138px!important}.md-device-svg{width:126px!important;height:66px!important}}
 
 </style>
 </head>
@@ -1250,7 +1280,7 @@ body{
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.21.0';
+const APP_VERSION='V6.4.2-RC5.21.1';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -1368,13 +1398,18 @@ window.addEventListener('resize',closeActionMenus);
 // EC9: do not close action UI on scroll; mobile scroll events can fire immediately after tap.
 function invoiceActionsModal(iid){
   const i=state.invoices.find(x=>x.id===iid);if(!i)return;
-  modal(`<div class="big">⋯ إجراءات الفاتورة ${invNo(i)}</div>
-    <div class="col">
-      <button class="ok" onclick="showInv('${iid}')">🧾 عرض الفاتورة</button>
-      <button onclick="printInvoice('${iid}')">🖨 طباعة</button>
-      ${canCorrectInvoice()&&i.status!=='voided'?`<button class="btn-warn" onclick="invoiceCorrectionModal('${iid}')">✏ تصحيح موثّق</button><button class="danger" onclick="voidInvoiceModal('${iid}')">⛔ إلغاء موثّق</button>`:''}
-      <button class="gray" onclick="closeM()">إغلاق</button>
-    </div>`);
+  const correctionActions=canCorrectInvoice()&&i.status!=='voided'
+    ? `<button class="invoice-action-card invoice-action-warn" onclick="invoiceCorrectionModal('${iid}')"><span class="ia-icon">✏️</span><span class="ia-text"><strong>تصحيح موثّق</strong><small>تعديل الفاتورة مع حفظ سجل المراجعة</small></span><span class="ia-chevron">‹</span></button><button class="invoice-action-card invoice-action-danger" onclick="voidInvoiceModal('${iid}')"><span class="ia-icon">⛔</span><span class="ia-text"><strong>إلغاء موثّق</strong><small>إلغاء بدون حذف الفاتورة من السجل</small></span><span class="ia-chevron">‹</span></button>`
+    : '';
+  modal(`<div class="invoice-action-modal">
+    <div class="invoice-action-title"><strong>إجراءات الفاتورة ${invNo(i)}</strong><span>${invoiceStatusText(i)}</span></div>
+    <div class="invoice-action-sheet">
+      <button class="invoice-action-card invoice-action-primary" onclick="showInv('${iid}')"><span class="ia-icon">🧾</span><span class="ia-text"><strong>عرض الفاتورة</strong><small>فتح تفاصيل الفاتورة داخل التطبيق</small></span><span class="ia-chevron">‹</span></button>
+      <button class="invoice-action-card invoice-action-print" onclick="printInvoice('${iid}')"><span class="ia-icon">🖨️</span><span class="ia-text"><strong>طباعة / PDF</strong><small>فتح نسخة الطباعة والحفظ</small></span><span class="ia-chevron">‹</span></button>
+      ${correctionActions}
+      <button class="invoice-action-close" onclick="closeM()">إغلاق</button>
+    </div>
+  </div>`);
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function owner(){return user&&['Owner','Admin'].includes(user.role)}
@@ -1780,15 +1815,15 @@ function miniDeviceName(d){
   return raw;
 }
 function miniDeviceSvg(){
-  return `<svg class="md-device-svg" viewBox="0 0 132 62" aria-hidden="true" focusable="false">
-    <g class="ps-console" transform="translate(73 4) rotate(-3)">
-      <path class="ps-shell" d="M16 2 C30 2 42 6 45 18 L50 54 C39 58 25 59 11 56 C5 42 2 20 16 2 Z"/>
-      <path class="ps-core" d="M29 5 C38 9 43 17 44 28 L48 52 C43 54 37 55 31 55 C34 38 34 20 29 5 Z"/>
-      <path class="ps-accent" d="M23 9 C27 23 27 39 24 54"/>
-      <path class="ps-accent" d="M35 15 L39 49" opacity=".72"/>
-      <circle cx="39" cy="14" r="1.6" fill="#cbd5e1" opacity=".85"/>
+  return `<svg class="md-device-svg" viewBox="0 0 156 78" aria-hidden="true" focusable="false">
+    <g class="ps-console" transform="translate(78 4) rotate(-2) scale(1.16)">
+      <path class="ps-shell" d="M17 2 C33 2 47 7 51 21 L56 64 C43 69 27 69 12 65 C5 49 2 21 17 2 Z"/>
+      <path class="ps-core" d="M33 5 C43 10 48 20 50 34 L54 61 C48 64 41 65 34 65 C38 43 38 21 33 5 Z"/>
+      <path class="ps-accent" d="M25 9 C30 27 30 47 26 63"/>
+      <path class="ps-accent" d="M42 17 L47 58" opacity=".72"/>
+      <circle cx="45" cy="15" r="1.7" fill="#cbd5e1" opacity=".9"/>
     </g>
-    <g class="ps-controller" transform="translate(7 31)">
+    <g class="ps-controller" transform="translate(14 45) scale(.72)">
       <path class="pad-shell" d="M10 14 C15 4 25 1 37 6 C43 9 52 9 58 6 C70 1 80 4 85 14 C91 27 85 34 76 30 C70 27 68 20 61 20 L34 20 C27 20 25 27 19 30 C10 34 4 27 10 14 Z"/>
       <path class="pad-dark" d="M37 10 L58 10 C60 10 61 11 61 13 C61 15 60 16 58 16 L37 16 C35 16 34 15 34 13 C34 11 35 10 37 10 Z" opacity=".92"/>
       <path class="pad-cut" d="M23 11 L23 21 M18 16 L28 16"/>
@@ -3033,7 +3068,7 @@ bootApplication();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-21-0')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-21-1')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
