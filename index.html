@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.19.0</title>
+<title>PS Cafe Manager • V6.4.2-RC5.20.0</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc5-19-0">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc5-20-0">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-17">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-17">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-17">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-17">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-17">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-20-0">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-20-0">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-20-0">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-20-0">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-20-0">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -52,7 +52,7 @@ html,body{max-width:100%;overflow-x:hidden;}
 ::-webkit-scrollbar-thumb:hover{background:var(--blue)}
 
 
-/* RC5.19.0 — Core Operations Recovery from RC5.17 baseline. Timed Session temporarily disabled. */
+/* RC5.20.0 — Timed Session Safe Add on verified Core Direct Operations. */
 .boot-status{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
   background:radial-gradient(ellipse 60% 50% at 30% 40%,rgba(41,121,255,0.08) 0%,transparent 60%),
   radial-gradient(ellipse 50% 60% at 80% 70%,rgba(124,58,237,0.06) 0%,transparent 60%),var(--bg-base);}
@@ -1210,7 +1210,7 @@ button{min-height:var(--btn-h)!important;padding:var(--btn-pad-y) var(--btn-pad-
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.19.1';
+const APP_VERSION='V6.4.2-RC5.20.0';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -1268,6 +1268,10 @@ function today(){return localBusinessDate()}
 function val(x){return document.getElementById(x)?.value||''}
 function matchOptionPrice(opt,mode){return Number((mode==='multi'?opt.multi:opt.single) ?? opt.price ?? 0)||0}
 function matchOptionLabel(opt,mode){return `${Number(opt.mins)||0} دقيقة — ${money(matchOptionPrice(opt,mode))} ج`}
+function isTimedSession(s){return !!s && s.sessionType==='timed'}
+function isFixedTimeSession(s){return !!s && (s.sessionType==='match'||s.sessionType==='timed')}
+function timedOptionPrice(mins,mode,device){const rate=mode==='multi'?Number(device?.multiRate):Number(device?.singleRate);return billOpenPlay((Number(mins)||0)/60*(rate||0));}
+function sessionTimeLeftMinutes(s){const target=Number(s&&s.matchMins)||0;const elapsed=Math.max(0,(Date.now()-new Date(s.start))/60000);return target-elapsed;}
 function isMatchLine(x){return !!x && (x.type==='match'||x.itemType==='match'||x.item_type==='match'||String(x.name||'').trim().startsWith('مباراة'));}
 function matchItemsTotal(items){return (items||[]).filter(isMatchLine).reduce((a,i)=>a+(+i.price||0)*(+i.qty||1),0);}
 function nonMatchItemsTotal(items){return (items||[]).filter(i=>!isMatchLine(i)).reduce((a,i)=>a+(+i.price||0)*(+i.qty||1),0);}
@@ -1277,6 +1281,7 @@ function invoiceMatchCount(i){return (i&&i.sessionType==='match'?1:0)+matchItems
 function matchCountLabel(n){return n===1?'مباراة واحدة':(n===2?'مباراتان':(n>=3&&n<=10?n+' مباريات':n+' مباراة'));}
 function invoicePlayLabel(i){
   const count=invoiceMatchCount(i);
+  if(i&&i.sessionType==='timed')return count>0?'رسوم الوقت المحدد والمباريات':'رسوم الوقت المحدد';
   if(i&&i.sessionType==='match')return count>1?'رسوم المباراة والمباريات الإضافية':'رسوم المباراة';
   return count>0?'رسوم اللعب والمباريات':'رسوم اللعب';
 }
@@ -1361,6 +1366,7 @@ function invoiceStarter(i){return (i&&(i.startedBy||i.startedByLabel||i.started_
 function invoiceEnder(i){return (i&&(i.endedBy||i.endedByLabel||i.ended_by_label))||invActor(i)||'غير محدد';}
 function invoiceSessionTypeText(i){
   if(!i)return '—';
+  if(i.sessionType==='timed')return `وقت محدد ${Number(i.matchMins)||Number(i.minutes)||0} دقيقة`;
   if(i.sessionType==='match')return `مباراة ${Number(i.matchMins)||Number(i.minutes)||0} دقيقة`;
   return invoiceMatchCount(i)>0?'جلسة مفتوحة + مباريات إضافية':'جلسة مفتوحة';
 }
@@ -1471,10 +1477,10 @@ function cost(s){
   let elapsed=Math.max(0,(Date.now()-new Date(s.start))/60000); // float minutes elapsed
   let d=state.devices.find(x=>x.id===s.deviceId)||{};
   let play=0;
-  let m=s.sessionType==='match'?(Number(s.matchMins)||Math.ceil(elapsed)||1):(Math.ceil(elapsed)||1);
-  if(s.sessionType==='match'){
-    // Match is a fixed-price product: no live accounting timer.
-    play=+s.matchPrice||0;
+  let m=isFixedTimeSession(s)?(Number(s.matchMins)||Math.ceil(elapsed)||1):(Math.ceil(elapsed)||1);
+  if(isFixedTimeSession(s)){
+    // Match and timed sessions are fixed-price sessions based on the selected duration.
+    play=+s.matchPrice||timedOptionPrice(s.matchMins,s.mode,d)||0;
   } else {
     // Open session only: billed by elapsed time, minimum 5 EGP, rounded up to nearest 5, no fractions.
     let rate=s.mode==='multi'?d.multiRate:d.singleRate;
@@ -1493,9 +1499,12 @@ function sessionClock(s){
 }
 function liveSessionPanel(s,c){
   const sid=esc(s.id);
-  if(s.sessionType==='match'){
+  if(isFixedTimeSession(s)){
+    const left=sessionTimeLeftMinutes(s);
+    const label=s.sessionType==='timed'?'وقت محدد':'المدة';
+    const remain=left>0?`${Math.ceil(left)} د متبقية`:(left<=0?`انتهى +${Math.floor(Math.abs(left))} د`:`${Number(s.matchMins)||0} د`);
     return `<div class="live-session-panel">
-      <div class="live-session-box match-fixed"><span>المدة</span><strong>${Number(s.matchMins)||0} د</strong></div>
+      <div class="live-session-box match-fixed"><span>${label}</span><strong>${remain}</strong></div>
       <div class="live-session-box current-total"><span>الإجمالي</span><strong data-live-total="${sid}">${money(c.total)} ج</strong></div>
       <div class="live-session-box drink-total"><span>المشروبات</span><strong data-live-drinks="${sid}">${money(c.dr)} ج</strong></div>
       <div class="live-session-box"><span>إضافي</span><strong data-live-matchadd="${sid}">${money(c.matchAdd)} ج</strong></div>
@@ -1524,6 +1533,7 @@ function badge(d,s=null,alertCls=''){
   if(s){
     if(alertCls.includes('overtime')||alertCls.includes('ended'))return `<span class="badge b-ended">⛔ انتهت</span>`;
     if(alertCls.includes('warn-2'))return `<span class="badge b-warn">⚠ قربت</span>`;
+    if(s.sessionType==='timed')return `<span class="badge b-match">⏳ ${Number(s.matchMins)||0} د</span>`;
     if(s.sessionType==='match')return `<span class="badge b-match">🎮 ${Number(s.matchMins)||0} د</span>`;
     return `<span class="badge b-open">⏱ مفتوحة</span>`;
   }
@@ -1673,7 +1683,7 @@ function checkAlerts(){
     const d=state.devices.find(x=>x.id===s.deviceId)||{};
     const deviceName=d.name||'الجهاز';
     const elapsed=Math.max(0,(Date.now()-new Date(s.start))/60000);
-    if(s.sessionType==='match'){
+    if(isFixedTimeSession(s)){
       const target=Number(s.matchMins)||0;
       if(!target)return;
       const left=target-elapsed;
@@ -1692,7 +1702,7 @@ function checkAlerts(){
 // DASHBOARD RENDER
 // ============================================================
 function getDeviceAlertClass(s){
-  if(!s||s.sessionType!=='match')return '';
+  if(!s||!isFixedTimeSession(s))return '';
   const target=Number(s.matchMins)||0;if(!target)return '';
   const elapsed=Math.max(0,(Date.now()-new Date(s.start))/60000),left=target-elapsed;
   if(elapsed>=target+5)return 'overtime';
@@ -1701,7 +1711,7 @@ function getDeviceAlertClass(s){
   return '';
 }
 function getTimerClass(s){
-  if(!s||s.sessionType!=='match')return '';
+  if(!s||!isFixedTimeSession(s))return '';
   const target=Number(s.matchMins)||0;if(!target)return '';
   const elapsed=Math.max(0,(Date.now()-new Date(s.start))/60000),left=target-elapsed;
   if(elapsed>=target)return 'over';
@@ -1758,9 +1768,10 @@ function miniDeviceCard(d){
     const isWarn=alertCls.includes('warn-2');
     if(isEnded){cls='md-ended';stateText='انتهت'}
     else if(isWarn){cls='md-warn';stateText='قربت'}
+    else if(s.sessionType==='timed'){cls='md-match';stateText='وقت محدد'}
     else if(s.sessionType==='match'){cls='md-match';stateText='مباراة'}
     else {cls='md-open';stateText='مفتوحة'}
-    if(s.sessionType==='match'){
+    if(isFixedTimeSession(s)){
       const elapsed=Math.max(0,(Date.now()-new Date(s.start))/60000);
       const total=Number(s.matchMins)||0;
       const left=Math.max(0,Math.ceil(total-elapsed));
@@ -1788,13 +1799,13 @@ function openDeviceDetail(did){
         <div class="device-detail-box"><span>Single</span><strong>${money(d.singleRate)} ج/س</strong></div>
         <div class="device-detail-box"><span>Multi</span><strong>${money(d.multiRate)} ج/س</strong></div>
       </div>
-      ${d.status==='available'?`<div class="device-detail-actions"><button class="ok" onclick="startModal('${d.id}')">⏱ جلسة</button><button style="background:var(--purple-dim);border-color:rgba(124,58,237,0.4);color:#a78bfa" onclick="matchModal('${d.id}')">🎮 مباراة</button><button class="gray" onclick="closeM()">إغلاق</button></div>`:`<div class="settings-note">الجهاز ليس متاحًا للتشغيل الآن.</div><div class="row"><button class="gray" onclick="closeM()">إغلاق</button></div>`}
+      ${d.status==='available'?`<div class="device-detail-actions"><button class="ok" onclick="startModal('${d.id}')">⏱ جلسة</button><button style="background:var(--purple-dim);border-color:rgba(124,58,237,0.4);color:#a78bfa" onclick="matchModal('${d.id}')">🎮 مباراة</button><button style="background:var(--blue-dim);border-color:rgba(41,121,255,0.45);color:#b9d4ff" onclick="timedModal('${d.id}')">⏳ وقت محدد</button><button class="gray" onclick="closeM()">إغلاق</button></div>`:`<div class="settings-note">الجهاز ليس متاحًا للتشغيل الآن.</div><div class="row"><button class="gray" onclick="closeM()">إغلاق</button></div>`}
     </div>`);
     return;
   }
   modal(`<div class="device-detail-modal"><div class="device-detail-head"><div class="device-detail-title">🎮 ${esc(d.name)}</div>${badge(d,s,alertCls)}</div>
     <div class="session-topline compact-status">
-      <span class="mini-chip">${s.sessionType==='match'?'🎮 مباراة':'⏱ مفتوحة'}</span>
+      <span class="mini-chip">${s.sessionType==='timed'?'⏳ وقت محدد':(s.sessionType==='match'?'🎮 مباراة':'⏱ مفتوحة')}</span>
       <span class="mini-chip">${s.mode==='multi'?'Multi':'Single'}</span>
       <span class="mini-chip">${matchCountLabel(sessionMatchCount(s))}</span>
     </div>
@@ -1825,6 +1836,7 @@ function rDash(){
       <div class="row">
         <button class="ok" onclick="startModal()">▶ جلسة</button>
         <button style="background:var(--purple-dim);border-color:rgba(124,58,237,0.4);color:#a78bfa" onclick="matchModal()">⚽ مباراة</button>
+        <button style="background:var(--blue-dim);border-color:rgba(41,121,255,0.45);color:#b9d4ff" onclick="timedModal()">⏳ وقت محدد</button>
       </div>
     </div>
     ${cashier()?cashierShiftWidget():''}
@@ -1886,8 +1898,8 @@ async function directStartCloudSession(payload){
     customer:payload.customer||'',
     play_mode:payload.playMode||'single',
     session_type:payload.sessionType||'open',
-    match_minutes:payload.sessionType==='match' ? (payload.matchMinutes||null) : null,
-    match_price:payload.sessionType==='match' ? (payload.matchPrice||0) : null,
+    match_minutes:isFixedTimeSession({sessionType:payload.sessionType}) ? (payload.matchMinutes||null) : null,
+    match_price:isFixedTimeSession({sessionType:payload.sessionType}) ? (payload.matchPrice||0) : null,
     started_at:new Date().toISOString(),
     started_by:uid,
     started_by_label:cloudActorLabel(),
@@ -1914,7 +1926,7 @@ async function directCompleteCloudSession(sid){
     customer:s.customer||'',
     play_mode:s.mode||'single',
     session_type:s.sessionType||'open',
-    match_minutes:s.sessionType==='match' ? (s.matchMins||null) : null,
+    match_minutes:isFixedTimeSession(s) ? (s.matchMins||null) : null,
     started_at:s.start||null,
     ended_at:now,
     minutes:c.m||1,
@@ -1953,6 +1965,67 @@ async function start(){
   const when=new Date().toISOString();
   state.sessions.push({id:sid,deviceId:did,customer:val('sc'),mode:val('sm'),sessionType:'open',items:[],start:when,status:'open',user:user.username,startedBy:user.username,startedById:user.id||''});
   d.status='busy';audit('SESSION_START','session',sid,'بدء جلسة مفتوحة على '+d.name,{deviceId:did,deviceName:d.name,mode:val('sm')});closeM();save();
+}
+
+
+// ============================================================
+// TIMED SESSION MODAL
+// ============================================================
+function timedModal(did=''){
+  let av=state.devices.filter(d=>d.status==='available'&&!sess(d.id));
+  if(!av.length&&!did){return alert('لا توجد أجهزة متاحة');}
+  let devSel=`<select id="tsd" onchange="updateTimedPrices()">${av.map(d=>`<option value="${d.id}" ${d.id==did?'selected':''}>${d.name}</option>`)}</select>`;
+  modal(`<div class="big">⏳ وقت محدد</div>
+    <div class="grid g2">
+      <div class="col"><label>الجهاز</label>${devSel}</div>
+      <div class="col"><label>اسم العميل</label><input id="tsc" placeholder="اختياري"></div>
+      <div class="col" style="grid-column:1/-1"><label>نوع التشغيل</label>
+        <div class="type-toggle">
+          <button type="button" class="sel" id="tm2_single" onclick="toggleTimedMode('single')">Single</button>
+          <button type="button" id="tm2_multi" onclick="toggleTimedMode('multi')">Multi</button>
+        </div>
+        <input type="hidden" id="tsm" value="single">
+      </div>
+      <div class="col" style="grid-column:1/-1">
+        <label>المدة والسعر</label>
+        <div id="timed-prices-list"></div>
+        <input type="hidden" id="sel-timed-mins" value="30">
+        <input type="hidden" id="sel-timed-price" value="0">
+      </div>
+    </div>
+    <br><div class="row"><button class="ok" onclick="startTimedSession()">بدء الوقت المحدد</button><button class="gray" onclick="closeM()">إلغاء</button></div>`);
+  updateTimedPrices();
+}
+function toggleTimedMode(m){
+  document.getElementById('tsm').value=m;
+  document.getElementById('tm2_single').className=m==='single'?'sel':'';
+  document.getElementById('tm2_multi').className=m==='multi'?'sel':'';
+  updateTimedPrices();
+}
+function updateTimedPrices(){
+  const did=val('tsd'), d=state.devices.find(x=>x.id===did); if(!d)return;
+  const mode=document.getElementById('tsm')?.value||'single';
+  const options=[30,60,90,120];
+  document.getElementById('timed-prices-list').innerHTML=`<div class="match-choice-grid">${options.map((mins,i)=>{const price=timedOptionPrice(mins,mode,d);return `<div class="match-choice ${i===0?'sel':''}" onclick="selectTimedPrice(${i},${mins},${price})"><strong>${mins} دقيقة</strong><small>${money(price)} ج</small></div>`}).join('')}</div>`;
+  selectTimedPrice(0,options[0],timedOptionPrice(options[0],mode,d));
+}
+function selectTimedPrice(idx,mins,price){
+  document.querySelectorAll('#timed-prices-list .match-choice').forEach((el,i)=>{el.className='match-choice'+(i===idx?' sel':'')});
+  document.getElementById('sel-timed-mins').value=mins;
+  document.getElementById('sel-timed-price').value=price;
+}
+async function startTimedSession(){
+  const did=val('tsd');if(!did)return alert('اختار جهاز');
+  const mins=+val('sel-timed-mins')||0, price=+val('sel-timed-price')||0, mode=val('tsm')||'single', sid=id();
+  const d=state.devices.find(x=>x.id==did);
+  if(!mins||!price)return alert('اختار مدة الوقت المحدد');
+  if(st().mode==='secure_cloud'){
+    try{await directStartCloudSession({id:sid,deviceId:did,customer:val('tsc'),playMode:mode,sessionType:'timed',matchMinutes:mins,matchPrice:price});closeM();await loadCloud(true);showNotice('تم بدء الوقت المحدد ✓','success');}
+    catch(e){showNotice('لم يبدأ الوقت المحدد: '+e.message,'danger');}
+    return;
+  }
+  state.sessions.push({id:sid,deviceId:did,customer:val('tsc'),mode,sessionType:'timed',matchMins:mins,matchPrice:price,items:[],start:new Date().toISOString(),status:'open',user:user.username,startedBy:user.username,startedById:user.id||''});
+  d.status='busy';audit('TIMED_START','session',sid,'بدء وقت محدد على '+d.name,{deviceId:did,deviceName:d.name,minutes:mins,price});closeM();save();
 }
 
 // ============================================================
@@ -2920,7 +2993,7 @@ bootApplication();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-19-0')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-20-0')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
