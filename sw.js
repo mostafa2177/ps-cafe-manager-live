@@ -1,11 +1,11 @@
 // ============================================================
 // PS Cafe Manager — Service Worker
-// Version: 6.4.2-RC5.21.1 CARDS & MENUS VISUAL BALANCE
+// Version: 6.4.2-RC5.21.2 RESPONSIVE DEVICE CARDS & UNIFIED SHEETS
 // ============================================================
-const CACHE_NAME = 'ps-cafe-v6.4.2-rc5-21-1';
-const OFFLINE_URL = './index.html?v=6.4.2-rc5-21-1';
+const CACHE_NAME = 'ps-cafe-v6.4.2-rc5-21-2';
+const OFFLINE_URL = './index.html?v=6.4.2-rc5-21-2';
 const PRECACHE_ASSETS = [
-  './', './index.html?v=6.4.2-rc5-21-1', './manifest.json?v=6.4.2-rc5-21-1',
+  './', './index.html?v=6.4.2-rc5-21-2', './manifest.json?v=6.4.2-rc5-21-2',
   './icon-72.png','./icon-96.png','./icon-128.png','./icon-144.png',
   './icon-152.png','./icon-192.png','./icon-384.png','./icon-512.png','./brand-avatar.png'
 ];
