@@ -1,11 +1,11 @@
 // ============================================================
 // PS Cafe Manager — Service Worker
-// Version: 6.4.2-RC5.21.3 PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
+// Version: 6.4.2-RC5.21.4 ELEGANT VISUAL CORRECTION
 // ============================================================
-const CACHE_NAME = 'ps-cafe-v6.4.2-rc5-21-3';
-const OFFLINE_URL = './index.html?v=6.4.2-rc5-21-3';
+const CACHE_NAME = 'ps-cafe-v6.4.2-rc5-21-4';
+const OFFLINE_URL = './index.html?v=6.4.2-rc5-21-4';
 const PRECACHE_ASSETS = [
-  './', './index.html?v=6.4.2-rc5-21-3', './manifest.json?v=6.4.2-rc5-21-3',
+  './', './index.html?v=6.4.2-rc5-21-4', './manifest.json?v=6.4.2-rc5-21-4',
   './icon-72.png','./icon-96.png','./icon-128.png','./icon-144.png',
   './icon-152.png','./icon-192.png','./icon-384.png','./icon-512.png','./brand-avatar.png'
 ];

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>PS Cafe Manager • V6.4.2-RC5.21.3</title>
+<title>PS Cafe Manager • V6.4.2-RC5.21.4</title>
 
 <!-- PWA Meta Tags -->
 <meta name="application-name" content="PS Cafe Manager">
@@ -18,14 +18,14 @@
 <meta name="msapplication-tap-highlight" content="no">
 
 <!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json?v=6.4.2-rc5-21-3">
+<link rel="manifest" href="manifest.json?v=6.4.2-rc5-21-4">
 
 <!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-21-3">
-<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-21-3">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-21-3">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-21-3">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-21-3">
+<link rel="apple-touch-icon" href="icon-192.png?v=6.4.2-rc5-21-4">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-192.png?v=6.4.2-rc5-21-4">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png?v=6.4.2-rc5-21-4">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=6.4.2-rc5-21-4">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=6.4.2-rc5-21-4">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -1182,7 +1182,7 @@ body{
 
 
 /* ============================================================
-   RC5.21.3 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
+   RC5.21.4 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
    UI ONLY: cards/menu polish; no Supabase / SQL / RPC / operation logic changes.
    ============================================================ */
 .mini-device-grid{grid-template-columns:repeat(auto-fit,minmax(184px,1fr))!important;gap:14px!important;align-items:stretch!important}
@@ -1212,7 +1212,7 @@ body{
 
 
 /* ============================================================
-   RC5.21.3 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
+   RC5.21.4 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
    UI ONLY: responsive cards/sheets polish; no Supabase / SQL / RPC / operation logic changes.
    ============================================================ */
 .mini-devices-section{
@@ -1390,7 +1390,7 @@ body{
 
 
 /* ============================================================
-   RC5.21.3 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
+   RC5.21.4 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
    UI ONLY: premium visual polish; no Supabase / SQL / RPC / operation logic changes.
    ============================================================ */
 .md-device-svg{width:116px!important;height:55px!important;overflow:visible!important;filter:drop-shadow(0 12px 15px rgba(0,0,0,.34)) drop-shadow(0 0 14px var(--md-glow,rgba(148,163,184,.24)))!important}
@@ -1451,6 +1451,42 @@ body{
   .invoice-action-sheet{grid-template-columns:1fr!important;gap:8px!important}.invoice-action-card{min-height:54px!important;border-radius:15px!important;padding:8px 10px!important;grid-template-columns:32px 1fr auto!important;grid-template-areas:'icon text chev'!important}.invoice-action-card .ia-icon{width:32px!important;height:32px!important;border-radius:11px!important;font-size:15px!important}.invoice-action-card .ia-text strong{font-size:12.9px!important}.invoice-action-card .ia-text small{font-size:10.1px!important;line-height:1.24!important}.invoice-action-card .ia-chevron{align-self:center!important;font-size:15px!important}.invoice-action-close{min-height:36px!important;border-radius:13px!important}
 }
 @media(max-width:390px){.md-device-svg{width:76px!important;height:37px!important}.mini-device-card .md-ps5-icon{min-height:35px!important}.mini-device-card .md-ps5-icon::before{width:72px!important;height:24px!important}}
+
+
+
+/* ============================================================
+   RC5.21.4 — VISUAL CORRECTION: elegant compact cards + refined action sheet
+   UI-only final override. No Supabase/SQL/RPC/logic changes.
+   ============================================================ */
+:root{--rc214-panel:rgba(10,18,31,.86);--rc214-line:rgba(148,163,184,.18);--rc214-soft:rgba(255,255,255,.055)}
+.mini-devices-section{background:linear-gradient(180deg,rgba(3,7,18,.40),rgba(7,13,25,.28))!important;border-color:rgba(148,163,184,.11)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)!important}
+.mini-device-grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important;gap:12px!important;align-items:stretch!important}
+.mini-device-card{min-height:116px!important;padding:11px 12px 10px!important;border-radius:21px!important;background:linear-gradient(145deg,rgba(10,18,31,.96),rgba(15,23,42,.82))!important;border:1px solid rgba(148,163,184,.18)!important;box-shadow:0 10px 26px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.045)!important;gap:7px!important;isolation:isolate!important}
+.mini-device-card::before{width:4px!important;border-radius:999px!important;inset:12px auto 12px 8px!important;opacity:.95!important}
+.mini-device-card::after{display:none!important}
+.mini-device-card:hover{transform:translateY(-1px)!important;box-shadow:0 15px 31px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.05)!important}
+.mini-device-card .md-mini-top{min-height:24px!important;position:relative!important;z-index:2!important}
+.mini-device-card .md-name{font-size:14.4px!important;font-weight:950!important;letter-spacing:-.01em!important;color:#f8fbff!important;max-width:calc(100% - 54px)!important;line-height:1.12!important}
+.mini-device-card .md-state{font-size:9.8px!important;min-width:45px!important;padding:4px 7px!important;background:rgba(255,255,255,.055)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.045)!important}
+.md-ps5-icon{min-height:48px!important;margin:-1px 0 0!important;display:flex!important;align-items:center!important;justify-content:center!important;position:relative!important;z-index:1!important}
+.md-ps5-icon::before{width:104px!important;height:34px!important;opacity:.52!important;filter:blur(8px)!important;background:radial-gradient(ellipse at center,var(--md-glow,rgba(148,163,184,.23)),transparent 72%)!important}
+.md-device-svg{width:104px!important;height:48px!important;overflow:visible!important;filter:drop-shadow(0 8px 12px rgba(0,0,0,.30)) drop-shadow(0 0 10px var(--md-glow,rgba(148,163,184,.20)))!important;transition:transform .16s ease!important}
+.mini-device-card:hover .md-device-svg{transform:translateY(-1px) scale(1.015)!important}.md-device-svg .ps-floor{opacity:.34!important}.md-device-svg .ps-console{filter:drop-shadow(0 5px 8px rgba(0,0,0,.24))}.md-device-svg .ps-controller{filter:drop-shadow(0 5px 7px rgba(0,0,0,.20));opacity:.94!important}.md-device-svg .ps-controller.secondary{opacity:.90!important}.md-device-svg .ps-shell{stroke:rgba(255,255,255,.82)!important;stroke-width:1.05!important}.md-device-svg .ps-core{stroke:rgba(6,11,20,.78)!important;stroke-width:.75!important}.md-device-svg .ps-accent{stroke-width:2.15!important}.md-device-svg .pad-shell{stroke:rgba(255,255,255,.80)!important;stroke-width:1.15!important}.md-device-svg .pad-cut{stroke-width:2.1!important}
+.mini-device-card .md-mini-bottom{padding-top:6px!important;border-top:1px solid rgba(255,255,255,.065)!important;position:relative!important;z-index:2!important;gap:8px!important}
+.mini-device-card .md-metric{font-size:14.4px!important;font-weight:950!important;max-width:50%!important;line-height:1.1!important}.mini-device-card.md-available .md-metric{font-size:15.2px!important;color:#f7fff9!important}.mini-device-card .md-sub{font-size:9.8px!important;font-weight:850!important;max-width:56%!important;color:#c4d1e3!important;text-align:left!important;direction:ltr!important;letter-spacing:-.02em!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.mini-device-card.md-available{background:linear-gradient(145deg,rgba(5,23,20,.97),rgba(6,48,35,.82))!important;border-color:rgba(34,197,94,.34)!important}.mini-device-card.md-open{background:linear-gradient(145deg,rgba(5,19,37,.97),rgba(9,54,86,.82))!important;border-color:rgba(56,189,248,.38)!important}.mini-device-card.md-match{background:linear-gradient(145deg,rgba(24,14,48,.97),rgba(59,27,103,.82))!important;border-color:rgba(167,139,250,.38)!important}.mini-device-card.md-timed{background:linear-gradient(145deg,rgba(7,36,35,.97),rgba(72,49,18,.82))!important;border-color:rgba(45,212,191,.42)!important}
+.modal .box:has(.invoice-action-modal){width:min(560px,calc(100vw - 24px))!important;padding:18px!important;border-radius:24px!important;background:linear-gradient(160deg,rgba(14,25,42,.97),rgba(8,15,28,.98))!important;border-color:rgba(99,124,163,.28)!important;box-shadow:0 28px 70px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.055)!important}.modal .box:has(.invoice-action-modal)::before{opacity:.32!important;height:150px!important}.invoice-action-modal{gap:12px!important}.invoice-action-title{min-height:52px!important;border-radius:18px!important;padding:11px 14px!important;background:linear-gradient(135deg,rgba(15,23,42,.82),rgba(24,37,60,.58))!important;border:1px solid rgba(148,163,184,.16)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important}.invoice-action-title strong{font-size:19px!important;letter-spacing:-.01em!important}.invoice-action-title strong::before{font-size:18px!important;opacity:.88!important}.invoice-action-title span{font-size:10.5px!important;padding:4px 9px!important;background:rgba(15,23,42,.58)!important;border-color:rgba(148,163,184,.18)!important}.invoice-action-sheet{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}.invoice-action-card{--ia:#60a5fa;min-height:66px!important;border-radius:18px!important;padding:10px!important;grid-template-columns:38px 1fr auto!important;grid-template-areas:'icon text chev'!important;text-align:right!important;background:linear-gradient(135deg,rgba(255,255,255,.045),rgba(15,23,42,.70))!important;border:1px solid color-mix(in srgb,var(--ia) 35%,rgba(148,163,184,.18))!important;box-shadow:0 10px 24px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.045)!important;overflow:hidden!important}.invoice-action-card::before{height:100%!important;width:4px!important;inset:0 auto 0 0!important;background:linear-gradient(180deg,var(--ia),transparent 88%)!important;opacity:.88!important}.invoice-action-card::after{display:none!important}.invoice-action-card:hover{transform:translateY(-1px)!important;box-shadow:0 15px 28px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.055)!important}.invoice-action-card .ia-icon{width:36px!important;height:36px!important;border-radius:13px!important;font-size:16px!important;background:color-mix(in srgb,var(--ia) 24%,rgba(255,255,255,.08))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.09)!important}.invoice-action-card .ia-text strong{font-size:13.4px!important;line-height:1.15!important}.invoice-action-card .ia-text small{font-size:10.6px!important;line-height:1.25!important;color:rgba(220,232,248,.75)!important}.invoice-action-card .ia-chevron{font-size:15px!important;opacity:.52!important;align-self:center!important}.invoice-action-primary{--ia:#22c55e!important}.invoice-action-print{--ia:#3b82f6!important}.invoice-action-warn{--ia:#f59e0b!important;color:#fff!important}.invoice-action-danger{--ia:#f43f5e!important}.invoice-action-close{min-height:38px!important;border-radius:15px!important;background:rgba(30,50,78,.52)!important;border-color:rgba(148,163,184,.18)!important;color:#dbe8f7!important;box-shadow:none!important}
+@media(max-width:700px){.mini-device-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}.mini-device-card{min-height:100px!important;padding:8px 8px 7px!important;border-radius:17px!important;gap:4px!important}.mini-device-card::before{inset:10px auto 10px 6px!important;width:3px!important}.mini-device-card .md-name{font-size:12.2px!important;max-width:calc(100% - 42px)!important}.mini-device-card .md-state{font-size:8.2px!important;min-width:35px!important;padding:3px 5px!important}.md-ps5-icon{min-height:36px!important}.md-ps5-icon::before{width:76px!important;height:25px!important;filter:blur(6px)!important}.md-device-svg{width:78px!important;height:36px!important}.mini-device-card .md-mini-bottom{padding-top:4px!important;gap:5px!important}.mini-device-card .md-metric{font-size:11.6px!important;max-width:48%!important}.mini-device-card.md-available .md-metric{font-size:12.3px!important}.mini-device-card .md-sub{font-size:8.1px!important;max-width:58%!important}.modal .box:has(.invoice-action-modal){width:calc(100vw - 18px)!important;max-height:calc(100dvh - 24px - env(safe-area-inset-top))!important;padding:12px!important;border-radius:19px!important}.invoice-action-title{min-height:48px!important;padding:9px 10px!important;border-radius:16px!important}.invoice-action-title strong{font-size:16.2px!important}.invoice-action-title strong::before{font-size:16px!important}.invoice-action-title span{font-size:9.6px!important;padding:4px 7px!important}.invoice-action-sheet{grid-template-columns:1fr!important;gap:7px!important}.invoice-action-card{min-height:51px!important;border-radius:15px!important;padding:8px 9px!important;grid-template-columns:31px 1fr auto!important}.invoice-action-card::before{width:3px!important}.invoice-action-card .ia-icon{width:31px!important;height:31px!important;border-radius:10px!important;font-size:14px!important}.invoice-action-card .ia-text strong{font-size:12.4px!important}.invoice-action-card .ia-text small{font-size:9.7px!important}.invoice-action-close{min-height:35px!important;border-radius:13px!important}}
+@media(max-width:390px){.mini-device-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.mini-device-card{min-height:94px!important;padding:7px!important}.md-device-svg{width:70px!important;height:33px!important}.md-ps5-icon{min-height:32px!important}.mini-device-card .md-name{font-size:11.2px!important}.mini-device-card .md-state{font-size:7.8px!important;min-width:32px!important}.mini-device-card .md-metric{font-size:10.9px!important}.mini-device-card .md-sub{font-size:7.7px!important}}
+
+
+/* RC5.21.4 compatibility pass: avoid color-mix dependency on older mobile browsers */
+.invoice-action-card{border-color:rgba(96,165,250,.30)!important}
+.invoice-action-card .ia-icon{background:rgba(96,165,250,.15)!important}
+.invoice-action-primary{border-color:rgba(34,197,94,.36)!important}.invoice-action-primary .ia-icon{background:rgba(34,197,94,.16)!important}
+.invoice-action-print{border-color:rgba(59,130,246,.36)!important}.invoice-action-print .ia-icon{background:rgba(59,130,246,.16)!important}
+.invoice-action-warn{border-color:rgba(245,158,11,.38)!important}.invoice-action-warn .ia-icon{background:rgba(245,158,11,.18)!important}
+.invoice-action-danger{border-color:rgba(244,63,94,.38)!important}.invoice-action-danger .ia-icon{background:rgba(244,63,94,.18)!important}
 
 </style>
 </head>
@@ -1523,7 +1559,7 @@ body{
 // ============================================================
 // CORE STATE & STORAGE
 // ============================================================
-const APP_VERSION='V6.4.2-RC5.21.3';
+const APP_VERSION='V6.4.2-RC5.21.4';
 const K='ps_cafe_v4_state', SK='ps_cafe_v4_settings', QK='ps_cafe_v4_sync_queue', SMK='ps_cafe_v4_sync_meta';
 const CLOUD_AUDIT_TABLE='ps_audit_logs';
 let state,user=null,tab='Dashboard',dirty=false,timer=null,swRegistration=null,installPromptEvent=null,cloudMembers=[];
@@ -2058,22 +2094,27 @@ function miniDeviceName(d){
   return raw;
 }
 function miniDeviceSvg(){
-  return `<svg class="md-device-svg" viewBox="0 0 172 82" aria-hidden="true" focusable="false">
+  return `<svg class="md-device-svg" viewBox="0 0 176 78" aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id="psBody" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stop-color="#ffffff" stop-opacity="1"/>
         <stop offset="1" stop-color="#dbeafe" stop-opacity=".96"/>
       </linearGradient>
+      <linearGradient id="padBody" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f8fafc" stop-opacity="1"/>
+        <stop offset="1" stop-color="#dbeafe" stop-opacity=".95"/>
+      </linearGradient>
     </defs>
-    <g class="ps-console" transform="translate(86 2) rotate(-1.5) scale(1.08)">
+    <ellipse class="ps-floor" cx="88" cy="69" rx="68" ry="8" fill="var(--md-glow,rgba(148,163,184,.22))" opacity=".38"/>
+    <g class="ps-console" transform="translate(68 3) rotate(-1.5) scale(.92)">
       <path class="ps-shell" fill="url(#psBody)" d="M17 2 C33 2 47 7 51 21 L56 64 C43 69 27 69 12 65 C5 49 2 21 17 2 Z"/>
       <path class="ps-core" d="M33 5 C43 10 48 20 50 34 L54 61 C48 64 41 65 34 65 C38 43 38 21 33 5 Z"/>
       <path class="ps-accent" d="M25 9 C30 27 30 47 26 63"/>
-      <path class="ps-accent" d="M42 17 L47 58" opacity=".72"/>
+      <path class="ps-accent" d="M42 17 L47 58" opacity=".62"/>
       <circle cx="45" cy="15" r="1.7" fill="#cbd5e1" opacity=".9"/>
     </g>
-    <g class="ps-controller primary" transform="translate(9 49) rotate(-7) scale(.54)">
-      <path class="pad-shell" d="M10 14 C15 4 25 1 37 6 C43 9 52 9 58 6 C70 1 80 4 85 14 C91 27 85 34 76 30 C70 27 68 20 61 20 L34 20 C27 20 25 27 19 30 C10 34 4 27 10 14 Z"/>
+    <g class="ps-controller primary" transform="translate(24 47) rotate(-5) scale(.46)">
+      <path class="pad-shell" fill="url(#padBody)" d="M10 14 C15 4 25 1 37 6 C43 9 52 9 58 6 C70 1 80 4 85 14 C91 27 85 34 76 30 C70 27 68 20 61 20 L34 20 C27 20 25 27 19 30 C10 34 4 27 10 14 Z"/>
       <path class="pad-dark" d="M37 10 L58 10 C60 10 61 11 61 13 C61 15 60 16 58 16 L37 16 C35 16 34 15 34 13 C34 11 35 10 37 10 Z" opacity=".92"/>
       <path class="pad-cut" d="M23 11 L23 21 M18 16 L28 16"/>
       <circle class="pad-accent" cx="70" cy="13" r="3"/>
@@ -2082,8 +2123,8 @@ function miniDeviceSvg(){
       <circle class="pad-dark" cx="47" cy="26" r="2.8" opacity=".78"/>
       <circle class="pad-dark" cx="55" cy="26" r="2.8" opacity=".78"/>
     </g>
-    <g class="ps-controller secondary" transform="translate(162 47) rotate(7) scale(-.50 .50)">
-      <path class="pad-shell" d="M10 14 C15 4 25 1 37 6 C43 9 52 9 58 6 C70 1 80 4 85 14 C91 27 85 34 76 30 C70 27 68 20 61 20 L34 20 C27 20 25 27 19 30 C10 34 4 27 10 14 Z"/>
+    <g class="ps-controller secondary" transform="translate(110 47) rotate(5) scale(.46)">
+      <path class="pad-shell" fill="url(#padBody)" d="M10 14 C15 4 25 1 37 6 C43 9 52 9 58 6 C70 1 80 4 85 14 C91 27 85 34 76 30 C70 27 68 20 61 20 L34 20 C27 20 25 27 19 30 C10 34 4 27 10 14 Z"/>
       <path class="pad-dark" d="M37 10 L58 10 C60 10 61 11 61 13 C61 15 60 16 58 16 L37 16 C35 16 34 15 34 13 C34 11 35 10 37 10 Z" opacity=".92"/>
       <path class="pad-cut" d="M23 11 L23 21 M18 16 L28 16"/>
       <circle class="pad-accent" cx="70" cy="13" r="3"/>
@@ -2116,7 +2157,7 @@ function miniDeviceCard(d){
       sub=`${money(c.total)} ج`;
     }
   }else if(d.status==='available'){
-    cls='md-available';stateText='متاح';metric='جاهز';sub=`S ${money(d.singleRate)} / M ${money(d.multiRate)}`;
+    cls='md-available';stateText='متاح';metric='جاهز';sub=`S ${Math.round(Number(d.singleRate)||0)} / M ${Math.round(Number(d.multiRate)||0)}`;
   }
   return `<button type="button" class="mini-device-card ${cls}" onclick="openDeviceDetail('${d.id}')" aria-label="${esc(name)}">
     <span class="md-mini-top"><span class="md-name">${esc(name)}</span><span class="md-state">${stateText}</span></span>
@@ -2573,7 +2614,7 @@ function printInvoice(iid){
   
 
 /* ============================================================
-   RC5.21.3 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
+   RC5.21.4 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
    UI ONLY: premium visual polish; no Supabase / SQL / RPC / operation logic changes.
    ============================================================ */
 .md-device-svg{width:116px!important;height:55px!important;overflow:visible!important;filter:drop-shadow(0 12px 15px rgba(0,0,0,.34)) drop-shadow(0 0 14px var(--md-glow,rgba(148,163,184,.24)))!important}
@@ -2888,7 +2929,7 @@ function printDailyReview(){
   w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير اليوم</title><style>*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;padding:16px;color:#111}.sheet{max-width:820px;margin:0 auto}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:12px}h1{margin:0;font-size:23px}.sub{color:#555;font-size:12px;margin-top:4px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.k{border:1px solid #ddd;border-radius:8px;padding:9px}.k span{display:block;color:#555;font-size:11px}.k b{font-size:18px}.row,.total{display:flex;justify-content:space-between;border-bottom:1px dashed #bbb;padding:8px 0}.total{border-top:2px solid #111;border-bottom:0;font-size:20px;font-weight:900;margin-top:8px}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}th,td{border-bottom:1px solid #ddd;padding:6px;text-align:right}th{background:#f5f5f5}.actions{text-align:center;margin:16px 0}button{padding:9px 18px;border:0;background:#155eef;color:#fff;border-radius:6px;font-weight:700}@page{size:auto;margin:10mm}@media print{.actions{display:none}}
 
 /* ============================================================
-   RC5.21.3 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
+   RC5.21.4 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
    UI ONLY: premium visual polish; no Supabase / SQL / RPC / operation logic changes.
    ============================================================ */
 .md-device-svg{width:116px!important;height:55px!important;overflow:visible!important;filter:drop-shadow(0 12px 15px rgba(0,0,0,.34)) drop-shadow(0 0 14px var(--md-glow,rgba(148,163,184,.24)))!important}
@@ -3103,7 +3144,7 @@ function printShiftReport(summary,closure){
   w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تسليم وردية</title><style>*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;margin:0;padding:18px;color:#111}.sheet{max-width:760px;margin:0 auto;border:1px solid #ddd;padding:22px}.head{text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:14px}h1{font-size:22px;margin:0}.row{display:flex;justify-content:space-between;border-bottom:1px dashed #bbb;padding:9px 0;font-size:14px}.total{display:flex;justify-content:space-between;border-top:2px solid #111;margin-top:10px;padding-top:12px;font-size:20px;font-weight:700}.actions{text-align:center;margin:18px 0}button{padding:10px 20px;border:0;background:#155eef;color:white;border-radius:6px;font-weight:700}@page{size:auto;margin:12mm}@media print{.actions{display:none}.sheet{border:none;padding:0}}
 
 /* ============================================================
-   RC5.21.3 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
+   RC5.21.4 — PREMIUM ACTION SHEETS & DUAL CONTROLLER VISUAL
    UI ONLY: premium visual polish; no Supabase / SQL / RPC / operation logic changes.
    ============================================================ */
 .md-device-svg{width:116px!important;height:55px!important;overflow:visible!important;filter:drop-shadow(0 12px 15px rgba(0,0,0,.34)) drop-shadow(0 0 14px var(--md-glow,rgba(148,163,184,.24)))!important}
@@ -3522,7 +3563,7 @@ bootApplication();
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-21-3')
+    navigator.serviceWorker.register('./sw.js?v=6.4.2-rc5-21-4')
       .then(reg=>{
         swRegistration=reg;
         console.log('SW registered:', reg.scope, APP_VERSION);
